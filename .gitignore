@@ -7,7 +7,4 @@ gradlew
 gradlew.bat
 *.iml
 *.log
-libs/
-notebook/
-computer/
-tmp/
+atlassian-ide-plugin.xml
