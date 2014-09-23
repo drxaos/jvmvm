@@ -1,3 +1,5 @@
+package interpretable;
+
 import net.sf.jauvm.interpretable;
 
 public class Parity {
