@@ -28,19 +28,24 @@
 
 package net.sf.jauvm.vm.ref;
 
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import net.sf.jauvm.vm.AccessControl;
 import net.sf.jauvm.vm.GlobalCodeCache;
 import net.sf.jauvm.vm.MethodCode;
 import net.sf.jauvm.vm.Types;
 
-public final class MethodRef extends SymbolicRef<Method> {
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+
+public final class MethodRef extends SymbolicRef<Method> implements Serializable {
     private static final Reference<Method> nil = new WeakReference<Method>(null);
-    private volatile Reference<Method> method = nil;
+    private transient volatile Reference<Method> method = nil;
 
     private final String id;
     private final String owner;
@@ -48,8 +53,18 @@ public final class MethodRef extends SymbolicRef<Method> {
     private final String descriptor;
     private final boolean expectsStatic;
     private final boolean expectsInterface;
-    private final Reference<Class<?>> referrer;
+    private transient Reference<Class<?>> referrer;
 
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        referrer = new WeakReference<Class<?>>((Class<?>) in.readObject());
+        in.defaultReadObject();
+        method = nil;
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeObject(referrer.get());
+        out.defaultWriteObject();
+    }
 
     public MethodRef(String owner, String name, String descriptor, Class<?> referrer, boolean expectsStatic,
                      boolean expectsInterface) {
@@ -113,6 +128,8 @@ public final class MethodRef extends SymbolicRef<Method> {
         AccessControl.makeAccessible(m);
 
         method = new SoftReference<Method>(m);
+
+        GlobalCodeCache.checkAccess(m.getDeclaringClass());
     }
 
     private static Method findMethod(Class<?> cls, String name, String descriptor) {

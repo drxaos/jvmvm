@@ -28,24 +28,18 @@
 
 package net.sf.jauvm.vm.insn;
 
+import net.sf.jauvm.vm.*;
+import net.sf.jauvm.vm.ref.ConstructorRef;
+import net.sf.jauvm.vm.ref.MethodRef;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import net.sf.jauvm.Continuation;
-import net.sf.jauvm.vm.*;
-import net.sf.jauvm.vm.ref.ClassRef;
-import net.sf.jauvm.vm.ref.ConstructorRef;
-import net.sf.jauvm.vm.ref.MethodRef;
+
 import static org.objectweb.asm.Opcodes.*;
 
 public abstract class MethodInsn extends Insn {
     public static Insn getInsn(int opcode, String owner, String name, String desc, Class<?> cls) {
-        if (Continuation.class.isAssignableFrom(ClassRef.get(owner, cls))) {
-            Insn insn = ContinuationInsn.getInsn(opcode, owner, name, desc, cls);
-            if (insn != null) return insn;
-        }
-
         switch (opcode) {
             case INVOKEVIRTUAL:
                 return new InvokeVirtualInsn(owner, name, desc, cls);
@@ -73,6 +67,8 @@ public abstract class MethodInsn extends Insn {
         public void execute(VirtualMachine vm) throws Throwable {
             Frame frame = vm.getFrame();
             Method method = m.get();
+            method.setAccessible(true); // TODO check access
+
             Object target = frame.getTarget(method.getParameterTypes());
             MethodCode code = m.getCode(target.getClass());
             if (code != null) {
@@ -117,6 +113,8 @@ public abstract class MethodInsn extends Insn {
         public void execute(VirtualMachine vm) throws Throwable {
             Frame frame = vm.getFrame();
             Method method = m.get();
+            method.setAccessible(true); // TODO check access
+
             MethodCode code = m.getCode(method.getDeclaringClass());
             if (code != null) {
                 Frame f = vm.getInsn() instanceof ReturnInsn && ((ReturnInsn) vm.getInsn()).canReturn(method.getReturnType()) ?
@@ -159,6 +157,8 @@ public abstract class MethodInsn extends Insn {
         public void execute(VirtualMachine vm) throws Throwable {
             Frame frame = vm.getFrame();
             Method method = m.get();
+            method.setAccessible(true); // TODO check access
+
             Object target = frame.getTarget(method.getParameterTypes());
 
             if (!method.getDeclaringClass().isInstance(target))
@@ -207,9 +207,9 @@ public abstract class MethodInsn extends Insn {
         public void execute(VirtualMachine vm) throws Throwable {
             Frame frame = vm.getFrame();
             Method method = m.get();
-
-            if (!Modifier.isPrivate(method.getModifiers()))
-                throw new InternalError();
+            method.setAccessible(true); // TODO check access
+//            if (!Modifier.isPrivate(method.getModifiers()))
+//                throw new InternalError();
 
             MethodCode code = m.getCode(method.getDeclaringClass());
             if (code != null) {
@@ -252,17 +252,36 @@ public abstract class MethodInsn extends Insn {
 
         public void execute(VirtualMachine vm) throws Throwable {
             Frame frame = vm.getFrame();
-            Constructor<?> constructor = c.get();
 
-            try {
-                Object[] params = frame.popParameters(constructor.getParameterTypes());
-                frame.replaceObject(constructor.newInstance(params));
-            } catch (InstantiationException e) {
-                throw new InstantiationError(Types.getInternalName(constructor));
-            } catch (IllegalAccessException e) {
-                throw new InternalError().initCause(e);
-            } catch (InvocationTargetException e) {
-                throw new StackTracedException(e.getCause());
+            Constructor<?> constructor = c.get();
+            MethodCode code = GlobalCodeCache.get(constructor.getDeclaringClass(), "<init>" + c.getDescriptor());
+
+            if (code != null) {
+                Frame f = frame.newCallFrame(vm.getCp(), constructor, code);
+                vm.setFrame(f);
+                vm.setCp(0);
+
+                if (constructor.getDeclaringClass().equals(Object.class)) {
+                    // no more super constructors, initializing object
+                    vm.getFrame().loadObject(0);
+                    Object o = vm.getFrame().popObject();
+                    if (o instanceof TypeInsn.LazyNewObject) {
+                        ((TypeInsn.LazyNewObject) o).init(Object.class, vm);
+                    }
+                }
+
+            } else {
+                try {
+                    TypeInsn.LazyNewObject lazyNewObject = (TypeInsn.LazyNewObject) frame.popObject();
+                    Object[] params = frame.popParameters(constructor.getParameterTypes());
+                    lazyNewObject.init(constructor.getDeclaringClass(), constructor.getParameterTypes(), params, vm);
+                } catch (InstantiationException e) {
+                    throw new InstantiationError(Types.getInternalName(constructor));
+                } catch (IllegalAccessException e) {
+                    throw new InternalError().initCause(e);
+                } catch (InvocationTargetException e) {
+                    throw new StackTracedException(e.getCause());
+                }
             }
         }
     }

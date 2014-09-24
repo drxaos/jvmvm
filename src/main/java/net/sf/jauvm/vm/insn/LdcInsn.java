@@ -33,18 +33,28 @@ import net.sf.jauvm.vm.VirtualMachine;
 import net.sf.jauvm.vm.ref.ClassRef;
 import org.objectweb.asm.Type;
 
+import static org.objectweb.asm.Opcodes.LDC;
+
 public abstract class LdcInsn extends Insn {
+    private Object value;
+
     public static Insn getInsn(Object cst, Class<?> cls) {
-        if (cst instanceof Integer) return new LdcIntegerInsn((Integer) cst);
-        if (cst instanceof Long) return new LdcLongInsn((Long) cst);
-        if (cst instanceof Float) return new LdcFloatInsn((Float) cst);
-        if (cst instanceof Double) return new LdcDoubleInsn((Double) cst);
-        if (cst instanceof String) return new LdcStringInsn((String) cst);
-        if (cst instanceof Type) return new LdcClassInsn((Type) cst, cls);
-        assert false;
-        return null;
+        LdcInsn res = null;
+        if (cst instanceof Integer) res = new LdcIntegerInsn((Integer) cst);
+        if (cst instanceof Long) res = new LdcLongInsn((Long) cst);
+        if (cst instanceof Float) res = new LdcFloatInsn((Float) cst);
+        if (cst instanceof Double) res = new LdcDoubleInsn((Double) cst);
+        if (cst instanceof String) res = new LdcStringInsn((String) cst);
+        if (cst instanceof Type) res = new LdcClassInsn((Type) cst, cls);
+        assert res != null;
+        res.value = cst;
+        return res;
     }
 
+    @Override
+    public String toString() {
+        return getOpcodeName(LDC) + (value == null ? " null" : " (" + value.getClass().getSimpleName() + ") " + value);
+    }
 
     static final class LdcIntegerInsn extends LdcInsn {
         private final int i;

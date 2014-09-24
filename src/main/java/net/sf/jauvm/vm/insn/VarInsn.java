@@ -30,6 +30,7 @@ package net.sf.jauvm.vm.insn;
 
 import net.sf.jauvm.vm.Frame;
 import net.sf.jauvm.vm.VirtualMachine;
+
 import static org.objectweb.asm.Opcodes.*;
 
 public final class VarInsn extends Insn {
@@ -87,5 +88,10 @@ public final class VarInsn extends Insn {
             default:
                 assert false;
         }
+    }
+
+    @Override
+    public String toString() {
+        return getOpcodeName(opcode) + " " + var;
     }
 }

@@ -28,22 +28,19 @@
 
 package net.sf.jauvm.vm;
 
-import java.io.IOException;
+import org.objectweb.asm.ClassReader;
+
 import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Collections;
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
-import net.sf.jauvm.interpretable;
-import org.objectweb.asm.ClassReader;
 
 public final class GlobalCodeCache {
     private static final GlobalCodeCache instance = new GlobalCodeCache();
 
     private final Map<Class<?>, Map<String, MethodCode>> cache;
-
+    private static CodeLoader codeLoader = new CodeLoader();
 
     private GlobalCodeCache() {
         this.cache = new WeakHashMap<Class<?>, Map<String, MethodCode>>();
@@ -63,25 +60,55 @@ public final class GlobalCodeCache {
         Map<String, MethodCode> code = cache.get(cls.getSuperclass());
         if (code == null) code = loadCode(cls.getSuperclass());
 
-        for (Method m : cls.getDeclaredMethods()) {
-            if (!Modifier.isAbstract(m.getModifiers()) && !Modifier.isNative(m.getModifiers()) &&
-                    m.getAnnotation(interpretable.class) != null) {
-                code = new IdentityHashMap<String, MethodCode>(code);
-                readCode(cls, code);
-                break;
-            }
-        }
+//        for (Method m : cls.getDeclaredMethods()) {
+//            if (!Modifier.isAbstract(m.getModifiers()) && !Modifier.isNative(m.getModifiers()) /*&&
+//                    m.getAnnotation(interpretable.class) != null*/) {
+        code = new HashMap<String, MethodCode>(code);
+        readCode(cls, code);
+//                break;
+//            }
+//        }
 
         cache.put(cls, code);
         return code;
     }
 
+    public static void setCodeLoader(CodeLoader codeLoader) {
+        if (codeLoader == null) {
+            GlobalCodeCache.codeLoader = new CodeLoader();
+        } else {
+            GlobalCodeCache.codeLoader = codeLoader;
+        }
+    }
+
     private static void readCode(Class<?> cls, Map<String, MethodCode> code) {
         try {
-            InputStream stream = cls.getClassLoader().getResourceAsStream(Types.getInternalName(cls) + ".class");
-            new ClassReader(stream).accept(new CodeVisitor(cls, code), false);
-        } catch (IOException e) {
-            // intentionally empty
+            InputStream stream = codeLoader.getBytecodeStream(cls);
+            if (stream != null) {
+                new ClassReader(stream).accept(new CodeVisitor(cls, code), false);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static class CodeLoader {
+        public InputStream getBytecodeStream(Class<?> cls) {
+            ClassLoader classLoader = cls.getClassLoader();
+            if (classLoader == null) {
+                classLoader = ClassLoader.getSystemClassLoader();
+            }
+            return classLoader.getResourceAsStream(Types.getInternalName(cls) + ".class");
+        }
+
+        public boolean checkAccess(Class cls) {
+            return true;
+        }
+    }
+
+    public static void checkAccess(Class cls) {
+        if (!codeLoader.checkAccess(cls)) {
+            throw new VirtualMachineException("Illegal class access: " + cls.getCanonicalName());
         }
     }
 }

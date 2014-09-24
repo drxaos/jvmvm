@@ -28,22 +28,38 @@
 
 package net.sf.jauvm.vm.ref;
 
+import net.sf.jauvm.vm.AccessControl;
+import net.sf.jauvm.vm.GlobalCodeCache;
+import net.sf.jauvm.vm.Types;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import net.sf.jauvm.vm.AccessControl;
-import net.sf.jauvm.vm.Types;
 
-public final class ConstructorRef extends SymbolicRef<Constructor<?>> {
+public final class ConstructorRef extends SymbolicRef<Constructor<?>> implements Serializable {
     private static final Reference<Constructor<?>> nil = new WeakReference<Constructor<?>>(null);
-    private volatile Reference<Constructor<?>> constructor = nil;
+    private transient volatile Reference<Constructor<?>> constructor = nil;
 
     private final String owner;
     private final String descriptor;
-    private final Reference<Class<?>> referrer;
+    private transient  Reference<Class<?>> referrer;
 
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        referrer = new WeakReference<Class<?>>((Class<?>) in.readObject());
+        in.defaultReadObject();
+        constructor = nil;
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeObject(referrer.get());
+        out.defaultWriteObject();
+    }
 
     public ConstructorRef(String owner, String descriptor, Class<?> referrer) {
         this.owner = owner;
@@ -56,6 +72,15 @@ public final class ConstructorRef extends SymbolicRef<Constructor<?>> {
         return constructor.get();
     }
 
+    public static Constructor get(Class<?> cls, String name, String descriptor) {
+        Constructor m = findConstructor(cls, descriptor);
+        AccessControl.makeAccessible(m);
+        return m;
+    }
+
+    public String getDescriptor() {
+        return descriptor;
+    }
 
     private synchronized void resolve() {
         if (constructor.get() != null) return;
@@ -74,6 +99,8 @@ public final class ConstructorRef extends SymbolicRef<Constructor<?>> {
         AccessControl.makeAccessible(c);
 
         constructor = new SoftReference<Constructor<?>>(c);
+
+        GlobalCodeCache.checkAccess(c.getDeclaringClass());
     }
 
     private static Constructor<?> findConstructor(Class<?> cls, String descriptor) {

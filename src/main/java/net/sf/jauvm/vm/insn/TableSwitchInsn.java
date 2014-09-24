@@ -28,9 +28,11 @@
 
 package net.sf.jauvm.vm.insn;
 
-import java.util.Map;
 import net.sf.jauvm.vm.VirtualMachine;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.Opcodes;
+
+import java.util.Map;
 
 public final class TableSwitchInsn extends LabeledInsn {
     public static Insn getInsn(int min, int max, Label dflt, Label[] labels) {
@@ -64,5 +66,10 @@ public final class TableSwitchInsn extends LabeledInsn {
         int i = vm.getFrame().popInt();
         if (i < min || i > max) vm.setCp(target);
         else vm.setCp(targets[i - min]);
+    }
+
+    @Override
+    public String toString() {
+        return getOpcodeName(Opcodes.TABLESWITCH);
     }
 }

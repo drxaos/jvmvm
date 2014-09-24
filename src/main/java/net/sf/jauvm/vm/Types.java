@@ -28,11 +28,12 @@
 
 package net.sf.jauvm.vm;
 
+import org.objectweb.asm.Type;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import org.objectweb.asm.Type;
 
 public class Types {
     protected Types() {

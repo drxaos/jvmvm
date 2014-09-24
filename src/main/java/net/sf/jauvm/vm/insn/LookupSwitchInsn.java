@@ -28,9 +28,11 @@
 
 package net.sf.jauvm.vm.insn;
 
-import java.util.Map;
 import net.sf.jauvm.vm.VirtualMachine;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.Opcodes;
+
+import java.util.Map;
 
 public final class LookupSwitchInsn extends LabeledInsn {
     public static Insn getInsn(Label dflt, int[] keys, Label[] labels) {
@@ -66,5 +68,10 @@ public final class LookupSwitchInsn extends LabeledInsn {
                 return;
             }
         vm.setCp(target);
+    }
+
+    @Override
+    public String toString() {
+        return getOpcodeName(Opcodes.LOOKUPSWITCH);
     }
 }

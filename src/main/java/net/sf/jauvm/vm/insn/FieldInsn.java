@@ -28,10 +28,13 @@
 
 package net.sf.jauvm.vm.insn;
 
-import java.lang.reflect.Field;
 import net.sf.jauvm.vm.Frame;
 import net.sf.jauvm.vm.VirtualMachine;
 import net.sf.jauvm.vm.ref.FieldRef;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
 import static org.objectweb.asm.Opcodes.*;
 
 public abstract class FieldInsn extends Insn {
@@ -155,6 +158,14 @@ public abstract class FieldInsn extends Insn {
         public void execute(VirtualMachine vm) throws Throwable {
             try {
                 Field field = f.get();
+
+                // enable access from constructors to final fields and from objects to their private fields
+                // TODO check access
+                field.setAccessible(true);
+                Field modifiersField = Field.class.getDeclaredField("modifiers");
+                modifiersField.setAccessible(true);
+                modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+
                 Frame frame = vm.getFrame();
                 Class<?> type = field.getType();
                 if (type == int.class || type == byte.class || type == char.class || type == short.class) {
@@ -179,6 +190,11 @@ public abstract class FieldInsn extends Insn {
             } catch (IllegalAccessException e) {
                 throw new InternalError().initCause(e);
             }
+        }
+
+        @Override
+        public String toString() {
+            return getOpcodeName(PUTFIELD) + " " + f.get();
         }
     }
 }

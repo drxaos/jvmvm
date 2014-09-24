@@ -28,11 +28,13 @@
 
 package net.sf.jauvm.vm.insn;
 
-import java.lang.reflect.Array;
 import net.sf.jauvm.vm.Frame;
 import net.sf.jauvm.vm.Types;
 import net.sf.jauvm.vm.VirtualMachine;
 import net.sf.jauvm.vm.ref.ClassRef;
+import org.objectweb.asm.Opcodes;
+
+import java.lang.reflect.Array;
 
 public final class MultiANewArrayInsn extends Insn {
     public static Insn getInsn(String desc, int dims, Class<?> cls) {
@@ -52,10 +54,14 @@ public final class MultiANewArrayInsn extends Insn {
     public void execute(VirtualMachine vm) {
         Frame frame = vm.getFrame();
         int[] dimensions = new int[dims];
-        for (int i = dims; i-- > 0;) dimensions[i] = frame.popInt();
+        for (int i = dims; i-- > 0; ) dimensions[i] = frame.popInt();
         frame.pushObject(Array.newInstance(c.get(), dimensions));
     }
 
+    @Override
+    public String toString() {
+        return getOpcodeName(Opcodes.MULTIANEWARRAY) + " " + c.get().getCanonicalName() + " " + dims;
+    }
 
     static final class MultiNewArrayInsn extends Insn {
         private final Class<?> c;
@@ -97,8 +103,14 @@ public final class MultiANewArrayInsn extends Insn {
         public void execute(VirtualMachine vm) {
             Frame frame = vm.getFrame();
             int[] dimensions = new int[dims];
-            for (int i = dims; i-- > 0;) dimensions[i] = frame.popInt();
+            for (int i = dims; i-- > 0; ) dimensions[i] = frame.popInt();
             frame.pushObject(Array.newInstance(c, dimensions));
         }
+
+        @Override
+        public String toString() {
+            return getOpcodeName(Opcodes.MULTIANEWARRAY) + " " + c.getCanonicalName() + " " + dims;
+        }
+
     }
 }

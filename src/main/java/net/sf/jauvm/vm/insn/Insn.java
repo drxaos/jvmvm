@@ -28,13 +28,18 @@
 
 package net.sf.jauvm.vm.insn;
 
-import java.lang.reflect.Array;
 import net.sf.jauvm.Monitor;
 import net.sf.jauvm.vm.Frame;
 import net.sf.jauvm.vm.VirtualMachine;
+import org.objectweb.asm.Opcodes;
+
+import java.io.Serializable;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+
 import static org.objectweb.asm.Opcodes.*;
 
-public abstract class Insn {
+public abstract class Insn implements Serializable {
     public static final Insn[] arrayType = new Insn[0];
 
     public static Insn getInsn(int opcode) {
@@ -129,6 +134,11 @@ public abstract class Insn {
                     assert false;
                     throw null;
             }
+        }
+
+        @Override
+        public String toString() {
+            return getOpcodeName(opcode);
         }
     }
 
@@ -583,5 +593,27 @@ public abstract class Insn {
                     assert false;
             }
         }
+
+        @Override
+        public String toString() {
+            return getOpcodeName(opcode);
+        }
+    }
+
+    public static String getOpcodeName(int opcode) {
+        for (Field field : Opcodes.class.getDeclaredFields()) {
+            if (field.getType().getName().equals("int") &&
+                    !field.getName().startsWith("ACC_") &&
+                    !field.getName().startsWith("V1_") &&
+                    !field.getName().startsWith("T_")) {
+                try {
+                    if (field.getInt(null) == opcode) {
+                        return field.getName();
+                    }
+                } catch (IllegalAccessException e) {
+                }
+            }
+        }
+        return "UNKNOWN(" + Integer.toHexString(opcode) + ")";
     }
 }

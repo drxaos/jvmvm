@@ -28,9 +28,11 @@
 
 package net.sf.jauvm.vm.insn;
 
-import java.lang.reflect.Array;
 import net.sf.jauvm.vm.Frame;
 import net.sf.jauvm.vm.VirtualMachine;
+
+import java.lang.reflect.Array;
+
 import static org.objectweb.asm.Opcodes.*;
 
 public abstract class IntInsn extends Insn {
@@ -38,7 +40,7 @@ public abstract class IntInsn extends Insn {
         switch (opcode) {
             case BIPUSH:
             case SIPUSH:
-                return new PushInsn(operand);
+                return new PushInsn(operand, opcode);
             case NEWARRAY:
                 return new NewArrayInsn(operand);
             default:
@@ -49,14 +51,21 @@ public abstract class IntInsn extends Insn {
 
 
     static final class PushInsn extends IntInsn {
+        private final int opcode;
         private final int i;
 
-        PushInsn(int i) {
+        PushInsn(int i, int opcode) {
             this.i = i;
+            this.opcode = opcode;
         }
 
         public void execute(VirtualMachine vm) {
             vm.getFrame().pushInt(i);
+        }
+
+        @Override
+        public String toString() {
+            return getOpcodeName(opcode) + " " + i;
         }
     }
 
@@ -98,6 +107,11 @@ public abstract class IntInsn extends Insn {
         public void execute(VirtualMachine vm) {
             Frame frame = vm.getFrame();
             frame.pushObject(Array.newInstance(c, frame.popInt()));
+        }
+
+        @Override
+        public String toString() {
+            return getOpcodeName(NEWARRAY) + " " + c.getCanonicalName();
         }
     }
 }

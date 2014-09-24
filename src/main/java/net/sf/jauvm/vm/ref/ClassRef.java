@@ -28,17 +28,35 @@
 
 package net.sf.jauvm.vm.ref;
 
+import net.sf.jauvm.vm.AccessControl;
+import net.sf.jauvm.vm.GlobalCodeCache;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import net.sf.jauvm.vm.AccessControl;
+import java.util.HashMap;
+import java.util.Map;
 
-public final class ClassRef extends SymbolicRef<Class<?>> {
+public final class ClassRef extends SymbolicRef<Class<?>> implements Serializable {
     private static final Reference<Class<?>> nil = new WeakReference<Class<?>>(null);
-    private volatile Reference<Class<?>> cls = nil;
+    private transient volatile Reference<Class<?>> cls = nil;
 
     private final String name;
-    private final Reference<Class<?>> referrer;
+    private transient Reference<Class<?>> referrer;
 
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        referrer = new WeakReference<Class<?>>((Class<?>) in.readObject());
+        in.defaultReadObject();
+        cls = nil;
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeObject(referrer.get());
+        out.defaultWriteObject();
+    }
 
     public ClassRef(String name, Class<?> referrer) {
         this.name = name;
@@ -61,10 +79,37 @@ public final class ClassRef extends SymbolicRef<Class<?>> {
         if (cls.get() != null) return;
         Class<?> c = get(name, referrer.get());
         cls = new WeakReference<Class<?>>(c);
+
+        GlobalCodeCache.checkAccess(c);
+    }
+
+    public static final Map<String, Class> primitives;
+
+    static {
+        primitives = new HashMap<String, Class>();
+
+        Class[] types = {
+                Boolean.TYPE,
+                Byte.TYPE,
+                Character.TYPE,
+                Double.TYPE,
+                Float.TYPE,
+                Integer.TYPE,
+                Long.TYPE,
+                Short.TYPE,
+                Void.TYPE
+        };
+
+        for (Class type : types) {
+            primitives.put(type.getName(), type);
+        }
     }
 
     private static Class<?> findClass(String name, ClassLoader classLoader) {
         try {
+            if (primitives.keySet().contains(name)) {
+                return primitives.get(name);
+            }
             return Class.forName(name.replace('/', '.'), false, classLoader);
         } catch (ClassNotFoundException e) {
             throw new NoClassDefFoundError(name);

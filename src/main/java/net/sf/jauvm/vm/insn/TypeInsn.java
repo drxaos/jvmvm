@@ -28,10 +28,15 @@
 
 package net.sf.jauvm.vm.insn;
 
-import java.lang.reflect.Array;
+import net.sf.jauvm.SilentObjectCreator;
 import net.sf.jauvm.vm.Frame;
 import net.sf.jauvm.vm.VirtualMachine;
 import net.sf.jauvm.vm.ref.ClassRef;
+
+import java.io.Serializable;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+
 import static org.objectweb.asm.Opcodes.*;
 
 public final class TypeInsn extends Insn {
@@ -39,9 +44,53 @@ public final class TypeInsn extends Insn {
         return new TypeInsn(opcode, name, cls);
     }
 
+    public final static class LazyNewObject implements Serializable {
+        private Class type;
+        private String signature;
+
+        public LazyNewObject(Class type) {
+            this.type = type;
+            this.signature = "lazy-" + type.getCanonicalName() + "-" + System.identityHashCode(this);
+        }
+
+        public void init(Class constructorClass, VirtualMachine vm) throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+            Object object = SilentObjectCreator.create(type, constructorClass);
+            vm.getFrame().replaceAllRecursive(this, object);
+        }
+
+        public void init(Class constructorClass, Class<?>[] paramTypes, Object[] paramValues, VirtualMachine vm) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+            Object object = SilentObjectCreator.create(type, constructorClass, paramTypes, paramValues);
+            vm.getFrame().replaceAllRecursive(this, object);
+        }
+
+        public Class getType() {
+            return type;
+        }
+
+        public String getSignature() {
+            return signature;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            LazyNewObject that = (LazyNewObject) o;
+            return !(signature != null ? !signature.equals(that.signature) : that.signature != null);
+        }
+
+        @Override
+        public int hashCode() {
+            return signature != null ? signature.hashCode() : 0;
+        }
+    }
 
     private final int opcode;
     private final ClassRef c;
+
+    public Class getClazz() {
+        return c.get();
+    }
 
     TypeInsn(int opcode, String name, Class<?> cls) {
         this.opcode = opcode;
@@ -53,7 +102,7 @@ public final class TypeInsn extends Insn {
         Class<?> cls = c.get();
         switch (opcode) {
             case NEW:
-                frame.pushObject(this);
+                frame.pushObject(new LazyNewObject(this.getClazz()));
                 return;
             case CHECKCAST:
                 frame.pushObject(cls.cast(frame.popObject()));
@@ -67,5 +116,10 @@ public final class TypeInsn extends Insn {
             default:
                 assert false;
         }
+    }
+
+    @Override
+    public String toString() {
+        return getOpcodeName(opcode) + " " + c.get().getCanonicalName();
     }
 }

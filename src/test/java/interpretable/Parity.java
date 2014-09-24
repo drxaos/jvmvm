@@ -1,21 +1,26 @@
 package interpretable;
 
-import net.sf.jauvm.interpretable;
-
 public class Parity {
-    public static final int N = 100000;
+    public static final int N = 1000;
 
-    public static @interpretable void main(String... args) {
-        System.out.printf("isEven(%d) = %b\n", N, isEven(N));
-        System.out.printf("isOdd(%d) = %b\n", N, isOdd(N));
+    public static void main(String... args) {
+        boolean even = isEven(N);
+        boolean odd = isOdd(N);
+        System.out.printf("isEven(%d) = %b\n", N, even);
+        System.out.printf("isOdd(%d) = %b\n", N, odd);
+
+        even = isEven(N + 1);
+        odd = isOdd(N + 1);
+        System.out.printf("isEven(%d) = %b\n", N + 1, even);
+        System.out.printf("isOdd(%d) = %b\n", N + 1, odd);
     }
 
-    public static @interpretable boolean isEven(int n) {
+    public static boolean isEven(int n) {
         if (n == 0) return true;
         return isOdd(n - 1);
     }
 
-    public static @interpretable boolean isOdd(int n) {
+    public static boolean isOdd(int n) {
         if (n == 0) return false;
         return isEven(n - 1);
     }

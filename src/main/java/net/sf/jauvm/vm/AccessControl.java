@@ -30,6 +30,7 @@ package net.sf.jauvm.vm;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Member;
+
 import static java.lang.reflect.Modifier.*;
 
 public class AccessControl {

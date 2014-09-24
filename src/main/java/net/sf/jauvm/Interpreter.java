@@ -28,14 +28,12 @@
 
 package net.sf.jauvm;
 
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.UndeclaredThrowableException;
 import net.sf.jauvm.vm.GlobalCodeCache;
 import net.sf.jauvm.vm.MethodCode;
 import net.sf.jauvm.vm.VirtualMachine;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.UndeclaredThrowableException;
 
 /**
  * A JVM byte code interpreter.
@@ -48,60 +46,29 @@ import net.sf.jauvm.vm.VirtualMachine;
  * its arguments.
  * <p/>
  * Only methods tagged as {@code interpretable} are interpreted by an {@code Interpreter}.
+ *
  * @see interpretable
  */
 public class Interpreter implements Runnable {
     private final Runnable run;
 
+    VirtualMachine vm;
+
     /**
      * Constructs a new {@code Interpreter} object to interpret the specified {@code Runnable} object.
+     *
      * @param run the {@code Runnable} object whose {@code run()} method is to be interpreted
      * @throws NullPointerException if {@code run} is {@code null}
      */
     public Interpreter(final Runnable run) {
         if (run == null) throw new NullPointerException();
         this.run = run;
-    }
 
-    /**
-     * Constructs a new {@code Interpreter} object to return to the specified {@code Continuation} object's
-     * stored execution point.
-     * <p/>
-     * Invoking this constructor has the same effect as:
-     * <pre>  {@code new Interpreter(new Runnable() {
-     *      public @interpretable void run() {
-     *          cont.returnTo();
-     *      }
-     *  });}</pre>
-     * <p/>
-     * The given {@code Continuation} must be of {@code void} return type.
-     * @param cont the {@code Continuation} object to which to return to
-     * @throws NullPointerException if {@code cont} is {@code null}
-     * @throws IllegalArgumentException if {@code cont} is not of {@code void} return type
-     * @see Continuation#getReturnType()
-     */
-    public Interpreter(final Continuation cont) {
-        if (cont.getReturnType() != void.class) throw new IllegalArgumentException("return type mismatch");
-        this.run = new Runnable() {
-            public @interpretable void run() {
-                cont.returnTo();
-            }
-        };
-    }
-
-    /**
-     * Runs this {@code Interpreter} object, interpreting the underlying {@code Runnable} object's {@code run()} method.
-     * @throws UndeclaredThrowableException if the underlying {@code Runnable} object's {@code run()} method throws a
-     *      checked exception
-     */
-    public final void run() {
         try {
             Class<?> cls = run.getClass();
             Method method = cls.getMethod("run");
             MethodCode code = GlobalCodeCache.get(cls, "run()V");
-
-            if (code == null) run.run();
-            else new VirtualMachine(new Throwable().getStackTrace(), method, code, run).run();
+            vm = new VirtualMachine(new Throwable().getStackTrace(), method, code, run);
         } catch (Error e) {
             throw e;
         } catch (RuntimeException e) {
@@ -112,44 +79,20 @@ public class Interpreter implements Runnable {
     }
 
     /**
-     * The framework's {@code main(String[] args)} method.
-     * <p/>
-     * Loads the class specified by the first argument and interprets that class's {@code main(String[] args)} method,
-     * passing it the remainder of the arguments.
-     * @param args the first argument is the fully qualified name of the class to interpret, and the remainder of the
-     *      arguments are passed to that class's {@code main(String[] args)} method
-     * @throws Throwable any exception thrown as the result of trying to execute the classe's {@code
-     *      main(String[] args)} method
+     * Runs this {@code Interpreter} object, interpreting the underlying {@code Runnable} object's {@code run()} method.
+     *
+     * @throws java.lang.reflect.UndeclaredThrowableException if the underlying {@code Runnable} object's {@code run()} method throws a
+     *                                      checked exception
      */
-    public static void main(String... args) throws Throwable {
-        if (args.length < 1) usage();
-
-        if ("-ser".equals(args[0])) {
-            if (args.length != 2) usage();
-
-            ObjectInputStream in = new ObjectInputStream(new FileInputStream(args[1]));
-            Continuation cont = (Continuation) in.readObject();
-            in.close();
-
-            new Interpreter(cont).run();
-            return;
-        }
-
-        Class<?> cls = Class.forName(args[0]);
-        Method method = cls.getMethod("main", String[].class);
-        MethodCode code = GlobalCodeCache.get(cls, "main([Ljava/lang/String;)V");
-
-        String[] params = new String[args.length - 1];
-        for (int i = 0; i < params.length; i++) params[i] = args[i + 1];
-
-        if (code != null) new VirtualMachine(new Throwable().getStackTrace(), method, code, (Object) params).run();
-        else {
-            try {
-                method.setAccessible(true);
-                method.invoke(null, (Object) params);
-            } catch (InvocationTargetException e) {
-                throw e.getCause();
-            }
+    public final void run() {
+        try {
+            vm.run();
+        } catch (Error e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new UndeclaredThrowableException(t);
         }
     }
 

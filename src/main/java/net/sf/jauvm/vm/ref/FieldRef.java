@@ -28,25 +28,41 @@
 
 package net.sf.jauvm.vm.ref;
 
+import net.sf.jauvm.vm.AccessControl;
+import net.sf.jauvm.vm.GlobalCodeCache;
+import net.sf.jauvm.vm.Types;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import net.sf.jauvm.vm.AccessControl;
-import net.sf.jauvm.vm.Types;
 
-public final class FieldRef extends SymbolicRef<Field> {
+public final class FieldRef extends SymbolicRef<Field> implements Serializable {
     private static final Reference<Field> nil = new WeakReference<Field>(null);
-    private volatile Reference<Field> field = nil;
+    private transient volatile Reference<Field> field = nil;
 
     private final String owner;
     private final String name;
     private final String descriptor;
     private final boolean expectsStatic;
     private final boolean expectsPuttable;
-    private final Reference<Class<?>> referrer;
+    private transient Reference<Class<?>> referrer;
 
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        referrer = new WeakReference<Class<?>>((Class<?>) in.readObject());
+        in.defaultReadObject();
+        field = nil;
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeObject(referrer.get());
+        out.defaultWriteObject();
+    }
 
     public FieldRef(String owner, String name, String descriptor, Class<?> referrer, boolean expectsStatic,
                     boolean expectsPuttable) {
@@ -74,13 +90,15 @@ public final class FieldRef extends SymbolicRef<Field> {
         if (expectsStatic != Modifier.isStatic(f.getModifiers()))
             throw new IncompatibleClassChangeError(Types.getInternalName(cls));
 
-        if (expectsPuttable && Modifier.isFinal(f.getModifiers()))
-            throw new IllegalAccessError(Types.getInternalName(f));
+//        if (expectsPuttable && Modifier.isFinal(f.getModifiers())) // TODO check if in constructor
+//            throw new IllegalAccessError(Types.getInternalName(f));
 
         AccessControl.checkPermission(f, referrer.get());
         AccessControl.makeAccessible(f);
 
         field = new SoftReference<Field>(f);
+
+        GlobalCodeCache.checkAccess(f.getDeclaringClass());
     }
 
     private static Field findField(Class<?> cls, String name, String descriptor) {

@@ -30,7 +30,9 @@ package net.sf.jauvm.vm;
 
 import net.sf.jauvm.vm.ref.ClassRef;
 
-public final class ExcptHandler {
+import java.io.Serializable;
+
+public final class ExcptHandler implements Serializable {
     public static final ExcptHandler[] arrayType = new ExcptHandler[0];
 
     public final int start;

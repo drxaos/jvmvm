@@ -28,8 +28,9 @@
 
 package net.sf.jauvm.vm.insn;
 
-import java.util.Map;
 import org.objectweb.asm.Label;
+
+import java.util.Map;
 
 public abstract class LabeledInsn extends Insn {
     public abstract void resolve(Map<Label, Integer> labels);

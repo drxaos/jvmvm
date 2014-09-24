@@ -28,9 +28,10 @@
 
 package net.sf.jauvm.vm;
 
+import net.sf.jauvm.vm.insn.Insn;
+
 import java.util.List;
 import java.util.SortedSet;
-import net.sf.jauvm.vm.insn.Insn;
 
 public final class MethodCode {
     public final Insn[] insns;

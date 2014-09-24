@@ -28,15 +28,18 @@
 
 package net.sf.jauvm.vm;
 
+import net.sf.jauvm.Monitor;
+import net.sf.jauvm.vm.ref.ConstructorRef;
+import net.sf.jauvm.vm.ref.MethodRef;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
-import net.sf.jauvm.Monitor;
-import net.sf.jauvm.vm.ref.MethodRef;
 
 public final class Frame implements Cloneable, Serializable {
     private static final long serialVersionUID = 874267885800467086l;
@@ -48,6 +51,7 @@ public final class Frame implements Cloneable, Serializable {
     private Object[] stack;
 
     private transient Method method;
+    private transient Constructor constructor;
     private transient MethodCode code;
     private transient boolean mutable;
 
@@ -56,6 +60,16 @@ public final class Frame implements Cloneable, Serializable {
         this.parent = parent;
         this.ret = ret;
         this.method = method;
+        this.code = code;
+        this.sp = code.stackSize;
+        this.stack = new Object[this.sp];
+        this.mutable = true;
+    }
+
+    private Frame(Frame parent, int ret, Constructor method, MethodCode code) {
+        this.parent = parent;
+        this.ret = ret;
+        this.constructor = method;
         this.code = code;
         this.sp = code.stackSize;
         this.stack = new Object[this.sp];
@@ -73,6 +87,10 @@ public final class Frame implements Cloneable, Serializable {
 
     public Method getMethod() {
         return method;
+    }
+
+    public Constructor getConstructor() {
+        return constructor;
     }
 
     public MethodCode getCode() {
@@ -97,7 +115,39 @@ public final class Frame implements Cloneable, Serializable {
 
         int i = types.length + (isStatic ? 0 : 1);
         for (Class<?> type : types) if (type == long.class || type == double.class) i++;
-        for (int j = types.length; j-- > 0;) {
+        for (int j = types.length; j-- > 0; ) {
+            Class<?> type = types[j];
+
+            if (type == long.class || type == double.class) {
+                frame.stack[i -= 2] = popBigObject();
+            } else {
+                frame.stack[i -= 1] = popObject();
+            }
+        }
+        Object target;
+        if (isStatic) target = method.getDeclaringClass();
+        else {
+            target = popObject();
+            if (target == null) throw new NullPointerException();
+            frame.stack[i -= 1] = target;
+        }
+        if (isSynchronized) Monitor.enter(target);
+
+        return frame;
+    }
+
+    public Frame newCallFrame(int ret, Constructor method, MethodCode code) {
+        assert mutable;
+
+        Frame frame = new Frame(this, ret, method, code);
+
+        boolean isSynchronized = Modifier.isSynchronized(method.getModifiers());
+        boolean isStatic = Modifier.isStatic(method.getModifiers());
+        Class<?>[] types = method.getParameterTypes();
+
+        int i = types.length + (isStatic ? 0 : 1);
+        for (Class<?> type : types) if (type == long.class || type == double.class) i++;
+        for (int j = types.length; j-- > 0; ) {
             Class<?> type = types[j];
 
             if (type == long.class || type == double.class) {
@@ -130,7 +180,7 @@ public final class Frame implements Cloneable, Serializable {
         int i = types.length + (isStatic ? 0 : 1);
         for (Class<?> type : types)
             if (type == long.class || type == double.class) i++;
-        for (int j = types.length; j-- > 0;) {
+        for (int j = types.length; j-- > 0; ) {
             Class<?> type = types[j];
 
             if (type == long.class || type == double.class) {
@@ -335,7 +385,7 @@ public final class Frame implements Cloneable, Serializable {
 
         Object[] params = new Object[types.length];
 
-        for (int i = types.length; i-- > 0;) {
+        for (int i = types.length; i-- > 0; ) {
             Class<?> type = types[i];
 
             if (type == long.class || type == double.class) {
@@ -454,11 +504,19 @@ public final class Frame implements Cloneable, Serializable {
 
 
     private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeObject(method.getDeclaringClass());
-        out.writeUTF(method.getName());
-        out.writeUTF(Types.getDescriptor(method));
+        if (method != null) {
+            out.writeObject(method.getDeclaringClass());
+            out.writeUTF(method.getName());
+            out.writeUTF(Types.getDescriptor(method));
 
-        out.defaultWriteObject();
+            out.defaultWriteObject();
+        } else {
+            out.writeObject(constructor.getDeclaringClass());
+            out.writeUTF(constructor.getName());
+            out.writeUTF(Types.getDescriptor(constructor));
+
+            out.defaultWriteObject();
+        }
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -466,14 +524,31 @@ public final class Frame implements Cloneable, Serializable {
         String name = in.readUTF();
         String desc = in.readUTF();
 
-        method = MethodRef.get(cls, name, desc);
-        code = MethodRef.getCode(cls, name, desc);
+        if (!name.equals(cls.getName())) {
+            method = MethodRef.get(cls, name, desc);
+            code = MethodRef.getCode(cls, name, desc);
+        } else {
+            constructor = ConstructorRef.get(cls, name, desc);
+            code = GlobalCodeCache.get(cls, "<init>" + desc);
+        }
 
         in.defaultReadObject();
     }
 
 
     public String toString() {
-        return Types.getInternalName(method) + ' ' + Arrays.asList(stack).toString();
+        return Types.getInternalName(method != null ? method : constructor) + ' ' + Arrays.asList(stack).toString();
+    }
+
+    public void replaceAllRecursive(Object from, Object to) {
+        Frame frame = this;
+        while (frame != null) {
+            for (int i = 0; i < frame.stack.length; i++) {
+                if (from.equals(frame.stack[i])) {
+                    frame.stack[i] = to;
+                }
+            }
+            frame = frame.getParent();
+        }
     }
 }

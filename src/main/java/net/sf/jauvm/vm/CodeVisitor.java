@@ -28,8 +28,6 @@
 
 package net.sf.jauvm.vm;
 
-import java.util.*;
-import net.sf.jauvm.interpretable;
 import net.sf.jauvm.vm.insn.*;
 import net.sf.jauvm.vm.ref.ClassRef;
 import org.objectweb.asm.AnnotationVisitor;
@@ -37,6 +35,8 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.commons.EmptyVisitor;
+
+import java.util.*;
 
 public final class CodeVisitor extends EmptyVisitor {
     private static final EmptyVisitor emptyVisitor = new EmptyVisitor();
@@ -76,8 +76,8 @@ public final class CodeVisitor extends EmptyVisitor {
     }
 
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        if (version != 49 || "<init>".equals(name) || "<cinit>".equals(name)) return null;
-        this.interpretable = false;
+        if (version < 49 /*|| "<init>".equals(name) || "<cinit>".equals(name)*/) return null;
+        this.interpretable = true;
         this.name = name;
         this.desc = desc;
         return this;
@@ -85,7 +85,7 @@ public final class CodeVisitor extends EmptyVisitor {
 
 
     public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-        interpretable |= interpretable.class == ClassRef.get(Types.getInternalName(desc), cls);
+        //interpretable |= interpretable.class == ClassRef.get(Types.getInternalName(desc), cls);
         return emptyVisitor;
     }
 
@@ -177,7 +177,7 @@ public final class CodeVisitor extends EmptyVisitor {
     public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
         if (!interpretable) return;
         excpts.add(new ExcptHandler(labels.get(start), labels.get(end), labels.get(handler),
-                                    type == null ? null : new ClassRef(type, cls)));
+                type == null ? null : new ClassRef(type, cls)));
     }
 
     public void visitLineNumber(int line, Label start) {

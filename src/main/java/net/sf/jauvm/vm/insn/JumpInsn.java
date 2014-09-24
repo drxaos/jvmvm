@@ -28,10 +28,12 @@
 
 package net.sf.jauvm.vm.insn;
 
-import java.util.Map;
 import net.sf.jauvm.vm.Frame;
 import net.sf.jauvm.vm.VirtualMachine;
 import org.objectweb.asm.Label;
+
+import java.util.Map;
+
 import static org.objectweb.asm.Opcodes.*;
 
 public final class JumpInsn extends LabeledInsn {
@@ -115,5 +117,10 @@ public final class JumpInsn extends LabeledInsn {
             default:
                 assert false;
         }
+    }
+
+    @Override
+    public String toString() {
+        return getOpcodeName(opcode) + " " + label + " (" + target + ")";
     }
 }

@@ -31,6 +31,8 @@ package net.sf.jauvm.vm.insn;
 import net.sf.jauvm.vm.Frame;
 import net.sf.jauvm.vm.VirtualMachine;
 
+import static org.objectweb.asm.Opcodes.IINC;
+
 public final class IincInsn extends Insn {
     public static Insn getInsn(int var, int increment) {
         return new IincInsn(var, increment);
@@ -48,5 +50,10 @@ public final class IincInsn extends Insn {
     public void execute(VirtualMachine vm) {
         Frame frame = vm.getFrame();
         frame.setInt(var, frame.getInt(var) + increment);
+    }
+
+    @Override
+    public String toString() {
+        return getOpcodeName(IINC) + " " + var + " " + increment;
     }
 }

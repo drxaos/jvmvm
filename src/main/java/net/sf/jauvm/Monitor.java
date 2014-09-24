@@ -52,7 +52,7 @@ public class Monitor {
      */
     public static void enter(Object obj) {
         if (obj == null) throw new NullPointerException();
-        throw new UnsupportedOperationException("unstructured locks not supported");
+        //TODO//throw new UnsupportedOperationException("unstructured locks not supported");
     }
 
     /**
@@ -70,8 +70,8 @@ public class Monitor {
      * @see java.util.concurrent.locks
      */
     public static void exit(Object obj) {
-        if (!Thread.holdsLock(obj)) throw new IllegalMonitorStateException();
-        throw new UnsupportedOperationException("unstructured locks not supported");
+        //TODO//if (!Thread.holdsLock(obj)) throw new IllegalMonitorStateException();
+        //TODO//throw new UnsupportedOperationException("unstructured locks not supported");
     }
 
     /**
@@ -115,7 +115,7 @@ public class Monitor {
      * @param obj the object on which to wait
      * @param timeout the maximum time to wait
      * @param unit the time util of {@code timeout}
-     * @see TimeUnit#timedWait(Object, long)
+     * @see java.util.concurrent.TimeUnit#timedWait(Object, long)
      */
     public static void wait(Object obj, long timeout, TimeUnit unit) throws InterruptedException {
         unit.timedWait(obj, timeout);
