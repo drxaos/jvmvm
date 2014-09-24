@@ -1,7 +1,7 @@
 package interpretable;
 
 public class Parity {
-    public static final int N = 1000;
+    public static final int N = 10000;
 
     public static void main(String... args) {
         boolean even = isEven(N);

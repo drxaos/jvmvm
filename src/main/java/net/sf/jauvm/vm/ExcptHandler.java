@@ -10,9 +10,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its contributors
- *    may be used to endorse or promote products derived from this software without
- *    specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -36,9 +33,9 @@ import java.util.Map;
 public final class ExcptHandler {
     public static final ExcptHandler[] arrayType = new ExcptHandler[0];
 
-    private Label startLabel;
-    private Label endLabel;
-    private Label handlerLabel;
+    private Label startLbl;
+    private Label endLbl;
+    private Label handlerLbl;
 
     public int start;
     public int end;
@@ -46,15 +43,18 @@ public final class ExcptHandler {
     public final ClassRef cls;
 
     public ExcptHandler(Label start, Label end, Label handler, ClassRef cls) {
-        this.startLabel = start;
-        this.endLabel = end;
-        this.handlerLabel = handler;
+        this.startLbl = start;
+        this.endLbl = end;
+        this.handlerLbl = handler;
         this.cls = cls;
     }
 
     public void resolve(Map<Label, Integer> map) {
-        start = map.get(startLabel);
-        end = map.get(endLabel);
-        handler = map.get(handlerLabel);
+        start = map.get(startLbl);
+        end = map.get(endLbl);
+        handler = map.get(handlerLbl);
+        startLbl = null;
+        endLbl = null;
+        handlerLbl = null;
     }
 }

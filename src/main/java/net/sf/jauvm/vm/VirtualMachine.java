@@ -29,6 +29,7 @@
 package net.sf.jauvm.vm;
 
 import net.sf.jauvm.vm.insn.Insn;
+import net.sf.jauvm.vm.insn.ReturnInsn;
 import org.apache.commons.codec.binary.Base64;
 
 import java.io.*;
@@ -231,5 +232,10 @@ public final class VirtualMachine implements Serializable {
 
     public Insn getInsn() {
         return insns[cp];
+    }
+
+    public boolean inTailPosition(Class<?> returnType) {
+        for (ExcptHandler excpt : excpts) if (excpt.start < cp && cp <= excpt.end) return false;
+        return insns[cp] instanceof ReturnInsn && ((ReturnInsn) insns[cp]).canReturn(returnType);
     }
 }
