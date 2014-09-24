@@ -28,7 +28,6 @@
 
 package net.sf.jauvm.vm;
 
-import net.sf.jauvm.Monitor;
 import net.sf.jauvm.vm.ref.ConstructorRef;
 import net.sf.jauvm.vm.ref.MethodRef;
 

@@ -28,8 +28,8 @@
 
 package net.sf.jauvm.vm.insn;
 
-import net.sf.jauvm.Monitor;
 import net.sf.jauvm.vm.Frame;
+import net.sf.jauvm.vm.Monitor;
 import net.sf.jauvm.vm.VirtualMachine;
 import org.objectweb.asm.Opcodes;
 
@@ -50,7 +50,7 @@ public abstract class Insn implements Serializable {
             case FRETURN:
             case DRETURN:
             case ARETURN:
-                return new ReturnInsn(opcode);
+                return ReturnInsn.getInsn(opcode);
             default:
                 return new NoArgsInsn(opcode);
         }
@@ -58,89 +58,6 @@ public abstract class Insn implements Serializable {
 
     public abstract void execute(VirtualMachine vm) throws Throwable;
 
-
-    static final class ReturnInsn extends Insn {
-        private final int opcode;
-
-        ReturnInsn(int opcode) {
-            this.opcode = opcode;
-        }
-
-        public void execute(VirtualMachine vm) {
-            Frame frame = vm.getFrame();
-            switch (opcode) {
-                case RETURN: {
-                    Frame parent = frame.getParent() == null ? null : frame.getParent().getMutableCopy();
-                    vm.setCp(frame.getRet());
-                    vm.setFrame(parent);
-                    return;
-                }
-                case IRETURN: {
-                    Frame parent = frame.getParent().getMutableCopy();
-                    parent.pushInt(frame.popInt());
-                    vm.setCp(frame.getRet());
-                    vm.setFrame(parent);
-                    return;
-                }
-                case LRETURN: {
-                    Frame parent = frame.getParent().getMutableCopy();
-                    parent.pushLong(frame.popLong());
-                    vm.setCp(frame.getRet());
-                    vm.setFrame(parent);
-                    return;
-                }
-                case FRETURN: {
-                    Frame parent = frame.getParent().getMutableCopy();
-                    parent.pushFloat(frame.popFloat());
-                    vm.setCp(frame.getRet());
-                    vm.setFrame(parent);
-                    return;
-                }
-                case DRETURN: {
-                    Frame parent = frame.getParent().getMutableCopy();
-                    parent.pushDouble(frame.popDouble());
-                    vm.setCp(frame.getRet());
-                    vm.setFrame(parent);
-                    return;
-                }
-                case ARETURN: {
-                    Frame parent = frame.getParent().getMutableCopy();
-                    parent.pushObject(frame.popObject());
-                    vm.setCp(frame.getRet());
-                    vm.setFrame(parent);
-                    return;
-                }
-
-                default:
-                    assert false;
-            }
-        }
-
-        public boolean canReturn(Class cls) {
-            switch (opcode) {
-                case RETURN:
-                    return cls == void.class;
-                case IRETURN:
-                    return cls == int.class || cls == byte.class || cls == short.class || cls == char.class || cls == boolean.class;
-                case LRETURN:
-                    return cls == long.class;
-                case FRETURN:
-                    return cls == float.class;
-                case DRETURN:
-                    return cls == double.class;
-                case ARETURN:
-                    return Object.class.isAssignableFrom(cls);
-                default:
-                    assert false;
-                    throw null;
-            }
-        }
-
-        @Override
-        public String toString() {
-            return getOpcodeName(opcode);
-        }
-    }
 
     static final class NoArgsInsn extends Insn {
         private final int opcode;

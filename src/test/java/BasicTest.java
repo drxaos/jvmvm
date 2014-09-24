@@ -45,7 +45,6 @@ public class BasicTest {
             }
         });
 
-        StringBuilder b = new StringBuilder();
         while (vm.isActive()) {
             vm.step();
             StackTraceElement pointer = vm.getPointer();

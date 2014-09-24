@@ -26,7 +26,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  **/
 
-package net.sf.jauvm;
+package net.sf.jauvm.vm;
 
 import java.util.concurrent.TimeUnit;
 
