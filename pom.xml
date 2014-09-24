@@ -1,7 +1,7 @@
 <project>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>jauvm</groupId>
-    <artifactId>java-interpreter</artifactId>
+    <groupId>com.googlecode.jvmvm</groupId>
+    <artifactId>jvmvm</artifactId>
     <version>1.0</version>
 
     <dependencies>
