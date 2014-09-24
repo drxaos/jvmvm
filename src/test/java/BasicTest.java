@@ -1,8 +1,10 @@
+import interpretable.InheritanceA;
 import interpretable.Parity;
 import net.sf.jauvm.vm.GlobalCodeCache;
 import net.sf.jauvm.vm.VirtualMachine;
 import net.sf.jauvm.vm.VirtualMachineException;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -10,8 +12,8 @@ import java.io.InputStream;
 
 public class BasicTest {
 
-    @Test
-    public void test_vm_execute() throws Throwable {
+    @Before
+    public void setUp() {
         GlobalCodeCache.setCodeLoader(new GlobalCodeCache.CodeLoader() {
             @Override
             public InputStream getBytecodeStream(Class<?> cls) {
@@ -37,7 +39,10 @@ public class BasicTest {
                 return true;
             }
         });
+    }
 
+    @Test
+    public void test_tail_call() throws Throwable {
         VirtualMachine vm = VirtualMachine.create(new Runnable() {
             @Override
             public void run() {
@@ -62,11 +67,27 @@ public class BasicTest {
                             (
                                     (
                                             size.contains("Instance of illegal class [java.io.PrintStream]") ||
-                                            size.contains("Instance of illegal class [BasicTest$2]") ||
-                                            size.matches("[0-9]{4}")
+                                                    size.contains("Instance of illegal class [BasicTest$2]") ||
+                                                    size.matches("[0-9]{4}")
                                     ) && pointer.getFileName().matches("(BasicTest|Parity)\\.java")
                             )
             );
         }
+    }
+
+    @Test
+    public void test_inheritance() throws Throwable {
+        VirtualMachine vm = VirtualMachine.create(new Runnable() {
+            @Override
+            public void run() {
+                InheritanceA.main(new String[0]);
+            }
+        });
+
+        while (vm.isActive()) {
+            vm.step();
+        }
+
+        Assert.assertEquals("SA;SB;IA;CA;IB;CB;", InheritanceA.out.toString());
     }
 }
