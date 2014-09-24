@@ -33,10 +33,15 @@ public class ReturnInsn extends Insn {
         vm.setFrame(parent);
     }
 
+    public boolean canReturn(Class cls) {
+        return cls == void.class;
+    }
+
     @Override
     public String toString() {
         return getOpcodeName(RETURN);
     }
+
 
     static final class IReturnInsn extends ReturnInsn {
         static final IReturnInsn instance = new IReturnInsn();
@@ -47,6 +52,10 @@ public class ReturnInsn extends Insn {
             parent.pushInt(frame.popInt());
             vm.setCp(frame.getRet());
             vm.setFrame(parent);
+        }
+
+        public boolean canReturn(Class cls) {
+            return cls == int.class || cls == byte.class || cls == short.class || cls == char.class || cls == boolean.class;
         }
 
         @Override
@@ -66,6 +75,10 @@ public class ReturnInsn extends Insn {
             vm.setFrame(parent);
         }
 
+        public boolean canReturn(Class cls) {
+            return cls == long.class;
+        }
+
         @Override
         public String toString() {
             return getOpcodeName(LRETURN);
@@ -81,6 +94,10 @@ public class ReturnInsn extends Insn {
             parent.pushFloat(frame.popFloat());
             vm.setCp(frame.getRet());
             vm.setFrame(parent);
+        }
+
+        public boolean canReturn(Class cls) {
+            return cls == float.class;
         }
 
         @Override
@@ -100,6 +117,10 @@ public class ReturnInsn extends Insn {
             vm.setFrame(parent);
         }
 
+        public boolean canReturn(Class cls) {
+            return cls == double.class;
+        }
+
         @Override
         public String toString() {
             return getOpcodeName(DRETURN);
@@ -115,6 +136,10 @@ public class ReturnInsn extends Insn {
             parent.pushObject(frame.popObject());
             vm.setCp(frame.getRet());
             vm.setFrame(parent);
+        }
+
+        public boolean canReturn(Class cls) {
+            return !cls.isPrimitive();
         }
 
         @Override
