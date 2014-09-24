@@ -29,21 +29,32 @@
 package net.sf.jauvm.vm;
 
 import net.sf.jauvm.vm.ref.ClassRef;
+import org.objectweb.asm.Label;
 
-import java.io.Serializable;
+import java.util.Map;
 
-public final class ExcptHandler implements Serializable {
+public final class ExcptHandler {
     public static final ExcptHandler[] arrayType = new ExcptHandler[0];
 
-    public final int start;
-    public final int end;
-    public final int handler;
+    private Label startLabel;
+    private Label endLabel;
+    private Label handlerLabel;
+
+    public int start;
+    public int end;
+    public int handler;
     public final ClassRef cls;
 
-    public ExcptHandler(int start, int end, int handler, ClassRef cls) {
-        this.start = start;
-        this.end = end;
-        this.handler = handler;
+    public ExcptHandler(Label start, Label end, Label handler, ClassRef cls) {
+        this.startLabel = start;
+        this.endLabel = end;
+        this.handlerLabel = handler;
         this.cls = cls;
+    }
+
+    public void resolve(Map<Label, Integer> map) {
+        start = map.get(startLabel);
+        end = map.get(endLabel);
+        handler = map.get(handlerLabel);
     }
 }

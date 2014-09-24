@@ -72,6 +72,7 @@ public abstract class MethodInsn extends Insn {
             Object target = frame.getTarget(method.getParameterTypes());
             MethodCode code = m.getCode(target.getClass());
             if (code != null) {
+                // FIXME: can't tail-call if covered by an exception handler
                 method = m.get(target.getClass());
                 Frame f = vm.getInsn() instanceof ReturnInsn && ((ReturnInsn) vm.getInsn()).canReturn(method.getReturnType()) ?
                         frame.newTailCallFrame(method, code) :
@@ -117,6 +118,7 @@ public abstract class MethodInsn extends Insn {
 
             MethodCode code = m.getCode(method.getDeclaringClass());
             if (code != null) {
+                // FIXME: can't tail-call if covered by an exception handler
                 Frame f = vm.getInsn() instanceof ReturnInsn && ((ReturnInsn) vm.getInsn()).canReturn(method.getReturnType()) ?
                         frame.newTailCallFrame(method, code) :
                         frame.newCallFrame(vm.getCp(), method, code);
@@ -166,6 +168,7 @@ public abstract class MethodInsn extends Insn {
 
             MethodCode code = m.getCode(target.getClass());
             if (code != null) {
+                // FIXME: can't tail-call if covered by an exception handler
                 method = m.get(target.getClass());
                 Frame f = vm.getInsn() instanceof ReturnInsn && ((ReturnInsn) vm.getInsn()).canReturn(method.getReturnType()) ?
                         frame.newTailCallFrame(method, code) :
@@ -213,6 +216,7 @@ public abstract class MethodInsn extends Insn {
 
             MethodCode code = m.getCode(method.getDeclaringClass());
             if (code != null) {
+                // FIXME: can't tail-call if covered by an exception handler
                 Frame f = vm.getInsn() instanceof ReturnInsn && ((ReturnInsn) vm.getInsn()).canReturn(method.getReturnType()) ?
                         frame.newTailCallFrame(method, code) :
                         frame.newCallFrame(vm.getCp(), method, code);

@@ -105,6 +105,7 @@ public final class CodeVisitor extends EmptyVisitor {
                 labeledInsn.resolve(labels);
             }
         }
+        for (ExcptHandler excpt : excpts) excpt.resolve(labels);
         MethodCode methodCode = new MethodCode(insns, excpts, lines, maxStack + maxLocals, source);
         code.put((name + desc).intern(), methodCode);
     }
@@ -176,8 +177,7 @@ public final class CodeVisitor extends EmptyVisitor {
 
     public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
         if (!interpretable) return;
-        excpts.add(new ExcptHandler(labels.get(start), labels.get(end), labels.get(handler),
-                type == null ? null : new ClassRef(type, cls)));
+        excpts.add(new ExcptHandler(start, end, handler, type == null ? null : new ClassRef(type, cls)));
     }
 
     public void visitLineNumber(int line, Label start) {

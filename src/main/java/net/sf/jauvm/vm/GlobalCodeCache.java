@@ -85,7 +85,7 @@ public final class GlobalCodeCache {
         try {
             InputStream stream = codeLoader.getBytecodeStream(cls);
             if (stream != null) {
-                new ClassReader(stream).accept(new CodeVisitor(cls, code), false);
+                new ClassReader(stream).accept(new CodeVisitor(cls, code), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
             }
         } catch (Exception e) {
             e.printStackTrace();
