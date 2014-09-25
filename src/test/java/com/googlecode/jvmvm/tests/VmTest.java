@@ -12,7 +12,7 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
-public class BasicTest {
+public class VmTest {
 
     @Before
     public void setUp() {
@@ -68,7 +68,7 @@ public class BasicTest {
                     (pointer == null && !vm.isActive()) ||
                             (
                                     (size.contains("Instance of illegal class") || size.matches("[0-9]{4}")) &&
-                                            pointer.getFileName().matches("(BasicTest|Parity)\\.java")
+                                            pointer.getFileName().matches("(" + this.getClass().getSimpleName() + "|Parity)\\.java")
                             )
             );
         }

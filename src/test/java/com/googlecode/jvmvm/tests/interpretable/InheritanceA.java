@@ -1,7 +1,7 @@
 package com.googlecode.jvmvm.tests.interpretable;
 
 public class InheritanceA {
-    public static final StringBuilder out = new StringBuilder();
+    public static StringBuilder out = new StringBuilder();
 
     static {
         out.append("SA;");
@@ -15,8 +15,8 @@ public class InheritanceA {
         out.append("CA;");
     }
 
-    public static void main(String []a) {
-        System.out.println(new InheritanceB().out);
+    public static void main(String[] a) {
+        new InheritanceB();
     }
 }
 
