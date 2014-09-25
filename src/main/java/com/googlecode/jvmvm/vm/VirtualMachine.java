@@ -50,6 +50,9 @@ public final class VirtualMachine implements Serializable {
     VirtualMachine() {
     }
 
+    // TODO on start schedule execution of <clinit-jvmvm> of classes loaded by classloader before called method
+    // TODO on deserialization load maps of static values to static fields
+
     public static VirtualMachine create(Class<?> cls) throws Throwable {
         if (cls == null) throw new NullPointerException();
         Method method = cls.getMethod("run");
