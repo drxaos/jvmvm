@@ -33,14 +33,11 @@ Executed programs must use only serializable system classes for ability of VM se
 User classes made serializable by classloader.
 
 ```
-try {
-  while (true) {
-    project.step();
-  }
-} catch (ProjectStoppedException e) {
-  Object result = e.getResult();
-}
+byte[] serializedProject = project.saveToBytes();
+Project restoredProject = Project.fromBytes(serializedProject);
 ```
+You can continue running restored project as if it is a new separate project, stopped at same point as original.
+
 
 ### In Development
 Project is still in alpha and contains bugs and hidden features.
