@@ -10,7 +10,7 @@ Target of this project is to create sandbox for user java code execution
 with control over instructions and save/load running program.
 
 To run VM you just need to create and compile project:
-```
+```java
 Project project = new Project("Program1")
     .addFiles(mapWithFileNamesAsKeysAndTheirContentsAsValues)
     .addSystemClasses(listOfSystemClassesThatYouAllowToUseInVm)
@@ -21,7 +21,7 @@ Project project = new Project("Program1")
 
 JvmVM virtualizes jvm stack and instructions execution for given code.
 
-```
+```java
 try {
   while (true) {
     project.step();
@@ -35,7 +35,7 @@ try {
 Executed programs must use only serializable system classes for ability of VM serialization.
 User classes made serializable by classloader.
 
-```
+```java
 byte[] serializedProject = project.saveToBytes();
 Project restoredProject = Project.fromBytes(serializedProject);
 ```
