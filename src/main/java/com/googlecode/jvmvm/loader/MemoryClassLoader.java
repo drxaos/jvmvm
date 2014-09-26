@@ -17,6 +17,9 @@ class Modifier extends ClassAdapter {
 
     @Override
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+        
+        // TODO keep statics
+        
         if ((access & Opcodes.ACC_STATIC) != 0) {
             return null;
         }
@@ -25,6 +28,8 @@ class Modifier extends ClassAdapter {
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+        // TODO rename <clinit> to <clinit-jvmvm> for interpretation
+
         if ((access & Opcodes.ACC_STATIC) != 0 && name.equals("<clinit>")) {
             return null;
         }
