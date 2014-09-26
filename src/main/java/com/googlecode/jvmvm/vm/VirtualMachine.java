@@ -122,6 +122,16 @@ public final class VirtualMachine implements Serializable {
                 synchronized (this) {
                     Insn insn = insns[cp++];
                     insn.execute(this);
+                    try {
+                        save(new ByteArrayOutputStream());
+                    } catch (VirtualMachineException e) {
+                        Throwable cause = e.getCause();
+                        if (cause instanceof NotSerializableException) {
+                            // stack contains not serializable object
+                            fillInStackTrace(cause, cause.getStackTrace());
+                            throw cause;
+                        }
+                    }
                     stepNumber++;
                 }
                 if (cycles > 0) {

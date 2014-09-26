@@ -17,21 +17,13 @@ class Modifier extends ClassAdapter {
 
     @Override
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-        
-        // TODO keep statics
-        
-        if ((access & Opcodes.ACC_STATIC) != 0) {
-            return null;
-        }
         return super.visitField(access, name, desc, signature, value);
     }
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        // TODO rename <clinit> to <clinit-jvmvm> for interpretation
-
         if ((access & Opcodes.ACC_STATIC) != 0 && name.equals("<clinit>")) {
-            return null;
+            name = "void";
         }
         access &= ~Opcodes.ACC_TRANSIENT;
         return super.visitMethod(access, name, desc, signature, exceptions);

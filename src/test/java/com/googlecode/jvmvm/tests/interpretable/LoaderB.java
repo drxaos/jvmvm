@@ -4,6 +4,7 @@ class LoaderA {
 
     public String P = "P;";
     public static String S = "S;";
+    public static String S1 = "S" + "1" + ";";
     public static final String F = "F;";
 
     private static final String X;
@@ -32,12 +33,12 @@ class LoaderA {
         out += "CA;";
     }
 
-    public String m() {
+    public String m() throws Exception {
         out += "AM;";
         return out;
     }
 
-    public static String ms() {
+    public static String ms() throws Exception {
         return outs;
     }
 
@@ -59,12 +60,12 @@ public class LoaderB extends LoaderA {
         out += "CB;";
     }
 
-    public String m() {
+    public String m() throws RuntimeException {
         out += "BM;";
         return out;
     }
 
-    public static String ms() {
+    public static String ms() throws Exception {
         return new LoaderB().m();
     }
 }

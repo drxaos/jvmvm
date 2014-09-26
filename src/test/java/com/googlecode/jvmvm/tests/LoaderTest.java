@@ -25,12 +25,10 @@ public class LoaderTest {
             "java.lang.String",
             "java.lang.StringBuilder",
             "java.lang.StackTraceElement",
+            "java.lang.Throwable",
+            "java.lang.Exception",
+            "java.lang.RuntimeException",
             "java.io.Serializable",
-            "java.io.OutputStream",
-            "java.io.ByteArrayOutputStream",
-            "java.io.InputStream",
-            "java.io.ByteArrayInputStream",
-            "java.io.PrintStream",
             "sun.reflect.SerializationConstructorAccessorImpl"
     );
 
@@ -80,33 +78,26 @@ public class LoaderTest {
         Project project = new Project("serialization-test")
                 .addFile(name, FileUtils.readFileToString(new File("src/test/java/" + name)))
                 .addSystemClasses(bootstrap)
-                .compile();
-
-        project.startVM(LoaderB.class.getCanonicalName(), "ms", null, new Class[0], new Object[0]);
-
-        for (int i = 0; i < 10; i++) {
-            project.step();
-        }
-
-        byte[] serializedProject = project.saveToBytes();
+                .compile()
+                .startVM(LoaderB.class.getCanonicalName(), "ms", null, new Class[0], new Object[0]);
 
         try {
             int i = 0;
             while (true) {
                 project.step();
                 Assert.assertTrue(i++ < 1000000);
-            }
-        } catch (ProjectStoppedException e) {
-            Assert.assertEquals("result", "IA;P;F;CA;IB;CB;BM;", e.getResult());
-        }
 
-        Project restoredProject = Project.fromBytes(serializedProject);
-
-        try {
-            int i = 0;
-            while (true) {
-                restoredProject.step();
-                Assert.assertTrue(i++ < 1000000);
+                byte[] serializedProject = project.saveToBytes();
+                Project restoredProject = Project.fromBytes(serializedProject);
+                try {
+                    int j = 0;
+                    while (true) {
+                        restoredProject.step();
+                        Assert.assertTrue(j++ < 1000000);
+                    }
+                } catch (ProjectStoppedException e) {
+                    Assert.assertEquals("result", "IA;P;F;CA;IB;CB;BM;", e.getResult());
+                }
             }
         } catch (ProjectStoppedException e) {
             Assert.assertEquals("result", "IA;P;F;CA;IB;CB;BM;", e.getResult());
