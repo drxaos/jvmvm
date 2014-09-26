@@ -45,11 +45,11 @@ public final class FieldRef extends SymbolicRef<Field> implements Serializable {
     private static final Reference<Field> nil = new WeakReference<Field>(null);
     private transient volatile Reference<Field> field = nil;
 
-    private final String owner;
-    private final String name;
-    private final String descriptor;
-    private final boolean expectsStatic;
-    private final boolean expectsPuttable;
+    private String owner;
+    private String name;
+    private String descriptor;
+    private boolean expectsStatic;
+    private boolean expectsPuttable;
     private transient Reference<Class<?>> referrer;
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -61,6 +61,9 @@ public final class FieldRef extends SymbolicRef<Field> implements Serializable {
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeObject(referrer.get());
         out.defaultWriteObject();
+    }
+
+    FieldRef() {
     }
 
     public FieldRef(String owner, String name, String descriptor, Class<?> referrer, boolean expectsStatic,

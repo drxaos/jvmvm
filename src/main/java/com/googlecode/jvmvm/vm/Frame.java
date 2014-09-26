@@ -43,8 +43,8 @@ import java.util.Arrays;
 public final class Frame implements Cloneable, Serializable {
     private static final long serialVersionUID = 874267885800467086l;
 
-    private final Frame parent;
-    private final int ret;
+    private Frame parent;
+    private int ret;
 
     private int sp;
     private Object[] stack;
@@ -52,8 +52,10 @@ public final class Frame implements Cloneable, Serializable {
     private transient Method method;
     private transient Constructor constructor;
     private transient MethodCode code;
-    private transient boolean mutable;
+    private boolean mutable;
 
+    Frame() {
+    }
 
     private Frame(Frame parent, int ret, Method method, MethodCode code) {
         this.parent = parent;

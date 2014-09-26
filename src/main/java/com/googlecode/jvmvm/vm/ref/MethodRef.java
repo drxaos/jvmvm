@@ -47,12 +47,12 @@ public final class MethodRef extends SymbolicRef<Method> implements Serializable
     private static final Reference<Method> nil = new WeakReference<Method>(null);
     private transient volatile Reference<Method> method = nil;
 
-    private final String id;
-    private final String owner;
-    private final String name;
-    private final String descriptor;
-    private final boolean expectsStatic;
-    private final boolean expectsInterface;
+    private String id;
+    private String owner;
+    private String name;
+    private String descriptor;
+    private boolean expectsStatic;
+    private boolean expectsInterface;
     private transient Reference<Class<?>> referrer;
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -64,6 +64,9 @@ public final class MethodRef extends SymbolicRef<Method> implements Serializable
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeObject(referrer.get());
         out.defaultWriteObject();
+    }
+
+    MethodRef() {
     }
 
     public MethodRef(String owner, String name, String descriptor, Class<?> referrer, boolean expectsStatic,

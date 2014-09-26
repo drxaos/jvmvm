@@ -45,8 +45,8 @@ public final class ConstructorRef extends SymbolicRef<Constructor<?>> implements
     private static final Reference<Constructor<?>> nil = new WeakReference<Constructor<?>>(null);
     private transient volatile Reference<Constructor<?>> constructor = nil;
 
-    private final String owner;
-    private final String descriptor;
+    private String owner;
+    private String descriptor;
     private transient  Reference<Class<?>> referrer;
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -58,6 +58,9 @@ public final class ConstructorRef extends SymbolicRef<Constructor<?>> implements
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeObject(referrer.get());
         out.defaultWriteObject();
+    }
+
+    ConstructorRef() {
     }
 
     public ConstructorRef(String owner, String descriptor, Class<?> referrer) {

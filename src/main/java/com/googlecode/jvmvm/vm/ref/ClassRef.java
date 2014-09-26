@@ -43,7 +43,7 @@ public final class ClassRef extends SymbolicRef<Class<?>> implements Serializabl
     private static final Reference<Class<?>> nil = new WeakReference<Class<?>>(null);
     private transient volatile Reference<Class<?>> cls = nil;
 
-    private final String name;
+    private String name;
     private transient Reference<Class<?>> referrer;
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -55,6 +55,9 @@ public final class ClassRef extends SymbolicRef<Class<?>> implements Serializabl
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeObject(referrer.get());
         out.defaultWriteObject();
+    }
+
+    ClassRef() {
     }
 
     public ClassRef(String name, Class<?> referrer) {

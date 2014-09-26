@@ -57,16 +57,15 @@ public final class VirtualMachine implements Serializable {
     // TODO on deserialization load maps of static values to static fields
     // TODO serialize vm on each step to prevent using not serializable objects
 
-    
+
     VirtualMachine() {
     }
 
     /**
      * Start static void method() in VM
      *
-     * @param cl              classLoader for program
-     * @param className       class to search method
-     * @param methodSignature method to start
+     * @param cl        classLoader for program
+     * @param className class to search method
      * @return VM
      * @throws Throwable on error
      */
@@ -275,12 +274,20 @@ class CustomClassLoaderObjectInputStream extends ObjectInputStream {
     }
 
     List<String> vm = Arrays.asList(
-            "com.googlecode.jvmvm.vm.VirtualMachine",
+            "[Lcom.googlecode.jvmvm.vm.",
+            "com.googlecode.jvmvm.vm.",
             "sun.reflect.SerializationConstructorAccessorImpl"
     );
 
     protected Class<?> resolveClass(ObjectStreamClass desc) throws ClassNotFoundException {
-        if (vm.contains(desc.getName())) {
+        boolean system = false;
+        for (String s : vm) {
+            if (desc.getName().startsWith(s)) {
+                system = true;
+                break;
+            }
+        }
+        if (system) {
             return Class.forName(desc.getName(), false, this.getClass().getClassLoader());
         } else {
             return Class.forName(desc.getName(), false, classLoader);

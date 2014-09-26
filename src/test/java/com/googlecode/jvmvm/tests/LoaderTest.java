@@ -24,6 +24,7 @@ public class LoaderTest {
             "java.lang.Object",
             "java.lang.String",
             "java.lang.StringBuilder",
+            "java.lang.StackTraceElement",
             "java.io.Serializable",
             "java.io.OutputStream",
             "java.io.ByteArrayOutputStream",
