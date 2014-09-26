@@ -90,15 +90,15 @@ public class LoaderTest {
 
         byte[] serializedProject = project.saveToBytes();
 
-//        try {
-//            int i = 0;
-//            while (true) {
-//                project.step();
-//                Assert.assertTrue(i++ < 1000000);
-//            }
-//        } catch (ProjectStoppedException e) {
-//            Assert.assertEquals("result", "IA;P;F;CA;IB;CB;BM;", e.getResult());
-//        }
+        try {
+            int i = 0;
+            while (true) {
+                project.step();
+                Assert.assertTrue(i++ < 1000000);
+            }
+        } catch (ProjectStoppedException e) {
+            Assert.assertEquals("result", "IA;P;F;CA;IB;CB;BM;", e.getResult());
+        }
 
         Project restoredProject = Project.fromBytes(serializedProject);
 
