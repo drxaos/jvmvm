@@ -43,6 +43,11 @@ while (project.isActive()) {
 Object result = project.getResult();
 ```
 
+or to execute to end
+```java
+Object result = project.run();
+```
+
 ### Save / Load
 Executed programs must use only serializable system classes for ability of VM serialization.
 User classes made serializable by classloader.
