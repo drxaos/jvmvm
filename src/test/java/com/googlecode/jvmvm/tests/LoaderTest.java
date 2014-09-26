@@ -1,6 +1,8 @@
 package com.googlecode.jvmvm.tests;
 
 import com.googlecode.jvmvm.loader.MemoryClassLoader;
+import com.googlecode.jvmvm.loader.Project;
+import com.googlecode.jvmvm.loader.ProjectStoppedException;
 import com.googlecode.jvmvm.tests.interpretable.LoaderB;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -8,6 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.*;
+import java.util.Arrays;
+import java.util.List;
 
 public class LoaderTest {
 
@@ -16,26 +20,95 @@ public class LoaderTest {
 
     }
 
+    List<String> bootstrap = Arrays.asList(
+            "java.lang.Object",
+            "java.lang.String",
+            "java.lang.StringBuilder",
+            "java.io.Serializable",
+            "java.io.OutputStream",
+            "java.io.ByteArrayOutputStream",
+            "java.io.InputStream",
+            "java.io.ByteArrayInputStream",
+            "java.io.PrintStream",
+            "sun.reflect.SerializationConstructorAccessorImpl"
+    );
+
     @Test
     public void test_compile() throws Exception {
         String name = LoaderB.class.getCanonicalName().replace(".", "/") + ".java";
-        MemoryClassLoader cl = new com.googlecode.jvmvm.loader.Compiler("loader-test")
+
+        MemoryClassLoader cl = new Project("compiler-test")
                 .addFile(name, FileUtils.readFileToString(new File("src/test/java/" + name)))
+                .addSystemClasses(bootstrap)
                 .compile()
-                .getClassLoader()
-                .addBootstrapClass("java.lang.Object")
-                .addBootstrapClass("java.lang.String")
-                .addBootstrapClass("java.lang.StringBuilder")
-                .addBootstrapClass("java.io.Serializable")
-                .addBootstrapClass("java.io.OutputStream")
-                .addBootstrapClass("java.io.ByteArrayOutputStream")
-                .addBootstrapClass("java.io.InputStream")
-                .addBootstrapClass("java.io.ByteArrayInputStream")
-                .addBootstrapClass("java.io.PrintStream");
+                .getClassLoader();
 
         Class<?> cls = cl.loadClass(LoaderB.class.getCanonicalName());
         Object b = cls.newInstance();
         Object res = cls.getMethod("m").invoke(b);
-        Assert.assertEquals("result", "IA;P;F;CA;IB;CB;", res);
+        Assert.assertEquals("result", "IA;P;F;CA;IB;CB;BM;", res);
+    }
+
+    @Test
+    public void test_save_load() throws Exception {
+        String name = LoaderB.class.getCanonicalName().replace(".", "/") + ".java";
+
+        Project project = new Project("serialization-test")
+                .addFile(name, FileUtils.readFileToString(new File("src/test/java/" + name)))
+                .addSystemClasses(bootstrap)
+                .compile();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(project);
+        byte[] serializedProject = baos.toByteArray();
+
+        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serializedProject));
+        Project restoredProject = (Project) ois.readObject();
+
+        Class<?> cls = restoredProject.getClassLoader().loadClass(LoaderB.class.getCanonicalName());
+        Object b = cls.newInstance();
+        Object res = cls.getMethod("m").invoke(b);
+        Assert.assertEquals("result", "IA;P;F;CA;IB;CB;BM;", res);
+    }
+
+    @Test
+    public void test_vm_save_load() throws Exception {
+        String name = LoaderB.class.getCanonicalName().replace(".", "/") + ".java";
+
+        Project project = new Project("serialization-test")
+                .addFile(name, FileUtils.readFileToString(new File("src/test/java/" + name)))
+                .addSystemClasses(bootstrap)
+                .compile();
+
+        project.startVM(LoaderB.class.getCanonicalName(), "ms", null, new Class[0], new Object[0]);
+
+        for (int i = 0; i < 10; i++) {
+            project.step();
+        }
+
+        byte[] serializedProject = project.saveToBytes();
+
+//        try {
+//            int i = 0;
+//            while (true) {
+//                project.step();
+//                Assert.assertTrue(i++ < 1000000);
+//            }
+//        } catch (ProjectStoppedException e) {
+//            Assert.assertEquals("result", "IA;P;F;CA;IB;CB;BM;", e.getResult());
+//        }
+
+        Project restoredProject = Project.fromBytes(serializedProject);
+
+        try {
+            int i = 0;
+            while (true) {
+                restoredProject.step();
+                Assert.assertTrue(i++ < 1000000);
+            }
+        } catch (ProjectStoppedException e) {
+            Assert.assertEquals("result", "IA;P;F;CA;IB;CB;BM;", e.getResult());
+        }
     }
 }

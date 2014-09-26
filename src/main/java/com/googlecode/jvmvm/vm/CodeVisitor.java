@@ -50,6 +50,7 @@ public final class CodeVisitor extends EmptyVisitor {
     private boolean interpretable;
     private String name;
     private String desc;
+    private int access;
 
     private List<Insn> insns;
     private List<ExcptHandler> excpts;
@@ -80,6 +81,7 @@ public final class CodeVisitor extends EmptyVisitor {
         this.interpretable = true;
         this.name = name;
         this.desc = desc;
+        this.access = access;
         return this;
     }
 
@@ -106,7 +108,7 @@ public final class CodeVisitor extends EmptyVisitor {
             }
         }
         for (ExcptHandler excpt : excpts) excpt.resolve(labels);
-        MethodCode methodCode = new MethodCode(insns, excpts, lines, maxStack + maxLocals, source);
+        MethodCode methodCode = new MethodCode(access, insns, excpts, lines, maxStack + maxLocals, source);
         code.put((name + desc).intern(), methodCode);
     }
 

@@ -15,6 +15,10 @@ public class InheritanceA {
         out.append("CA;");
     }
 
+    public void main() {
+        new InheritanceB();
+    }
+
     public static void main(String[] a) {
         new InheritanceB();
     }

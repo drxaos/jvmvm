@@ -29,7 +29,6 @@
 package com.googlecode.jvmvm.vm.ref;
 
 import com.googlecode.jvmvm.vm.AccessControl;
-import com.googlecode.jvmvm.vm.GlobalCodeCache;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -79,8 +78,6 @@ public final class ClassRef extends SymbolicRef<Class<?>> implements Serializabl
         if (cls.get() != null) return;
         Class<?> c = get(name, referrer.get());
         cls = new WeakReference<Class<?>>(c);
-
-        GlobalCodeCache.checkAccess(c);
     }
 
     public static final Map<String, Class> primitives;

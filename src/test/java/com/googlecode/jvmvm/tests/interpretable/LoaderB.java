@@ -33,10 +33,11 @@ class LoaderA {
     }
 
     public String m() {
+        out += "AM;";
         return out;
     }
 
-    public String ms() {
+    public static String ms() {
         return outs;
     }
 
@@ -59,10 +60,11 @@ public class LoaderB extends LoaderA {
     }
 
     public String m() {
+        out += "BM;";
         return out;
     }
 
-    public String ms() {
-        return outs;
+    public static String ms() {
+        return new LoaderB().m();
     }
 }

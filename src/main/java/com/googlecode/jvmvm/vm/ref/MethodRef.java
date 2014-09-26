@@ -29,7 +29,7 @@
 package com.googlecode.jvmvm.vm.ref;
 
 import com.googlecode.jvmvm.vm.AccessControl;
-import com.googlecode.jvmvm.vm.GlobalCodeCache;
+import com.googlecode.jvmvm.vm.GlobalCodeLoader;
 import com.googlecode.jvmvm.vm.MethodCode;
 import com.googlecode.jvmvm.vm.Types;
 
@@ -95,11 +95,11 @@ public final class MethodRef extends SymbolicRef<Method> implements Serializable
     }
 
     public MethodCode getCode(Class<?> cls) {
-        return GlobalCodeCache.get(cls, id);
+        return GlobalCodeLoader.get(cls, id);
     }
 
     public static MethodCode getCode(Class<?> cls, String name, String descriptor) {
-        return GlobalCodeCache.get(cls, (name + descriptor).intern());
+        return GlobalCodeLoader.get(cls, (name + descriptor).intern());
     }
 
 
@@ -128,8 +128,6 @@ public final class MethodRef extends SymbolicRef<Method> implements Serializable
         AccessControl.makeAccessible(m);
 
         method = new SoftReference<Method>(m);
-
-        GlobalCodeCache.checkAccess(m.getDeclaringClass());
     }
 
     private static Method findMethod(Class<?> cls, String name, String descriptor) {

@@ -29,7 +29,6 @@
 package com.googlecode.jvmvm.vm.ref;
 
 import com.googlecode.jvmvm.vm.AccessControl;
-import com.googlecode.jvmvm.vm.GlobalCodeCache;
 import com.googlecode.jvmvm.vm.Types;
 
 import java.io.IOException;
@@ -97,8 +96,6 @@ public final class FieldRef extends SymbolicRef<Field> implements Serializable {
         AccessControl.makeAccessible(f);
 
         field = new SoftReference<Field>(f);
-
-        GlobalCodeCache.checkAccess(f.getDeclaringClass());
     }
 
     private static Field findField(Class<?> cls, String name, String descriptor) {

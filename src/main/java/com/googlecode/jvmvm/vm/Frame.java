@@ -518,20 +518,24 @@ public final class Frame implements Cloneable, Serializable {
         }
     }
 
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        Class<?> cls = (Class) in.readObject();
-        String name = in.readUTF();
-        String desc = in.readUTF();
+    private void readObject(ObjectInputStream in) throws IOException {
+        try {
+            Class<?> cls = (Class) in.readObject();
+            String name = in.readUTF();
+            String desc = in.readUTF();
 
-        if (!name.equals(cls.getName())) {
-            method = MethodRef.get(cls, name, desc);
-            code = MethodRef.getCode(cls, name, desc);
-        } else {
-            constructor = ConstructorRef.get(cls, name, desc);
-            code = GlobalCodeCache.get(cls, "<init>" + desc);
+            if (!name.equals(cls.getName())) {
+                method = MethodRef.get(cls, name, desc);
+                code = MethodRef.getCode(cls, name, desc);
+            } else {
+                constructor = ConstructorRef.get(cls, name, desc);
+                code = GlobalCodeLoader.get(cls, "<init>" + desc);
+            }
+
+            in.defaultReadObject();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
-
-        in.defaultReadObject();
     }
 
 

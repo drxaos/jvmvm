@@ -2,6 +2,8 @@ package com.googlecode.jvmvm.loader;
 
 import org.objectweb.asm.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.security.SecureClassLoader;
 import java.util.*;
@@ -23,7 +25,7 @@ class Modifier extends ClassAdapter {
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        if ((access & Opcodes.ACC_STATIC) != 0) {
+        if ((access & Opcodes.ACC_STATIC) != 0 && name.equals("<clinit>")) {
             return null;
         }
         access &= ~Opcodes.ACC_TRANSIENT;
@@ -53,17 +55,17 @@ class Modifier extends ClassAdapter {
 }
 
 public class MemoryClassLoader extends SecureClassLoader {
-    public static class Classes extends HashMap<String, byte[]> implements Serializable {
+    static class Classes extends HashMap<String, byte[]> implements Serializable {
     }
 
     Classes classes = new Classes();
 
-    public MemoryClassLoader(Classes classes) {
+    MemoryClassLoader(Classes classes) {
         super(null);
         this.classes = classes;
     }
 
-    public MemoryClassLoader(Map<String, JavaClassObject> jclassObjectMap) {
+    MemoryClassLoader(Map<String, JavaClassObject> jclassObjectMap) {
         super(null);
         for (Map.Entry<String, JavaClassObject> e : jclassObjectMap.entrySet()) {
 
@@ -79,12 +81,12 @@ public class MemoryClassLoader extends SecureClassLoader {
 
     }
 
-    public MemoryClassLoader addClass(String className, byte[] bytecode) {
+    MemoryClassLoader addClass(String className, byte[] bytecode) {
         classes.put(className, bytecode);
         return this;
     }
 
-    public MemoryClassLoader addBootstrapClass(String className) {
+    MemoryClassLoader addSystemClass(String className) {
         try {
             super.loadClass(className, false);
             classes.put(className, new byte[0]);
@@ -138,5 +140,13 @@ public class MemoryClassLoader extends SecureClassLoader {
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         byte[] b = classes.get(name);
         return super.defineClass(name, b, 0, b.length);
+    }
+
+    public InputStream getBytecodeStream(Class cls) {
+        if (classes.containsKey(cls.getCanonicalName()) && classes.get(cls.getCanonicalName()).length != 0) {
+            return new ByteArrayInputStream(classes.get(cls.getCanonicalName()));
+        } else {
+            return null;
+        }
     }
 }

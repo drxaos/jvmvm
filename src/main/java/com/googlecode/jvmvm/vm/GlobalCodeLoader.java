@@ -28,26 +28,45 @@
 
 package com.googlecode.jvmvm.vm;
 
-import com.googlecode.jvmvm.vm.insn.Insn;
+import com.googlecode.jvmvm.loader.MemoryClassLoader;
+import org.objectweb.asm.ClassReader;
 
-import java.util.List;
-import java.util.SortedSet;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-public final class MethodCode {
-    public final int access;
-    public final Insn[] insns;
-    public final ExcptHandler[] excpts;
-    public final LineNumber[] lines;
-    public final int stackSize;
-    public final String source;
+public final class GlobalCodeLoader {
 
-    public MethodCode(int access, List<Insn> insns, List<ExcptHandler> excpts, SortedSet<LineNumber> lines,
-                      int stackSize, String source) {
-        this.access = access;
-        this.insns = insns.toArray(Insn.arrayType);
-        this.excpts = excpts.toArray(ExcptHandler.arrayType);
-        this.lines = lines.toArray(LineNumber.arrayType);
-        this.stackSize = stackSize;
-        this.source = source;
+    public static synchronized MethodCode get(Class<?> cls, String methodId) {
+        Map<String, MethodCode> code = loadCode(cls);
+        return code.get(methodId);
+    }
+
+    public static synchronized Map<String, MethodCode> getAll(Class<?> cls) {
+        return loadCode(cls);
+    }
+
+    private static Map<String, MethodCode> loadCode(Class<?> cls) {
+        if (cls == null) return Collections.emptyMap();
+        assert Thread.holdsLock(GlobalCodeLoader.class);
+        Map<String, MethodCode> code = loadCode(cls.getSuperclass());
+        code = new HashMap<String, MethodCode>(code);
+        readCode(cls, code);
+        return code;
+    }
+
+    private static void readCode(Class<?> cls, Map<String, MethodCode> code) {
+        try {
+            InputStream stream = null;
+            if (cls.getClassLoader() instanceof MemoryClassLoader) {
+                stream = ((MemoryClassLoader) cls.getClassLoader()).getBytecodeStream(cls);
+            }
+            if (stream != null) {
+                new ClassReader(stream).accept(new CodeVisitor(cls, code), 0);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

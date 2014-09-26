@@ -29,7 +29,6 @@
 package com.googlecode.jvmvm.vm.ref;
 
 import com.googlecode.jvmvm.vm.AccessControl;
-import com.googlecode.jvmvm.vm.GlobalCodeCache;
 import com.googlecode.jvmvm.vm.Types;
 
 import java.io.IOException;
@@ -99,8 +98,6 @@ public final class ConstructorRef extends SymbolicRef<Constructor<?>> implements
         AccessControl.makeAccessible(c);
 
         constructor = new SoftReference<Constructor<?>>(c);
-
-        GlobalCodeCache.checkAccess(c.getDeclaringClass());
     }
 
     private static Constructor<?> findConstructor(Class<?> cls, String descriptor) {

@@ -254,7 +254,7 @@ public abstract class MethodInsn extends Insn {
             Frame frame = vm.getFrame();
 
             Constructor<?> constructor = c.get();
-            MethodCode code = GlobalCodeCache.get(constructor.getDeclaringClass(), "<init>" + c.getDescriptor());
+            MethodCode code = GlobalCodeLoader.get(constructor.getDeclaringClass(), "<init>" + c.getDescriptor());
 
             if (code != null) {
                 Frame f = frame.newCallFrame(vm.getCp(), constructor, code);

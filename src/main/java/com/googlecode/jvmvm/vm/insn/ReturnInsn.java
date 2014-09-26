@@ -29,6 +29,7 @@ public class ReturnInsn extends Insn {
         Frame frame = vm.getFrame();
         Frame parent = frame.getParent();
         if (parent != null) parent = parent.getMutableCopy();
+        vm.setResult(null);
         vm.setCp(frame.getRet());
         vm.setFrame(parent);
     }
@@ -48,8 +49,13 @@ public class ReturnInsn extends Insn {
 
         public void execute(VirtualMachine vm) {
             Frame frame = vm.getFrame();
-            Frame parent = frame.getParent().getMutableCopy();
-            parent.pushInt(frame.popInt());
+            Frame parent = frame.getParent();
+            if (parent != null) {
+                parent = parent.getMutableCopy();
+                parent.pushInt(frame.popInt());
+            } else {
+                vm.setResult(frame.popInt());
+            }
             vm.setCp(frame.getRet());
             vm.setFrame(parent);
         }
@@ -69,8 +75,13 @@ public class ReturnInsn extends Insn {
 
         public void execute(VirtualMachine vm) {
             Frame frame = vm.getFrame();
-            Frame parent = frame.getParent().getMutableCopy();
-            parent.pushLong(frame.popLong());
+            Frame parent = frame.getParent();
+            if (parent != null) {
+                parent = parent.getMutableCopy();
+                parent.pushLong(frame.popLong());
+            } else {
+                vm.setResult(frame.popLong());
+            }
             vm.setCp(frame.getRet());
             vm.setFrame(parent);
         }
@@ -90,8 +101,13 @@ public class ReturnInsn extends Insn {
 
         public void execute(VirtualMachine vm) {
             Frame frame = vm.getFrame();
-            Frame parent = frame.getParent().getMutableCopy();
-            parent.pushFloat(frame.popFloat());
+            Frame parent = frame.getParent();
+            if (parent != null) {
+                parent = parent.getMutableCopy();
+                parent.pushFloat(frame.popFloat());
+            } else {
+                vm.setResult(frame.popFloat());
+            }
             vm.setCp(frame.getRet());
             vm.setFrame(parent);
         }
@@ -111,8 +127,13 @@ public class ReturnInsn extends Insn {
 
         public void execute(VirtualMachine vm) {
             Frame frame = vm.getFrame();
-            Frame parent = frame.getParent().getMutableCopy();
-            parent.pushDouble(frame.popDouble());
+            Frame parent = frame.getParent();
+            if (parent != null) {
+                parent = parent.getMutableCopy();
+                parent.pushDouble(frame.popDouble());
+            } else {
+                vm.setResult(frame.popDouble());
+            }
             vm.setCp(frame.getRet());
             vm.setFrame(parent);
         }
@@ -132,8 +153,13 @@ public class ReturnInsn extends Insn {
 
         public void execute(VirtualMachine vm) {
             Frame frame = vm.getFrame();
-            Frame parent = frame.getParent().getMutableCopy();
-            parent.pushObject(frame.popObject());
+            Frame parent = frame.getParent();
+            if (parent != null) {
+                parent = parent.getMutableCopy();
+                parent.pushObject(frame.popObject());
+            } else {
+                vm.setResult(frame.popObject());
+            }
             vm.setCp(frame.getRet());
             vm.setFrame(parent);
         }

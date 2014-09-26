@@ -31,6 +31,8 @@ package com.googlecode.jvmvm.vm;
 import com.googlecode.jvmvm.vm.insn.Insn;
 import com.googlecode.jvmvm.vm.insn.ReturnInsn;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.ArrayUtils;
+import org.objectweb.asm.Type;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -46,40 +48,49 @@ public final class VirtualMachine implements Serializable {
     private Insn[] insns;
     private ExcptHandler[] excpts;
     private StackTraceElement[] trace;
+    private Object result;
+
+    transient ClassLoader classLoader;
 
     VirtualMachine() {
     }
 
-    public static VirtualMachine create(Class<?> cls) throws Throwable {
-        if (cls == null) throw new NullPointerException();
-        Method method = cls.getMethod("run");
-        MethodCode code = GlobalCodeCache.get(cls, "run()V");
-        return new VirtualMachine(new Throwable().getStackTrace(), method, code, cls.newInstance());
+    /**
+     * Start static void method() in VM
+     *
+     * @param cl              classLoader for program
+     * @param className       class to search method
+     * @param methodSignature method to start
+     * @return VM
+     * @throws Throwable on error
+     */
+    public static VirtualMachine create(ClassLoader cl, String className, String methodName, Object self, Class[] paramTypes, Object[] paramValues) throws Throwable {
+        Class cls = cl.loadClass(className);
+        Method method = cls.getMethod(methodName, paramTypes);
+        String methodDescriptor = Type.getMethodDescriptor(method);
+        MethodCode code = GlobalCodeLoader.get(cls, methodName + methodDescriptor);
+        VirtualMachine vm = new VirtualMachine(new Throwable().getStackTrace(), method, code, ArrayUtils.addAll(new Object[]{self}, paramValues));
+        vm.classLoader = cl;
+        return vm;
     }
 
-    public static VirtualMachine create(final Runnable run) throws Throwable {
-        if (run == null) throw new NullPointerException();
-        Class<?> cls = run.getClass();
-        Method method = cls.getMethod("run");
-        MethodCode code = GlobalCodeCache.get(cls, "run()V");
-        return new VirtualMachine(new Throwable().getStackTrace(), method, code, run);
-    }
-
-    public static VirtualMachine create(InputStream in) throws Throwable {
-        ObjectInputStream ois = new ObjectInputStream(in);
+    public static VirtualMachine create(ClassLoader cl, InputStream in) throws Throwable {
+        CustomClassLoaderObjectInputStream ois = new CustomClassLoaderObjectInputStream(in, cl);
         Object o = ois.readObject();
         if (o instanceof VirtualMachine) {
-            return (VirtualMachine) o;
+            VirtualMachine vm = (VirtualMachine) o;
+            vm.classLoader = cl;
+            return vm;
         } else {
             throw new IOException("object class is [" + o.getClass().getCanonicalName() + "]");
         }
     }
 
-    public static VirtualMachine create(String serialized) throws Throwable {
-        return create(new ByteArrayInputStream(Base64.decodeBase64(serialized)));
+    public static VirtualMachine create(ClassLoader cl, byte[] serialized) throws Throwable {
+        return create(cl, new ByteArrayInputStream(serialized));
     }
 
-    public VirtualMachine(StackTraceElement[] trace, Method method, MethodCode code, Object... params) {
+    VirtualMachine(StackTraceElement[] trace, Method method, MethodCode code, Object... params) {
         this.setFrame(Frame.newBootstrapFrame(method, code, params));
         this.trace = trace;
     }
@@ -87,7 +98,6 @@ public final class VirtualMachine implements Serializable {
     public void run() throws Throwable {
         run(-1);
     }
-
 
     public boolean isActive() {
         return frame != null;
@@ -127,18 +137,20 @@ public final class VirtualMachine implements Serializable {
     }
 
 
-    public String serialize() {
+    public byte[] serializeToBytes() {
         try {
-            String fullState = null;
             ByteArrayOutputStream s = new ByteArrayOutputStream();
             save(s);
             s.close();
-            fullState = Base64.encodeBase64String(s.toByteArray());
-            return fullState;
+            return s.toByteArray();
         } catch (Exception e) {
             // cannot save
         }
         return null;
+    }
+
+    public String serializeToString() {
+        return Base64.encodeBase64String(serializeToBytes());
     }
 
     public void save(OutputStream out) throws VirtualMachineException {
@@ -237,5 +249,35 @@ public final class VirtualMachine implements Serializable {
     public boolean inTailPosition(Class<?> returnType) {
         for (ExcptHandler excpt : excpts) if (excpt.start < cp && cp <= excpt.end) return false;
         return insns[cp] instanceof ReturnInsn && ((ReturnInsn) insns[cp]).canReturn(returnType);
+    }
+
+    public void setResult(Object result) {
+        this.result = result;
+    }
+
+    public Object getResult() {
+        return result;
+    }
+}
+
+class CustomClassLoaderObjectInputStream extends ObjectInputStream {
+    private ClassLoader classLoader;
+
+    public CustomClassLoaderObjectInputStream(InputStream in, ClassLoader classLoader) throws IOException {
+        super(in);
+        this.classLoader = classLoader;
+    }
+
+    List<String> vm = Arrays.asList(
+            "com.googlecode.jvmvm.vm.VirtualMachine",
+            "sun.reflect.SerializationConstructorAccessorImpl"
+    );
+
+    protected Class<?> resolveClass(ObjectStreamClass desc) throws ClassNotFoundException {
+        if (vm.contains(desc.getName())) {
+            return Class.forName(desc.getName(), false, this.getClass().getClassLoader());
+        } else {
+            return Class.forName(desc.getName(), false, classLoader);
+        }
     }
 }
