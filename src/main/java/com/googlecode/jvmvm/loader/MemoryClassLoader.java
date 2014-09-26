@@ -5,6 +5,8 @@ import org.objectweb.asm.*;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.security.SecureClassLoader;
 import java.util.*;
 
@@ -56,23 +58,22 @@ public class MemoryClassLoader extends SecureClassLoader {
     }
 
     Classes classes = new Classes();
+    boolean vmDisabled = false;
+    Set<Class> clinitedClasses = new HashSet<Class>();
 
     MemoryClassLoader(Classes classes) {
         super(null);
         this.classes = classes;
     }
 
+    public void onVmDisabled() {
+        vmDisabled = true;
+    }
+
     MemoryClassLoader(Map<String, JavaClassObject> jclassObjectMap) {
         super(null);
         for (Map.Entry<String, JavaClassObject> e : jclassObjectMap.entrySet()) {
-
             byte[] bytes = e.getValue().getBytes();
-            ClassReader cr = new ClassReader(bytes);
-            ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-            Modifier mcw = new Modifier(cw);
-            cr.accept(mcw, 0);
-            bytes = cw.toByteArray();
-
             classes.put(e.getKey(), bytes);
         }
 
@@ -95,7 +96,6 @@ public class MemoryClassLoader extends SecureClassLoader {
 
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         if (classes.containsKey(name)) {
-
             synchronized (getClassLoadingLock(name)) {
                 // First, check if the class has already been loaded
                 Class c = findLoadedClass(name);
@@ -136,6 +136,15 @@ public class MemoryClassLoader extends SecureClassLoader {
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         byte[] b = classes.get(name);
+
+        if (!vmDisabled) {
+            ClassReader cr = new ClassReader(b);
+            ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+            Modifier mcw = new Modifier(cw);
+            cr.accept(mcw, 0);
+            classes.put(name, b);
+        }
+
         return super.defineClass(name, b, 0, b.length);
     }
 

@@ -15,9 +15,12 @@ public class Project implements Serializable {
     String projectName;
     Map<String, String> files = new HashMap<String, String>();
     List<String> systemClasses = new ArrayList<String>();
-    boolean compiled = false;
     boolean started = false;
+    boolean vmDisabled = false;
     byte[] vmState;
+
+    boolean shouldCompile = false;
+    transient boolean compiled = false;
 
     transient DiagnosticCollector<JavaFileObject> diagnostics;
     transient ClassFileManager fileManager;
@@ -64,6 +67,9 @@ public class Project implements Serializable {
     }
 
     public Project compile() throws ProjectCompilerException {
+        if (compiled) {
+            throw new ProjectException("already compiled");
+        }
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         diagnostics = new DiagnosticCollector<JavaFileObject>();
         fileManager = new ClassFileManager(compiler.getStandardFileManager(null, null, null));
@@ -80,10 +86,16 @@ public class Project implements Serializable {
             classLoader.addSystemClass(bootstrapClass);
         }
         compiled = true;
+        shouldCompile = true;
         return this;
     }
 
     public MemoryClassLoader getClassLoader() {
+        if (!compiled) {
+            throw new ProjectException("not compiled yet");
+        }
+        vmDisabled = true;
+        classLoader.onVmDisabled();
         return classLoader;
     }
 
@@ -104,7 +116,7 @@ public class Project implements Serializable {
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException, ProjectCompilerException {
         in.defaultReadObject();
-        if (compiled) {
+        if (shouldCompile) {
             compile();
         }
     }
@@ -128,6 +140,9 @@ public class Project implements Serializable {
     }
 
     public Project startVM(String className, String methodName, Object self, Class[] paramTypes, Object[] paramValues) throws ProjectLoaderException {
+        if (vmDisabled) {
+            throw new ProjectLoaderException("vm disabled");
+        }
         if (virtualMachine != null || vmState != null) {
             throw new ProjectLoaderException("already loaded");
         } else {
