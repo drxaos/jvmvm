@@ -28,15 +28,19 @@
 
 package com.googlecode.jvmvm.vm;
 
+import com.googlecode.jvmvm.loader.ProjectLoaderException;
 import com.googlecode.jvmvm.vm.insn.Insn;
 import com.googlecode.jvmvm.vm.insn.ReturnInsn;
+import com.googlecode.jvmvm.vm.ref.FieldRef;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
 import org.objectweb.asm.Type;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 public final class VirtualMachine implements Serializable {
@@ -47,6 +51,8 @@ public final class VirtualMachine implements Serializable {
     private ExcptHandler[] excpts;
     private StackTraceElement[] trace;
     private Object result;
+
+    private Map<FieldRef, Object> staticValues = new LinkedHashMap<FieldRef, Object>();
     private Set<Class> clinitedClasses = new HashSet<Class>();
 
     transient ClassLoader classLoader;
@@ -90,9 +96,29 @@ public final class VirtualMachine implements Serializable {
         if (o instanceof VirtualMachine) {
             VirtualMachine vm = (VirtualMachine) o;
             vm.classLoader = cl;
+            vm.restoreStatics();
             return vm;
         } else {
             throw new IOException("object class is [" + o.getClass().getCanonicalName() + "]");
+        }
+    }
+
+    private void restoreStatics() throws ProjectLoaderException {
+        for (Map.Entry<FieldRef, Object> e : staticValues.entrySet()) {
+            Field f = e.getKey().get();
+
+            try {
+                // enable access
+                // TODO check access
+                f.setAccessible(true);
+                Field modifiersField = Field.class.getDeclaredField("modifiers");
+                modifiersField.setAccessible(true);
+                modifiersField.setInt(f, f.getModifiers() & ~Modifier.FINAL);
+
+                f.set(null, e.getValue());
+            } catch (Exception ex) {
+                throw new ProjectLoaderException("cannot restore statics", ex);
+            }
         }
     }
 
@@ -300,6 +326,11 @@ public final class VirtualMachine implements Serializable {
 
     public void onClinited(Class cls) {
         clinitedClasses.add(cls);
+    }
+
+    public void setStaticValue(FieldRef f, Object value) {
+        staticValues.remove(f);
+        staticValues.put(f, value);
     }
 }
 

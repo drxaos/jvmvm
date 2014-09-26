@@ -133,4 +133,17 @@ public final class FieldRef extends SymbolicRef<Field> implements Serializable {
     private static String fieldInternalName(Class<?> cls, String name, String descriptor) {
         return Types.getInternalName(cls) + '/' + name + ' ' + descriptor;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FieldRef fieldRef = (FieldRef) o;
+        return (fieldRef.get().equals(this.get()));
+    }
+
+    @Override
+    public int hashCode() {
+        return this.get().hashCode();
+    }
 }

@@ -79,21 +79,24 @@ public class StaticsTest {
                 project.step();
                 Assert.assertTrue(i++ < 1000000);
 
-//                byte[] serializedProject = project.saveToBytes();
-//                Project restoredProject = Project.fromBytes(serializedProject);
-//                try {
-//                    int j = 0;
-//                    while (true) {
-//                        restoredProject.step();
-//                        Assert.assertTrue(j++ < 1000000);
-//                    }
-//                } catch (ProjectStoppedException e) {
-//                    Assert.assertEquals("result", "IA;P;F;CA;IB;CB;BM;", e.getResult());
-//                }
+                byte[] serializedProject = project.saveToBytes();
+                Project restoredProject = Project.fromBytes(serializedProject);
+                try {
+                    int j = 0;
+                    while (true) {
+                        restoredProject.step();
+                        Assert.assertTrue(j++ < 1000000);
+                    }
+                } catch (ProjectStoppedException e) {
+                    Class<?> cls = restoredProject.getClassLoader().loadClass(InheritanceA.class.getCanonicalName());
+                    Assert.assertEquals("result (i=" + i + ")", "SA;SB;IA;CA;IB;CB;", cls.getField("out").get(null).toString());
+                    Assert.assertEquals("result (i=" + i + ")", "01623785", cls.getField("out2").get(null));
+                }
             }
         } catch (ProjectStoppedException e) {
             Class<?> cls = project.getClassLoader().loadClass(InheritanceA.class.getCanonicalName());
             Assert.assertEquals("result", "SA;SB;IA;CA;IB;CB;", cls.getField("out").get(null).toString());
+            Assert.assertEquals("result", "01623785", cls.getField("out2").get(null));
         }
     }
 }

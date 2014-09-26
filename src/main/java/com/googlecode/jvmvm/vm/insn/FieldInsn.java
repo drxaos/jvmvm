@@ -64,6 +64,14 @@ public abstract class FieldInsn extends Insn {
         public void execute(VirtualMachine vm) throws Throwable {
             try {
                 Field field = f.get();
+
+                // enable access
+                // TODO check access
+                field.setAccessible(true);
+                Field modifiersField = Field.class.getDeclaredField("modifiers");
+                modifiersField.setAccessible(true);
+                modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+
                 Frame frame = vm.getFrame();
                 Class<?> type = field.getType();
                 if (type == int.class || type == byte.class || type == char.class || type == short.class) {
@@ -100,20 +108,40 @@ public abstract class FieldInsn extends Insn {
         public void execute(VirtualMachine vm) throws Throwable {
             try {
                 Field field = f.get();
+
+                // enable access
+                // TODO check access
+                field.setAccessible(true);
+                Field modifiersField = Field.class.getDeclaredField("modifiers");
+                modifiersField.setAccessible(true);
+                modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+
                 Frame frame = vm.getFrame();
                 Class<?> type = field.getType();
                 if (type == int.class || type == byte.class || type == char.class || type == short.class) {
-                    field.setInt(null, frame.popInt());
+                    int value = frame.popInt();
+                    field.setInt(null, value);
+                    vm.setStaticValue(f, value);
                 } else if (type == long.class) {
-                    field.setLong(null, frame.popLong());
+                    long value = frame.popLong();
+                    field.setLong(null, value);
+                    vm.setStaticValue(f, value);
                 } else if (type == float.class) {
-                    field.setFloat(null, frame.popFloat());
+                    float value = frame.popFloat();
+                    field.setFloat(null, value);
+                    vm.setStaticValue(f, value);
                 } else if (type == double.class) {
-                    field.setDouble(null, frame.popDouble());
+                    double value = frame.popDouble();
+                    field.setDouble(null, value);
+                    vm.setStaticValue(f, value);
                 } else if (type == boolean.class) {
-                    field.setBoolean(null, frame.popInt() != 0);
+                    boolean value = frame.popInt() != 0;
+                    field.setBoolean(null, value);
+                    vm.setStaticValue(f, value);
                 } else {
-                    field.set(null, frame.popObject());
+                    Object value = frame.popObject();
+                    field.set(null, value);
+                    vm.setStaticValue(f, value);
                 }
 
                 // TODO save value to map of static values for serialization
@@ -139,6 +167,14 @@ public abstract class FieldInsn extends Insn {
         public void execute(VirtualMachine vm) throws Throwable {
             try {
                 Field field = f.get();
+
+                // enable access
+                // TODO check access
+                field.setAccessible(true);
+                Field modifiersField = Field.class.getDeclaredField("modifiers");
+                modifiersField.setAccessible(true);
+                modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+
                 Frame frame = vm.getFrame();
                 Object obj = frame.popObject();
                 Class<?> type = field.getType();
