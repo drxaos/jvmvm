@@ -58,6 +58,9 @@ public abstract class Insn implements Serializable {
 
     public abstract void execute(VirtualMachine vm) throws Throwable;
 
+    public Class getClassForClinit() {
+        return null;
+    }
 
     static final class NoArgsInsn extends Insn {
         private final int opcode;

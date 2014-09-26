@@ -145,6 +145,11 @@ public abstract class MethodInsn extends Insn {
                 }
             }
         }
+
+        @Override
+        public Class getClassForClinit() {
+            return m.get().getDeclaringClass();
+        }
     }
 
     static final class InvokeInterfaceInsn extends MethodInsn {

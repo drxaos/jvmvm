@@ -3,7 +3,11 @@ package com.googlecode.jvmvm.vm;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-class InvokeStaticInitializer {
+public class InvokeStaticInitializer {
+    public static boolean shouldClinit(VirtualMachine vm, Class cls) {
+        return !vm.isClinited(cls);
+    }
+
     public static void invoke(VirtualMachine vm, Class cls) {
         if (vm.isClinited(cls)) {
             return;

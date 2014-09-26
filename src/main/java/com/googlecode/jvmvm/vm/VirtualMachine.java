@@ -55,14 +55,6 @@ public final class VirtualMachine implements Serializable {
     // TODO on deserialization load maps of static values to static fields
     // TODO serialize vm on each step to prevent using not serializable objects
 
-    // TODO clinit executed immediately if:
-    //    T is a class and an instance of T is created.
-    //    T is a class and a static method declared by T is invoked.
-    //    A static field declared by T is assigned.
-    //    A static field declared by T is used and the field is not a constant variable (§4.12.4).
-    //  + T is a top level class (§7.6), and an assert statement (§14.10) lexically nested within T (§8.1.3) is executed.
-
-
     VirtualMachine() {
     }
 
@@ -134,6 +126,21 @@ public final class VirtualMachine implements Serializable {
             try {
                 synchronized (this) {
                     Insn insn = insns[cp++];
+
+                    // clinit executed immediately if:
+                    //  + T is a class and an instance of T is created.
+                    //  + T is a class and a static method declared by T is invoked.
+                    //  + A static field declared by T is assigned.
+                    //  + A static field declared by T is used and the field is not a constant variable (§4.12.4).
+                    //  + T is a top level class (§7.6), and an assert statement (§14.10) lexically nested within T (§8.1.3) is executed.
+
+                    Class clinitCls = insn.getClassForClinit();
+                    if (clinitCls != null && InvokeStaticInitializer.shouldClinit(this, clinitCls)) {
+                        cp--;
+                        InvokeStaticInitializer.invoke(this, clinitCls);
+                        insn = insns[cp++];
+                    }
+
                     insn.execute(this);
                     try {
                         save(new ByteArrayOutputStream());

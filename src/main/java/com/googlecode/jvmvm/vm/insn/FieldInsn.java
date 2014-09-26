@@ -83,6 +83,11 @@ public abstract class FieldInsn extends Insn {
                 throw new InternalError().initCause(e);
             }
         }
+
+        @Override
+        public Class getClassForClinit() {
+            return f.get().getDeclaringClass();
+        }
     }
 
     static final class PutStaticInsn extends FieldInsn {
@@ -110,12 +115,17 @@ public abstract class FieldInsn extends Insn {
                 } else {
                     field.set(null, frame.popObject());
                 }
-                
+
                 // TODO save value to map of static values for serialization
-                
+
             } catch (IllegalAccessException e) {
                 throw new InternalError().initCause(e);
             }
+        }
+
+        @Override
+        public Class getClassForClinit() {
+            return f.get().getDeclaringClass();
         }
     }
 

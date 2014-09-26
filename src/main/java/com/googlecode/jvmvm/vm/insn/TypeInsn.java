@@ -118,6 +118,10 @@ public final class TypeInsn extends Insn {
         }
     }
 
+    public Class getClassForClinit() {
+        return opcode == NEW ? c.get() : null;
+    }
+
     @Override
     public String toString() {
         return getOpcodeName(opcode) + " " + c.get().getCanonicalName();
