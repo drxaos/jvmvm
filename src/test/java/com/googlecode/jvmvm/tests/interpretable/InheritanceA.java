@@ -4,6 +4,7 @@ public class InheritanceA {
     public static StringBuilder out = new StringBuilder();
 
     static {
+        //String sf = InheritanceB.SF;
         out.append("SA;");
     }
 
@@ -25,6 +26,8 @@ public class InheritanceA {
 }
 
 class InheritanceB extends InheritanceA {
+    public static String SF = "SF;";
+
     static {
         out.append("SB;");
     }

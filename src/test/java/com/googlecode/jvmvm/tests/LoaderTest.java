@@ -75,7 +75,7 @@ public class LoaderTest {
     public void test_vm_save_load() throws Exception {
         String name = LoaderB.class.getCanonicalName().replace(".", "/") + ".java";
 
-        Project project = new Project("serialization-test")
+        Project project = new Project("vm-test")
                 .addFile(name, FileUtils.readFileToString(new File("src/test/java/" + name)))
                 .addSystemClasses(bootstrap)
                 .compile()

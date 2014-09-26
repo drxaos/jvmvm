@@ -5,11 +5,8 @@ import org.objectweb.asm.*;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.security.SecureClassLoader;
 import java.util.*;
-
 
 class Modifier extends ClassAdapter {
 
@@ -59,7 +56,8 @@ public class MemoryClassLoader extends SecureClassLoader {
 
     Classes classes = new Classes();
     boolean vmDisabled = false;
-    Set<Class> clinitedClasses = new HashSet<Class>();
+    boolean projectCompiled = false;
+    Set<String> modifiedClasses = new HashSet<String>();
 
     MemoryClassLoader(Classes classes) {
         super(null);
@@ -68,6 +66,10 @@ public class MemoryClassLoader extends SecureClassLoader {
 
     public void onVmDisabled() {
         vmDisabled = true;
+    }
+
+    public void onProjectCompiled() {
+        projectCompiled = true;
     }
 
     MemoryClassLoader(Map<String, JavaClassObject> jclassObjectMap) {
@@ -129,7 +131,11 @@ public class MemoryClassLoader extends SecureClassLoader {
                 return c;
             }
         } else {
-            throw new ClassNotFoundException(name);
+            if (projectCompiled) {
+                throw new ClassNotFoundException(name);
+            } else {
+                return super.loadClass(name, resolve);
+            }
         }
     }
 
@@ -137,12 +143,14 @@ public class MemoryClassLoader extends SecureClassLoader {
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         byte[] b = classes.get(name);
 
-        if (!vmDisabled) {
+        if (!vmDisabled && !modifiedClasses.contains(name)) {
             ClassReader cr = new ClassReader(b);
             ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
             Modifier mcw = new Modifier(cw);
             cr.accept(mcw, 0);
+            b = cw.toByteArray();
             classes.put(name, b);
+            modifiedClasses.add(name);
         }
 
         return super.defineClass(name, b, 0, b.length);

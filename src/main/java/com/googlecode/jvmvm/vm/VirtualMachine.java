@@ -37,9 +37,7 @@ import org.objectweb.asm.Type;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public final class VirtualMachine implements Serializable {
     private long stepNumber = 0;
@@ -49,13 +47,20 @@ public final class VirtualMachine implements Serializable {
     private ExcptHandler[] excpts;
     private StackTraceElement[] trace;
     private Object result;
+    private Set<Class> clinitedClasses = new HashSet<Class>();
 
     transient ClassLoader classLoader;
 
 
-    // TODO on start schedule execution of <clinit-jvmvm> of classes loaded by classloader before called method
     // TODO on deserialization load maps of static values to static fields
     // TODO serialize vm on each step to prevent using not serializable objects
+
+    // TODO clinit executed immediately if:
+    //    T is a class and an instance of T is created.
+    //    T is a class and a static method declared by T is invoked.
+    //    A static field declared by T is assigned.
+    //    A static field declared by T is used and the field is not a constant variable (§4.12.4).
+    //  + T is a top level class (§7.6), and an assert statement (§14.10) lexically nested within T (§8.1.3) is executed.
 
 
     VirtualMachine() {
@@ -81,10 +86,13 @@ public final class VirtualMachine implements Serializable {
         MethodCode code = GlobalCodeLoader.get(cls, methodName + methodDescriptor);
         VirtualMachine vm = new VirtualMachine(new Throwable().getStackTrace(), method, code, ArrayUtils.addAll(new Object[]{self}, paramValues));
         vm.classLoader = cl;
+
+        InvokeStaticInitializer.invoke(vm, cls);
         return vm;
     }
 
     public static VirtualMachine create(ClassLoader cl, InputStream in) throws Throwable {
+        // TODO load VM by system classLoader and stack objects by custom classLoader
         CustomClassLoaderObjectInputStream ois = new CustomClassLoaderObjectInputStream(in, cl);
         Object o = ois.readObject();
         if (o instanceof VirtualMachine) {
@@ -277,6 +285,14 @@ public final class VirtualMachine implements Serializable {
 
     public Object getResult() {
         return result;
+    }
+
+    public boolean isClinited(Class cls) {
+        return clinitedClasses.contains(cls);
+    }
+
+    public void onClinited(Class cls) {
+        clinitedClasses.add(cls);
     }
 }
 
