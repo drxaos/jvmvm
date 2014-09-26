@@ -1,7 +1,8 @@
 JvmVM
 =====
 
-Fork of JauVM - JVM stack emulator in Java
+Fork of JauVM - JVM stack emulator in Java.
+
 http://drxaos.github.io/JvmVM/
 
 ### A Java VM on top of JVM.
