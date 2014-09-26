@@ -71,7 +71,12 @@ public final class VirtualMachine implements Serializable {
      */
     public static VirtualMachine create(ClassLoader cl, String className, String methodName, Object self, Class[] paramTypes, Object[] paramValues) throws Throwable {
         Class cls = cl.loadClass(className);
-        Method method = cls.getMethod(methodName, paramTypes);
+        Method method = null;
+        try {
+            method = cls.getMethod(methodName, paramTypes);
+        } catch (NoSuchMethodException e) {
+            method = cls.getDeclaredMethod(methodName, paramTypes);
+        }
         String methodDescriptor = Type.getMethodDescriptor(method);
         MethodCode code = GlobalCodeLoader.get(cls, methodName + methodDescriptor);
         VirtualMachine vm = new VirtualMachine(new Throwable().getStackTrace(), method, code, ArrayUtils.addAll(new Object[]{self}, paramValues));
