@@ -11,24 +11,36 @@ with control over instructions and save/load running program.
 
 To run VM you just need to create and compile project:
 ```java
-Project project = new Project("Program1")
+Project project = new Project("Name")
     .addFiles(mapWithFileNamesAsKeysAndTheirContentsAsValues)
     .addSystemClasses(listOfSystemClassesThatYouAllowToUseInVm)
     .compile()
-    .startVM("pkg.ClassName", "methodName",
-                null, new Class[0], new Object[0]);
+    .startVM("pkg.ClassName", "methodName");
+```
+This will start execution of static method on given class.
+
+To execute methods on objects you can add synthetic class:
+```java
+Project project = new Project("Method call example")
+    .addFiles(mapWithFileNamesAsKeysAndTheirContentsAsValues)
+    .addFile("Boot.java", 
+                "public class Boot {" + 
+                "  public static String main() {" +
+                "    return new TestClass().callMethod(\"hello\");" +
+                "  }" +
+                "}")
+    .addSystemClasses(listOfSystemClassesThatYouAllowToUseInVm)
+    .compile()
+    .startVM("Boot", "main");
 ```
 
 JvmVM virtualizes jvm stack and instructions execution for given code.
 
 ```java
-try {
-  while (true) {
+while (project.isActive()) {
     project.step();
-  }
-} catch (ProjectStoppedException e) {
-  Object result = e.getResult();
 }
+Object result = project.getResult();
 ```
 
 ### Save / Load
