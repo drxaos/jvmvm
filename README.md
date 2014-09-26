@@ -15,7 +15,8 @@ Project project = new Project("Program1")
     .addFiles(mapWithFileNamesAsKeysAndTheirContentsAsValues)
     .addSystemClasses(listOfSystemClassesThatYouAllowToUseInVm)
     .compile()
-    .startVM("pkg.ClassName", "methodName", null, new Class[0], new Object[0]);
+    .startVM("pkg.ClassName", "methodName",
+                null, new Class[0], new Object[0]);
 ```
 
 JvmVM virtualizes jvm stack and instructions execution for given code.
@@ -43,8 +44,7 @@ You can continue running restored project as if it is a new separate project, st
 
 ### In Development
 Project is still in alpha and contains bugs and hidden features.
-See tests https://github.com/drxaos/JvmVM/tree/master/src/test/java/com/googlecode/jvmvm/tests
-and source code https://github.com/drxaos/JvmVM/tree/master/src/main/java/com/googlecode/jvmvm.
+See tests http://git.io/4hc3tA and source code http://git.io/V6UvpA.
 
 ### Authors and Contributors
 Original project is JauVM - http://jauvm.blogspot.ru/.
