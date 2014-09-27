@@ -89,6 +89,22 @@ public final class VirtualMachine implements Serializable {
         return vm;
     }
 
+    public static VirtualMachine restart(VirtualMachine vm, String className, String methodName, Object self, Class[] paramTypes, Object[] paramValues) throws Throwable {
+        Class cls = vm.classLoader.loadClass(className);
+        Method method = null;
+        try {
+            method = cls.getMethod(methodName, paramTypes);
+        } catch (NoSuchMethodException e) {
+            method = cls.getDeclaredMethod(methodName, paramTypes);
+        }
+        String methodDescriptor = Type.getMethodDescriptor(method);
+        MethodCode code = GlobalCodeLoader.get(cls, methodName + methodDescriptor);
+        vm.restart(new Throwable().getStackTrace(), method, code, ArrayUtils.addAll(new Object[]{self}, paramValues));
+
+        InvokeStaticInitializer.invoke(vm, cls);
+        return vm;
+    }
+
     public static VirtualMachine create(ClassLoader cl, InputStream in) throws Throwable {
         // TODO load VM by system classLoader and stack objects by custom classLoader
         CustomClassLoaderObjectInputStream ois = new CustomClassLoaderObjectInputStream(in, cl);
@@ -131,8 +147,14 @@ public final class VirtualMachine implements Serializable {
         this.trace = trace;
     }
 
-    public void run() throws Throwable {
+    void restart(StackTraceElement[] trace, Method method, MethodCode code, Object... params) {
+        this.setFrame(Frame.newBootstrapFrame(method, code, params));
+        this.trace = trace;
+    }
+
+    public Object run() throws Throwable {
         run(-1);
+        return getResult();
     }
 
     public boolean isActive() {
@@ -147,7 +169,7 @@ public final class VirtualMachine implements Serializable {
         return stepNumber;
     }
 
-    public void run(long cycles) throws Throwable {
+    void run(long cycles) throws Throwable {
         while (frame != null) {
             try {
                 synchronized (this) {

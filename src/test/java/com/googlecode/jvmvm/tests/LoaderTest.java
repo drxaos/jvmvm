@@ -79,11 +79,11 @@ public class LoaderTest {
                 .addFile(name, FileUtils.readFileToString(new File("src/test/java/" + name)))
                 .addSystemClasses(bootstrap)
                 .compile()
-                .startVM(LoaderB.class.getCanonicalName(), "ms", null, new Class[0], new Object[0]);
+                .setupVM(LoaderB.class.getCanonicalName(), "ms", null, new Class[0], new Object[0]);
 
         try {
             int i = 0;
-            while (true) {
+            while (project.isActive()) {
                 project.step();
                 Assert.assertTrue(i++ < 1000000);
 
@@ -91,7 +91,7 @@ public class LoaderTest {
                 Project restoredProject = Project.fromBytes(serializedProject);
                 try {
                     int j = 0;
-                    while (true) {
+                    while (restoredProject.isActive()) {
                         restoredProject.step();
                         Assert.assertTrue(j++ < 1000000);
                     }

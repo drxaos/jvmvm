@@ -139,12 +139,26 @@ public class Project implements Serializable {
         return b.toByteArray();
     }
 
-    public Project startVM(String className, String methodName, Object self, Class[] paramTypes, Object[] paramValues) throws ProjectLoaderException {
+    public Project setupVM(String className, String methodName) throws ProjectLoaderException {
+        return setupVM(className, methodName, null, new Class[0], new Object[0]);
+    }
+
+    public Project setupVM(String className, String methodName, Object self, Class[] paramTypes, Object[] paramValues) throws ProjectLoaderException {
         if (vmDisabled) {
             throw new ProjectLoaderException("vm disabled");
         }
-        if (virtualMachine != null || vmState != null) {
-            throw new ProjectLoaderException("already loaded");
+        if (vmState != null && virtualMachine == null) {
+            try {
+                virtualMachine = VirtualMachine.create(classLoader, vmState);
+            } catch (Throwable throwable) {
+                throw new ProjectLoaderException("vm load error", throwable);
+            }
+        } else if (virtualMachine != null) {
+            try {
+                virtualMachine = VirtualMachine.restart(virtualMachine, className, methodName, self, paramTypes, paramValues);
+            } catch (Throwable throwable) {
+                throw new ProjectLoaderException("vm start error", throwable);
+            }
         } else {
             try {
                 virtualMachine = VirtualMachine.create(classLoader, className, methodName, self, paramTypes, paramValues);
@@ -160,7 +174,22 @@ public class Project implements Serializable {
         return GlobalCodeLoader.getAll(classLoader.loadClass(className));
     }
 
-    public Project step() throws ProjectExecutionException, ProjectStoppedException, ProjectLoaderException {
+    public Object run() throws ProjectExecutionException, ProjectStoppedException, ProjectLoaderException {
+        if (vmState != null && virtualMachine == null) {
+            try {
+                virtualMachine = VirtualMachine.create(classLoader, vmState);
+            } catch (Throwable throwable) {
+                throw new ProjectLoaderException("vm load error", throwable);
+            }
+        }
+        try {
+            return virtualMachine.run();
+        } catch (Throwable throwable) {
+            throw new ProjectExecutionException("program error", throwable);
+        }
+    }
+
+    public void step() throws ProjectExecutionException, ProjectStoppedException, ProjectLoaderException {
         if (vmState != null && virtualMachine == null) {
             try {
                 virtualMachine = VirtualMachine.create(classLoader, vmState);
@@ -173,10 +202,17 @@ public class Project implements Serializable {
         } catch (Throwable throwable) {
             throw new ProjectExecutionException("program error", throwable);
         }
-        if (!virtualMachine.isActive()) {
-            throw new ProjectStoppedException(virtualMachine.getResult());
+    }
+
+    public boolean isActive() throws ProjectLoaderException {
+        if (vmState != null && virtualMachine == null) {
+            try {
+                virtualMachine = VirtualMachine.create(classLoader, vmState);
+            } catch (Throwable throwable) {
+                throw new ProjectLoaderException("vm load error", throwable);
+            }
         }
-        return this;
+        return virtualMachine.isActive();
     }
 
     public Object getRet() {

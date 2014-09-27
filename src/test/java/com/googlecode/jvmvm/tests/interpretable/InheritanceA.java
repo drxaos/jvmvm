@@ -25,9 +25,10 @@ public class InheritanceA {
         out2 += "4";
     }
 
-    public static void main(String[] a) {
+    public static String main(String[] a) {
         new InheritanceB();
         out2 += "5";
+        return out2;
     }
 }
 

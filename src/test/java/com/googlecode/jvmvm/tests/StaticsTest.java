@@ -71,11 +71,11 @@ public class StaticsTest {
                 .addFile(name, FileUtils.readFileToString(new File("src/test/java/" + name)))
                 .addSystemClasses(bootstrap)
                 .compile()
-                .startVM(InheritanceA.class.getCanonicalName(), "main", null, new Class[]{String[].class}, new Object[]{new String[0]});
+                .setupVM(InheritanceA.class.getCanonicalName(), "main", null, new Class[]{String[].class}, new Object[]{new String[0]});
 
         try {
             int i = 0;
-            while (true) {
+            while (project.isActive()) {
                 project.step();
                 Assert.assertTrue(i++ < 1000000);
 
@@ -83,7 +83,7 @@ public class StaticsTest {
                 Project restoredProject = Project.fromBytes(serializedProject);
                 try {
                     int j = 0;
-                    while (true) {
+                    while (restoredProject.isActive()) {
                         restoredProject.step();
                         Assert.assertTrue(j++ < 1000000);
                     }
@@ -98,5 +98,24 @@ public class StaticsTest {
             Assert.assertEquals("result", "SA;SB;IA;CA;IB;CB;", cls.getField("out").get(null).toString());
             Assert.assertEquals("result", "01623785", cls.getField("out2").get(null));
         }
+    }
+
+    @Test
+    public void test_vm_restart() throws Exception {
+        String name = InheritanceA.class.getCanonicalName().replace(".", "/") + ".java";
+
+        Project project = new Project("vm-test")
+                .addFile(name, FileUtils.readFileToString(new File("src/test/java/" + name)))
+                .addSystemClasses(bootstrap)
+                .compile()
+                .setupVM(InheritanceA.class.getCanonicalName(), "main", null, new Class[]{String[].class}, new Object[]{new String[0]});
+
+        Object res1 = project.run();
+
+        project.setupVM(InheritanceA.class.getCanonicalName(), "main", null, new Class[]{String[].class}, new Object[]{new String[0]});
+        Object res2 = project.run();
+
+        Assert.assertEquals("result1", "01623785", res1);
+        Assert.assertEquals("result2", "0162378523785", res2);
     }
 }
