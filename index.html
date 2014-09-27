@@ -1,36 +1,33 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
   <head>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="JvmVM : Fork of JauVM - JVM stack emulator in Java">
+    <title>JvmVM by drxaos</title>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>JvmVM</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
   </head>
-
   <body>
+    <div class="wrapper">
+      <header>
+        <h1>JvmVM</h1>
+        <p>Fork of JauVM - JVM stack emulator in Java</p>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/drxaos/JvmVM">View on GitHub</a>
+        <p class="view"><a href="https://github.com/drxaos/JvmVM">View the Project on GitHub <small>drxaos/JvmVM</small></a></p>
 
-          <h1 id="project_title">JvmVM</h1>
-          <h2 id="project_tagline">Fork of JauVM - JVM stack emulator in Java</h2>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/drxaos/JvmVM/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/drxaos/JvmVM/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
+        <ul>
+          <li><a href="https://github.com/drxaos/JvmVM/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/drxaos/JvmVM/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/drxaos/JvmVM">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
         <h3>
 <a name="a-java-vm-on-top-of-jvm" class="anchor" href="#a-java-vm-on-top-of-jvm"><span class="octicon octicon-link"></span></a>A Java VM on top of JVM.</h3>
 
@@ -47,19 +44,6 @@ with control over instructions and save/load running program.</p>
 </pre></div>
 
 <p>This will start execution of static method on given class.</p>
-
-<p>To execute methods on objects you can add synthetic class:</p>
-
-<div class="highlight highlight-java"><pre><span class="n">Project</span> <span class="n">project</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Project</span><span class="o">(</span><span class="s">"Method call example"</span><span class="o">)</span>
-    <span class="o">.</span><span class="na">addFiles</span><span class="o">(</span><span class="n">mapWithFileNamesAsKeysAndTheirContentsAsValues</span><span class="o">)</span>
-    <span class="o">.</span><span class="na">addSynthetic</span><span class="o">(</span><span class="s">"Boot"</span><span class="o">,</span> <span class="s">"return new TestClass(myArg).callMethod(param1, anotherParam);"</span><span class="o">)</span>
-    <span class="o">.</span><span class="na">addArgument</span><span class="o">(</span><span class="s">"myArg"</span><span class="o">,</span> <span class="s">"Some String"</span><span class="o">)</span>
-    <span class="o">.</span><span class="na">addArgument</span><span class="o">(</span><span class="s">"param1"</span><span class="o">,</span> <span class="k">new</span> <span class="nf">ClassAddedAsSystemClass</span><span class="o">())</span>
-    <span class="o">.</span><span class="na">addArgument</span><span class="o">(</span><span class="s">"anotherParam"</span><span class="o">,</span> <span class="kc">null</span><span class="o">)</span>
-    <span class="o">.</span><span class="na">addSystemClasses</span><span class="o">(</span><span class="n">listOfSystemClassesThatYouAllowToUseInVm</span><span class="o">)</span>
-    <span class="o">.</span><span class="na">compile</span><span class="o">()</span>
-    <span class="o">.</span><span class="na">setupVM</span><span class="o">(</span><span class="s">"Boot"</span><span class="o">);</span>
-</pre></div>
 
 <p>JvmVM virtualizes jvm stack and instructions execution for given code.
 And then you can execute instructions:</p>
@@ -134,17 +118,12 @@ and additional utilities were added.</p>
 
 <p>Contact me: <a href="mailto:vladimir.p.polyakov@gmail.com">vladimir.p.polyakov@gmail.com</a>.</p>
       </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">JvmVM maintained by <a href="https://github.com/drxaos">drxaos</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/drxaos">drxaos</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
       </footer>
     </div>
-
+    <script src="javascripts/scale.fix.js"></script>
     
-
   </body>
 </html>
