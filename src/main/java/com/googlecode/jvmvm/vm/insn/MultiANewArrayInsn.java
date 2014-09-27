@@ -60,7 +60,7 @@ public final class MultiANewArrayInsn extends Insn {
 
     @Override
     public String toString() {
-        return getOpcodeName(Opcodes.MULTIANEWARRAY) + " " + c.get().getCanonicalName() + " " + dims;
+        return getOpcodeName(Opcodes.MULTIANEWARRAY) + " " + c.get().getName() + " " + dims;
     }
 
     static final class MultiNewArrayInsn extends Insn {
@@ -109,7 +109,7 @@ public final class MultiANewArrayInsn extends Insn {
 
         @Override
         public String toString() {
-            return getOpcodeName(Opcodes.MULTIANEWARRAY) + " " + c.getCanonicalName() + " " + dims;
+            return getOpcodeName(Opcodes.MULTIANEWARRAY) + " " + c.getName() + " " + dims;
         }
 
     }

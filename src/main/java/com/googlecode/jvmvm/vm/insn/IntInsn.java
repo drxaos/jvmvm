@@ -111,7 +111,7 @@ public abstract class IntInsn extends Insn {
 
         @Override
         public String toString() {
-            return getOpcodeName(NEWARRAY) + " " + c.getCanonicalName();
+            return getOpcodeName(NEWARRAY) + " " + c.getName();
         }
     }
 }

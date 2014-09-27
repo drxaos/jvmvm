@@ -1,9 +1,6 @@
 package com.googlecode.jvmvm.tests;
 
-import com.googlecode.jvmvm.loader.MemoryClassLoader;
 import com.googlecode.jvmvm.loader.Project;
-import com.googlecode.jvmvm.loader.ProjectStoppedException;
-import com.googlecode.jvmvm.tests.interpretable.InheritanceA;
 import com.googlecode.jvmvm.tests.interpretable.Stack;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -45,6 +42,8 @@ public class ComplexTest {
                         new Object[]{"asd", "141414", "+@#$"});
 
         Object res = project.run();
-        Assert.assertEquals("result1", "01623785", res);
+
+        String expected = Stack.run("asd", "141414", "+@#$");
+        Assert.assertEquals("result1", expected, res);
     }
 }

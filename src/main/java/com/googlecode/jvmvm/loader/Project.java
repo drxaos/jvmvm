@@ -18,6 +18,7 @@ public class Project implements Serializable {
     boolean started = false;
     boolean vmDisabled = false;
     byte[] vmState;
+    boolean autoSerializationCheck = true;
 
     boolean shouldCompile = false;
     transient boolean compiled = false;
@@ -190,6 +191,10 @@ public class Project implements Serializable {
     }
 
     public void step() throws ProjectExecutionException, ProjectStoppedException, ProjectLoaderException {
+        step(true);
+    }
+
+    public void step(boolean autoSerializationCheck) throws ProjectExecutionException, ProjectStoppedException, ProjectLoaderException {
         if (vmState != null && virtualMachine == null) {
             try {
                 virtualMachine = VirtualMachine.create(classLoader, vmState);
@@ -199,6 +204,9 @@ public class Project implements Serializable {
         }
         try {
             virtualMachine.step();
+            if (autoSerializationCheck) {
+                virtualMachine.checkSerialization();
+            }
         } catch (Throwable throwable) {
             throw new ProjectExecutionException("program error", throwable);
         }

@@ -82,7 +82,7 @@ public final class VirtualMachine implements Serializable {
         }
         String methodDescriptor = Type.getMethodDescriptor(method);
         MethodCode code = GlobalCodeLoader.get(cls, methodName + methodDescriptor);
-        VirtualMachine vm = new VirtualMachine(new Throwable().getStackTrace(), method, code, ArrayUtils.addAll(new Object[]{self}, paramValues));
+        VirtualMachine vm = new VirtualMachine(new Throwable().getStackTrace(), method, code, paramValues);
         vm.classLoader = cl;
 
         InvokeStaticInitializer.invoke(vm, cls);
@@ -99,7 +99,7 @@ public final class VirtualMachine implements Serializable {
         }
         String methodDescriptor = Type.getMethodDescriptor(method);
         MethodCode code = GlobalCodeLoader.get(cls, methodName + methodDescriptor);
-        vm.restart(new Throwable().getStackTrace(), method, code, ArrayUtils.addAll(new Object[]{self}, paramValues));
+        vm.restart(new Throwable().getStackTrace(), method, code, paramValues);
 
         InvokeStaticInitializer.invoke(vm, cls);
         return vm;
@@ -115,7 +115,7 @@ public final class VirtualMachine implements Serializable {
             vm.restoreStatics();
             return vm;
         } else {
-            throw new IOException("object class is [" + o.getClass().getCanonicalName() + "]");
+            throw new IOException("object class is [" + o.getClass().getName() + "]");
         }
     }
 
@@ -191,16 +191,6 @@ public final class VirtualMachine implements Serializable {
                     cp++;
                     insn.execute(this);
 
-                    try {
-                        save(new ByteArrayOutputStream());
-                    } catch (VirtualMachineException e) {
-                        Throwable cause = e.getCause();
-                        if (cause instanceof NotSerializableException) {
-                            // stack contains not serializable object
-                            fillInStackTrace(cause, cause.getStackTrace());
-                            throw cause;
-                        }
-                    }
                     stepNumber++;
                 }
                 if (cycles > 0) {
@@ -220,6 +210,18 @@ public final class VirtualMachine implements Serializable {
         }
     }
 
+    public void checkSerialization() throws NotSerializableException {
+        try {
+            save(new ByteArrayOutputStream());
+        } catch (VirtualMachineException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof NotSerializableException) {
+                // stack contains not serializable object
+                fillInStackTrace(cause, cause.getStackTrace());
+                throw (NotSerializableException) cause;
+            }
+        }
+    }
 
     public byte[] serializeToBytes() {
         try {

@@ -32,10 +32,13 @@ import com.googlecode.jvmvm.SilentObjectCreator;
 import com.googlecode.jvmvm.vm.Frame;
 import com.googlecode.jvmvm.vm.VirtualMachine;
 import com.googlecode.jvmvm.vm.ref.ClassRef;
+import com.googlecode.jvmvm.vm.ref.FieldRef;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -45,30 +48,65 @@ public final class TypeInsn extends Insn {
     }
 
     public final static class LazyNewObject implements Serializable {
+        class SetTo {
+            FieldRef fieldRef;
+            Object target;
+            Object value;
+
+            SetTo(FieldRef fieldRef, Object target, Object value) {
+                this.fieldRef = fieldRef;
+                this.target = target;
+                this.value = value;
+            }
+        }
+
         private Class type;
-        private String signature;
+        private String uniqueId;
+        private List<SetTo> setTo = new ArrayList<SetTo>();
 
         public LazyNewObject(Class type) {
             this.type = type;
-            this.signature = "lazy-" + type.getCanonicalName() + "-" + System.identityHashCode(this);
+            this.uniqueId = "lazy-" + type.getName() + "-" + System.identityHashCode(this);
+        }
+
+        public boolean addFieldSet(Object target, FieldRef fieldRef) {
+            return setTo.add(new SetTo(fieldRef, target, this));
+        }
+
+        public boolean addFieldSet(Object target, FieldRef fieldRef, Object value) {
+            return setTo.add(new SetTo(fieldRef, target, value));
+        }
+
+        void initFields(Object obj) throws IllegalAccessException {
+            for (SetTo e : setTo) {
+                if (e.value == this) {
+                    e.fieldRef.get().set(e.target, obj);
+                } else if (e.target == this) {
+                    e.fieldRef.get().set(obj, e.value);
+                } else {
+                    e.fieldRef.get().set(e.target, e.value);
+                }
+            }
         }
 
         public void init(Class constructorClass, VirtualMachine vm) throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
             Object object = SilentObjectCreator.create(type, constructorClass);
             vm.getFrame().replaceAllRecursive(this, object);
+            initFields(object);
         }
 
         public void init(Class constructorClass, Class<?>[] paramTypes, Object[] paramValues, VirtualMachine vm) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
             Object object = SilentObjectCreator.create(type, constructorClass, paramTypes, paramValues);
             vm.getFrame().replaceAllRecursive(this, object);
+            initFields(object);
         }
 
         public Class getType() {
             return type;
         }
 
-        public String getSignature() {
-            return signature;
+        public String getUniqueId() {
+            return uniqueId;
         }
 
         @Override
@@ -76,12 +114,12 @@ public final class TypeInsn extends Insn {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             LazyNewObject that = (LazyNewObject) o;
-            return !(signature != null ? !signature.equals(that.signature) : that.signature != null);
+            return !(uniqueId != null ? !uniqueId.equals(that.uniqueId) : that.uniqueId != null);
         }
 
         @Override
         public int hashCode() {
-            return signature != null ? signature.hashCode() : 0;
+            return uniqueId != null ? uniqueId.hashCode() : 0;
         }
     }
 
@@ -124,6 +162,6 @@ public final class TypeInsn extends Insn {
 
     @Override
     public String toString() {
-        return getOpcodeName(opcode) + " " + c.get().getCanonicalName();
+        return getOpcodeName(opcode) + " " + c.get().getName();
     }
 }

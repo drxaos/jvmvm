@@ -38,9 +38,9 @@ public class NestedTest {
                 .addFile(name, FileUtils.readFileToString(new File("src/test/java/" + name)))
                 .addSystemClasses(bootstrap)
                 .compile()
-                .setupVM(NestedA.class.getCanonicalName(), "test2");
+                .setupVM(NestedA.class.getCanonicalName(), "test3");
 
         Object res = project.run();
-        Assert.assertEquals("result", "01623785", res);
+        Assert.assertEquals("result", "XBA", res);
     }
 }

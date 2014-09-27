@@ -219,22 +219,34 @@ public abstract class FieldInsn extends Insn {
                 Class<?> type = field.getType();
                 if (type == int.class || type == byte.class || type == char.class || type == short.class) {
                     int t = frame.popInt();
-                    field.setInt(frame.popObject(), t);
+                    Object target = frame.popObject();
+                    field.setInt(target, t);
                 } else if (type == long.class) {
                     long t = frame.popLong();
-                    field.setLong(frame.popObject(), t);
+                    Object target = frame.popObject();
+                    field.setLong(target, t);
                 } else if (type == float.class) {
                     float t = frame.popFloat();
-                    field.setFloat(frame.popObject(), t);
+                    Object target = frame.popObject();
+                    field.setFloat(target, t);
                 } else if (type == double.class) {
                     double t = frame.popDouble();
-                    field.setDouble(frame.popObject(), t);
+                    Object target = frame.popObject();
+                    field.setDouble(target, t);
                 } else if (type == boolean.class) {
                     boolean t = frame.popInt() != 0;
-                    field.setBoolean(frame.popObject(), t);
+                    Object target = frame.popObject();
+                    field.setBoolean(target, t);
                 } else {
                     Object t = frame.popObject();
-                    field.set(frame.popObject(), t);
+                    Object target = frame.popObject();
+                    if (t instanceof TypeInsn.LazyNewObject) {
+                        ((TypeInsn.LazyNewObject) t).addFieldSet(target, f);
+                    } else if (target instanceof TypeInsn.LazyNewObject) {
+                        ((TypeInsn.LazyNewObject) target).addFieldSet(target, f, t);
+                    } else {
+                        field.set(target, t);
+                    }
                 }
             } catch (IllegalAccessException e) {
                 throw new InternalError().initCause(e);
