@@ -15,7 +15,7 @@ Project project = new Project("Name")
     .addFiles(mapWithFileNamesAsKeysAndTheirContentsAsValues)
     .addSystemClasses(listOfSystemClassesThatYouAllowToUseInVm)
     .compile()
-    .startVM("pkg.ClassName", "methodName");
+    .setupVM("pkg.ClassName", "methodName");
 ```
 This will start execution of static method on given class.
 
@@ -23,19 +23,17 @@ To execute methods on objects you can add synthetic class:
 ```java
 Project project = new Project("Method call example")
     .addFiles(mapWithFileNamesAsKeysAndTheirContentsAsValues)
-    .addFile("Boot.java", 
-                "public class Boot {" + 
-                "  public static String main() {" +
-                "    return new TestClass().callMethod(\"hello\");" +
-                "  }" +
-                "}")
+    .addSynthetic("Boot", "return new TestClass(myArg).callMethod(param1, anotherParam);")
+    .addArgument("myArg", "Some String")
+    .addArgument("param1", new ClassAddedAsSystemClass())
+    .addArgument("anotherParam", null)
     .addSystemClasses(listOfSystemClassesThatYouAllowToUseInVm)
     .compile()
-    .startVM("Boot", "main");
+    .setupVM("Boot");
 ```
 
 JvmVM virtualizes jvm stack and instructions execution for given code.
-
+And then you can execute instructions:
 ```java
 while (project.isActive()) {
     project.step();
@@ -43,9 +41,33 @@ while (project.isActive()) {
 Object result = project.getResult();
 ```
 
-or to execute to end
+or to execute until return:
 ```java
 Object result = project.run();
+```
+
+### Breakpoints
+You can manage breakpoints to stop execution at needed point:
+```java
+project.setBreakpoint("pkg/ClassName.java", 15);
+project.setBreakpoint("pkg.ClassName", "methodName");
+project.removeBreakpoint("pkg/ClassName.java", 20);
+try{
+    Object result = project.run();
+} catch(ProjectBreakpointException e) {
+    // ...
+}
+project.clearBreakpoints();
+```
+
+### Data manipulation
+VM has ability to mainpulate values of static objects and in stack:
+```java
+int x = project.getLocalVariable("x");
+project.setLocalVariable("x", x + 1);
+
+Object obj = project.getStaticField("pkg.ClassName", "fieldName");
+project.setStaticField("pkg.ClassName", "fieldName", obj2);
 ```
 
 ### Save / Load
@@ -55,12 +77,13 @@ User classes made serializable by classloader.
 ```java
 byte[] serializedProject = project.saveToBytes();
 Project restoredProject = Project.fromBytes(serializedProject);
+restoredProject.run();
 ```
 You can continue running restored project as if it is a new separate project, stopped at same point as original.
 
 
 ### In Development
-Project is still in alpha and contains bugs and hidden features.
+Project is in alpha and contains bugs, undocumented features and documentation for unwritten features.
 See tests http://git.io/4hc3tA and source code http://git.io/V6UvpA.
 
 ### Authors and Contributors
