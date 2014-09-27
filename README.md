@@ -19,19 +19,6 @@ Project project = new Project("Name")
 ```
 This will start execution of static method on given class.
 
-To execute methods on objects you can add synthetic class:
-```java
-Project project = new Project("Method call example")
-    .addFiles(mapWithFileNamesAsKeysAndTheirContentsAsValues)
-    .addSynthetic("Boot", "return new TestClass(myArg).callMethod(param1, anotherParam);")
-    .addArgument("myArg", "Some String")
-    .addArgument("param1", new ClassAddedAsSystemClass())
-    .addArgument("anotherParam", null)
-    .addSystemClasses(listOfSystemClassesThatYouAllowToUseInVm)
-    .compile()
-    .setupVM("Boot");
-```
-
 JvmVM virtualizes jvm stack and instructions execution for given code.
 And then you can execute instructions:
 ```java
