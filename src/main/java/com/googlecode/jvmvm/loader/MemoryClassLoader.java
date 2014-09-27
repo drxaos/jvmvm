@@ -157,8 +157,8 @@ public class MemoryClassLoader extends SecureClassLoader {
     }
 
     public InputStream getBytecodeStream(Class cls) {
-        if (classes.containsKey(cls.getCanonicalName()) && classes.get(cls.getCanonicalName()).length != 0) {
-            return new ByteArrayInputStream(classes.get(cls.getCanonicalName()));
+        if (classes.containsKey(cls.getName()) && classes.get(cls.getName()).length != 0) {
+            return new ByteArrayInputStream(classes.get(cls.getName()));
         } else {
             return null;
         }

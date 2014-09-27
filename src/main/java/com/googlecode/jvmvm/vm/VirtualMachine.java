@@ -173,7 +173,7 @@ public final class VirtualMachine implements Serializable {
         while (frame != null) {
             try {
                 synchronized (this) {
-                    Insn insn = insns[cp++];
+                    Insn insn = insns[cp];
 
                     // clinit executed immediately if:
                     //  + T is a class and an instance of T is created.
@@ -184,12 +184,13 @@ public final class VirtualMachine implements Serializable {
 
                     Class clinitCls = insn.getClassForClinit();
                     if (clinitCls != null && InvokeStaticInitializer.shouldClinit(this, clinitCls)) {
-                        cp--;
                         InvokeStaticInitializer.invoke(this, clinitCls);
-                        insn = insns[cp++];
+                        insn = insns[cp];
                     }
 
+                    cp++;
                     insn.execute(this);
+
                     try {
                         save(new ByteArrayOutputStream());
                     } catch (VirtualMachineException e) {

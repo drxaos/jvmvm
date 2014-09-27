@@ -277,8 +277,8 @@ public abstract class MethodInsn extends Insn {
 
             } else {
                 try {
-                    TypeInsn.LazyNewObject lazyNewObject = (TypeInsn.LazyNewObject) frame.popObject();
                     Object[] params = frame.popParameters(constructor.getParameterTypes());
+                    TypeInsn.LazyNewObject lazyNewObject = (TypeInsn.LazyNewObject) frame.popObject();
                     lazyNewObject.init(constructor.getDeclaringClass(), constructor.getParameterTypes(), params, vm);
                 } catch (InstantiationException e) {
                     throw new InstantiationError(Types.getInternalName(constructor));
