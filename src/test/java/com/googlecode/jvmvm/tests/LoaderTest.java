@@ -2,7 +2,6 @@ package com.googlecode.jvmvm.tests;
 
 import com.googlecode.jvmvm.loader.MemoryClassLoader;
 import com.googlecode.jvmvm.loader.Project;
-import com.googlecode.jvmvm.loader.ProjectStoppedException;
 import com.googlecode.jvmvm.tests.interpretable.LoaderB;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -81,26 +80,20 @@ public class LoaderTest {
                 .compile()
                 .setupVM(LoaderB.class.getCanonicalName(), "ms", null, new Class[0], new Object[0]);
 
-        try {
-            int i = 0;
-            while (project.isActive()) {
-                project.step();
-                Assert.assertTrue(i++ < 1000000);
+        int i = 0;
+        while (project.isActive()) {
+            project.step();
+            Assert.assertTrue(i++ < 1000000);
 
-                byte[] serializedProject = project.saveToBytes();
-                Project restoredProject = Project.fromBytes(serializedProject);
-                try {
-                    int j = 0;
-                    while (restoredProject.isActive()) {
-                        restoredProject.step();
-                        Assert.assertTrue(j++ < 1000000);
-                    }
-                } catch (ProjectStoppedException e) {
-                    Assert.assertEquals("result", "IA;P;F;CA;IB;CB;BM;", e.getResult());
-                }
+            byte[] serializedProject = project.saveToBytes();
+            Project restoredProject = Project.fromBytes(serializedProject);
+            int j = 0;
+            while (restoredProject.isActive()) {
+                restoredProject.step();
+                Assert.assertTrue(j++ < 1000000);
             }
-        } catch (ProjectStoppedException e) {
-            Assert.assertEquals("result", "IA;P;F;CA;IB;CB;BM;", e.getResult());
+            Assert.assertEquals("result", "IA;P;F;CA;IB;CB;BM;", restoredProject.getResult());
         }
+        Assert.assertEquals("result", "IA;P;F;CA;IB;CB;BM;", project.getResult());
     }
 }

@@ -4,7 +4,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.util.List;
 
-public class ProjectCompilerException extends Exception {
+public class ProjectCompilerException extends RuntimeException {
     List<Diagnostic<? extends JavaFileObject>> diagnostics;
 
     public ProjectCompilerException(List<Diagnostic<? extends JavaFileObject>> diagnostics) {

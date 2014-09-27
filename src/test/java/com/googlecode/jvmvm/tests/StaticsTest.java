@@ -2,7 +2,6 @@ package com.googlecode.jvmvm.tests;
 
 import com.googlecode.jvmvm.loader.MemoryClassLoader;
 import com.googlecode.jvmvm.loader.Project;
-import com.googlecode.jvmvm.loader.ProjectStoppedException;
 import com.googlecode.jvmvm.tests.interpretable.InheritanceA;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -73,31 +72,25 @@ public class StaticsTest {
                 .compile()
                 .setupVM(InheritanceA.class.getCanonicalName(), "main", null, new Class[]{String[].class}, new Object[]{new String[0]});
 
-        try {
-            int i = 0;
-            while (project.isActive()) {
-                project.step();
-                Assert.assertTrue(i++ < 1000000);
+        int i = 0;
+        while (project.isActive()) {
+            project.step();
+            Assert.assertTrue(i++ < 1000000);
 
-                byte[] serializedProject = project.saveToBytes();
-                Project restoredProject = Project.fromBytes(serializedProject);
-                try {
-                    int j = 0;
-                    while (restoredProject.isActive()) {
-                        restoredProject.step();
-                        Assert.assertTrue(j++ < 1000000);
-                    }
-                } catch (ProjectStoppedException e) {
-                    Class<?> cls = restoredProject.getClassLoader().loadClass(InheritanceA.class.getCanonicalName());
-                    Assert.assertEquals("result (i=" + i + ")", "SA;SB;IA;CA;IB;CB;", cls.getField("out").get(null).toString());
-                    Assert.assertEquals("result (i=" + i + ")", "01623785", cls.getField("out2").get(null));
-                }
+            byte[] serializedProject = project.saveToBytes();
+            Project restoredProject = Project.fromBytes(serializedProject);
+            int j = 0;
+            while (restoredProject.isActive()) {
+                restoredProject.step();
+                Assert.assertTrue(j++ < 1000000);
             }
-        } catch (ProjectStoppedException e) {
-            Class<?> cls = project.getClassLoader().loadClass(InheritanceA.class.getCanonicalName());
-            Assert.assertEquals("result", "SA;SB;IA;CA;IB;CB;", cls.getField("out").get(null).toString());
-            Assert.assertEquals("result", "01623785", cls.getField("out2").get(null));
+            Class<?> cls = restoredProject.getClassLoader().loadClass(InheritanceA.class.getCanonicalName());
+            Assert.assertEquals("result (i=" + i + ")", "SA;SB;IA;CA;IB;CB;", cls.getField("out").get(null).toString());
+            Assert.assertEquals("result (i=" + i + ")", "01623785", cls.getField("out2").get(null));
         }
+        Class<?> cls = project.getClassLoader().loadClass(InheritanceA.class.getCanonicalName());
+        Assert.assertEquals("result", "SA;SB;IA;CA;IB;CB;", cls.getField("out").get(null).toString());
+        Assert.assertEquals("result", "01623785", cls.getField("out2").get(null));
     }
 
     @Test

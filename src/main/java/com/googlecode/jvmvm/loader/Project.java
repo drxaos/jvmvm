@@ -175,7 +175,7 @@ public class Project implements Serializable {
         return GlobalCodeLoader.getAll(classLoader.loadClass(className));
     }
 
-    public Object run() throws ProjectExecutionException, ProjectStoppedException, ProjectLoaderException {
+    public Object run() throws ProjectExecutionException, ProjectLoaderException {
         if (vmState != null && virtualMachine == null) {
             try {
                 virtualMachine = VirtualMachine.create(classLoader, vmState);
@@ -190,11 +190,11 @@ public class Project implements Serializable {
         }
     }
 
-    public void step() throws ProjectExecutionException, ProjectStoppedException, ProjectLoaderException {
+    public void step() throws ProjectExecutionException, ProjectLoaderException {
         step(true);
     }
 
-    public void step(boolean autoSerializationCheck) throws ProjectExecutionException, ProjectStoppedException, ProjectLoaderException {
+    public void step(boolean autoSerializationCheck) throws ProjectExecutionException, ProjectLoaderException {
         if (vmState != null && virtualMachine == null) {
             try {
                 virtualMachine = VirtualMachine.create(classLoader, vmState);
@@ -223,7 +223,7 @@ public class Project implements Serializable {
         return virtualMachine.isActive();
     }
 
-    public Object getRet() {
+    public Object getResult() {
         return virtualMachine.getResult();
     }
 }

@@ -29,6 +29,7 @@
 package com.googlecode.jvmvm.vm;
 
 import com.googlecode.jvmvm.loader.MemoryClassLoader;
+import com.googlecode.jvmvm.loader.ProjectLoaderException;
 import org.objectweb.asm.ClassReader;
 
 import java.io.InputStream;
@@ -40,7 +41,11 @@ public final class GlobalCodeLoader {
 
     public static synchronized MethodCode get(Class<?> cls, String methodId) {
         Map<String, MethodCode> code = loadCode(cls);
-        return code.get(methodId);
+        MethodCode methodCode = code.get(methodId);
+        if (cls.getClassLoader() instanceof MemoryClassLoader && methodCode == null) {
+            throw new ProjectLoaderException("cannot load code for " + cls.getName());
+        }
+        return methodCode;
     }
 
     public static synchronized Map<String, MethodCode> getAll(Class<?> cls) {

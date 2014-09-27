@@ -1,6 +1,6 @@
 package com.googlecode.jvmvm.loader;
 
-public class ProjectLoaderException extends Exception {
+public class ProjectLoaderException extends RuntimeException {
     public ProjectLoaderException() {
     }
 
