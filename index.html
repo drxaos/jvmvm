@@ -39,23 +39,68 @@ with control over instructions and save/load running program.</p>
 
 <p>To run VM you just need to create and compile project:</p>
 
-<div class="highlight highlight-java"><pre><span class="n">Project</span> <span class="n">project</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Project</span><span class="o">(</span><span class="s">"Program1"</span><span class="o">)</span>
+<div class="highlight highlight-java"><pre><span class="n">Project</span> <span class="n">project</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Project</span><span class="o">(</span><span class="s">"Name"</span><span class="o">)</span>
     <span class="o">.</span><span class="na">addFiles</span><span class="o">(</span><span class="n">mapWithFileNamesAsKeysAndTheirContentsAsValues</span><span class="o">)</span>
     <span class="o">.</span><span class="na">addSystemClasses</span><span class="o">(</span><span class="n">listOfSystemClassesThatYouAllowToUseInVm</span><span class="o">)</span>
     <span class="o">.</span><span class="na">compile</span><span class="o">()</span>
-    <span class="o">.</span><span class="na">startVM</span><span class="o">(</span><span class="s">"pkg.ClassName"</span><span class="o">,</span> <span class="s">"methodName"</span><span class="o">,</span>
-                <span class="kc">null</span><span class="o">,</span> <span class="k">new</span> <span class="n">Class</span><span class="o">[</span><span class="mi">0</span><span class="o">],</span> <span class="k">new</span> <span class="n">Object</span><span class="o">[</span><span class="mi">0</span><span class="o">]);</span>
+    <span class="o">.</span><span class="na">setupVM</span><span class="o">(</span><span class="s">"pkg.ClassName"</span><span class="o">,</span> <span class="s">"methodName"</span><span class="o">);</span>
 </pre></div>
 
-<p>JvmVM virtualizes jvm stack and instructions execution for given code.</p>
+<p>This will start execution of static method on given class.</p>
 
-<div class="highlight highlight-java"><pre><span class="k">try</span> <span class="o">{</span>
-  <span class="k">while</span> <span class="o">(</span><span class="kc">true</span><span class="o">)</span> <span class="o">{</span>
+<p>To execute methods on objects you can add synthetic class:</p>
+
+<div class="highlight highlight-java"><pre><span class="n">Project</span> <span class="n">project</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">Project</span><span class="o">(</span><span class="s">"Method call example"</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">addFiles</span><span class="o">(</span><span class="n">mapWithFileNamesAsKeysAndTheirContentsAsValues</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">addSynthetic</span><span class="o">(</span><span class="s">"Boot"</span><span class="o">,</span> <span class="s">"return new TestClass(myArg).callMethod(param1, anotherParam);"</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">addArgument</span><span class="o">(</span><span class="s">"myArg"</span><span class="o">,</span> <span class="s">"Some String"</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">addArgument</span><span class="o">(</span><span class="s">"param1"</span><span class="o">,</span> <span class="k">new</span> <span class="nf">ClassAddedAsSystemClass</span><span class="o">())</span>
+    <span class="o">.</span><span class="na">addArgument</span><span class="o">(</span><span class="s">"anotherParam"</span><span class="o">,</span> <span class="kc">null</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">addSystemClasses</span><span class="o">(</span><span class="n">listOfSystemClassesThatYouAllowToUseInVm</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">compile</span><span class="o">()</span>
+    <span class="o">.</span><span class="na">setupVM</span><span class="o">(</span><span class="s">"Boot"</span><span class="o">);</span>
+</pre></div>
+
+<p>JvmVM virtualizes jvm stack and instructions execution for given code.
+And then you can execute instructions:</p>
+
+<div class="highlight highlight-java"><pre><span class="k">while</span> <span class="o">(</span><span class="n">project</span><span class="o">.</span><span class="na">isActive</span><span class="o">())</span> <span class="o">{</span>
     <span class="n">project</span><span class="o">.</span><span class="na">step</span><span class="o">();</span>
-  <span class="o">}</span>
-<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ProjectStoppedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-  <span class="n">Object</span> <span class="n">result</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="na">getResult</span><span class="o">();</span>
 <span class="o">}</span>
+<span class="n">Object</span> <span class="n">result</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="na">getResult</span><span class="o">();</span>
+</pre></div>
+
+<p>or to execute until return:</p>
+
+<div class="highlight highlight-java"><pre><span class="n">Object</span> <span class="n">result</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="na">run</span><span class="o">();</span>
+</pre></div>
+
+<h3>
+<a name="breakpoints" class="anchor" href="#breakpoints"><span class="octicon octicon-link"></span></a>Breakpoints</h3>
+
+<p>You can manage breakpoints to stop execution at needed point:</p>
+
+<div class="highlight highlight-java"><pre><span class="n">project</span><span class="o">.</span><span class="na">setBreakpoint</span><span class="o">(</span><span class="s">"pkg/ClassName.java"</span><span class="o">,</span> <span class="mi">15</span><span class="o">);</span>
+<span class="n">project</span><span class="o">.</span><span class="na">setBreakpoint</span><span class="o">(</span><span class="s">"pkg.ClassName"</span><span class="o">,</span> <span class="s">"methodName"</span><span class="o">);</span>
+<span class="n">project</span><span class="o">.</span><span class="na">removeBreakpoint</span><span class="o">(</span><span class="s">"pkg/ClassName.java"</span><span class="o">,</span> <span class="mi">20</span><span class="o">);</span>
+<span class="k">try</span><span class="o">{</span>
+    <span class="n">Object</span> <span class="n">result</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="na">run</span><span class="o">();</span>
+<span class="o">}</span> <span class="k">catch</span><span class="o">(</span><span class="n">ProjectBreakpointException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// ...</span>
+<span class="o">}</span>
+<span class="n">project</span><span class="o">.</span><span class="na">clearBreakpoints</span><span class="o">();</span>
+</pre></div>
+
+<h3>
+<a name="data-manipulation" class="anchor" href="#data-manipulation"><span class="octicon octicon-link"></span></a>Data manipulation</h3>
+
+<p>VM has ability to mainpulate values of static objects and in stack:</p>
+
+<div class="highlight highlight-java"><pre><span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="na">getLocalVariable</span><span class="o">(</span><span class="s">"x"</span><span class="o">);</span>
+<span class="n">project</span><span class="o">.</span><span class="na">setLocalVariable</span><span class="o">(</span><span class="s">"x"</span><span class="o">,</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="o">);</span>
+
+<span class="n">Object</span> <span class="n">obj</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="na">getStaticField</span><span class="o">(</span><span class="s">"pkg.ClassName"</span><span class="o">,</span> <span class="s">"fieldName"</span><span class="o">);</span>
+<span class="n">project</span><span class="o">.</span><span class="na">setStaticField</span><span class="o">(</span><span class="s">"pkg.ClassName"</span><span class="o">,</span> <span class="s">"fieldName"</span><span class="o">,</span> <span class="n">obj2</span><span class="o">);</span>
 </pre></div>
 
 <h3>
@@ -66,6 +111,7 @@ User classes made serializable by classloader.</p>
 
 <div class="highlight highlight-java"><pre><span class="kt">byte</span><span class="o">[]</span> <span class="n">serializedProject</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="na">saveToBytes</span><span class="o">();</span>
 <span class="n">Project</span> <span class="n">restoredProject</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="na">fromBytes</span><span class="o">(</span><span class="n">serializedProject</span><span class="o">);</span>
+<span class="n">restoredProject</span><span class="o">.</span><span class="na">run</span><span class="o">();</span>
 </pre></div>
 
 <p>You can continue running restored project as if it is a new separate project, stopped at same point as original.</p>
@@ -73,7 +119,7 @@ User classes made serializable by classloader.</p>
 <h3>
 <a name="in-development" class="anchor" href="#in-development"><span class="octicon octicon-link"></span></a>In Development</h3>
 
-<p>Project is still in alpha and contains bugs and hidden features.
+<p>Project is in alpha and contains bugs, undocumented features and documentation for unwritten features.
 See tests <a href="http://git.io/4hc3tA">http://git.io/4hc3tA</a> and source code <a href="http://git.io/V6UvpA">http://git.io/V6UvpA</a>.</p>
 
 <h3>
