@@ -42,9 +42,10 @@ public final class GlobalCodeLoader {
     public static synchronized MethodCode get(Class<?> cls, String methodId) {
         Map<String, MethodCode> code = loadCode(cls);
         MethodCode methodCode = code.get(methodId);
-        if (cls.getClassLoader() instanceof MemoryClassLoader && methodCode == null) {
-            throw new ProjectLoaderException("cannot load code for " + cls.getName());
-        }
+        // TODO check if code of method from user classes not found
+//        if (cls.getClassLoader() instanceof MemoryClassLoader && methodCode == null) {
+//            throw new ProjectLoaderException("cannot load code for " + cls.getName() + " " + methodId);
+//        }
         return methodCode;
     }
 
