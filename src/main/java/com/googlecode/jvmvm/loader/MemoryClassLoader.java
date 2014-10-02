@@ -1,5 +1,6 @@
 package com.googlecode.jvmvm.loader;
 
+import com.googlecode.jvmvm.compiler.javac.JavaClassObject;
 import org.objectweb.asm.*;
 
 import java.io.ByteArrayInputStream;
@@ -72,7 +73,7 @@ public class MemoryClassLoader extends SecureClassLoader {
         projectCompiled = true;
     }
 
-    MemoryClassLoader(Map<String, JavaClassObject> jclassObjectMap) {
+    public MemoryClassLoader(Map<String, JavaClassObject> jclassObjectMap) {
         super(null);
         for (Map.Entry<String, JavaClassObject> e : jclassObjectMap.entrySet()) {
             byte[] bytes = e.getValue().getBytes();
