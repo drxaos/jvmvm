@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 
-public class JavaClassObject extends SimpleJavaFileObject {
+class JavaClassObject extends SimpleJavaFileObject {
 
     /**
      * Byte code created by the compiler will be stored in this

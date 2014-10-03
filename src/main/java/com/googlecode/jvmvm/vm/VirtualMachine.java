@@ -28,12 +28,12 @@
 
 package com.googlecode.jvmvm.vm;
 
+import com.googlecode.jvmvm.loader.MemoryClassLoader;
 import com.googlecode.jvmvm.loader.ProjectLoaderException;
 import com.googlecode.jvmvm.vm.insn.Insn;
 import com.googlecode.jvmvm.vm.insn.ReturnInsn;
 import com.googlecode.jvmvm.vm.ref.FieldRef;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.ArrayUtils;
 import org.objectweb.asm.Type;
 
 import java.io.*;
@@ -56,10 +56,6 @@ public final class VirtualMachine implements Serializable {
     private Set<Class> clinitedClasses = new HashSet<Class>();
 
     transient ClassLoader classLoader;
-
-
-    // TODO on deserialization load maps of static values to static fields
-    // TODO serialize vm on each step to prevent using not serializable objects
 
     VirtualMachine() {
     }
@@ -106,7 +102,6 @@ public final class VirtualMachine implements Serializable {
     }
 
     public static VirtualMachine create(ClassLoader cl, InputStream in) throws Throwable {
-        // TODO load VM by system classLoader and stack objects by custom classLoader
         CustomClassLoaderObjectInputStream ois = new CustomClassLoaderObjectInputStream(in, cl);
         Object o = ois.readObject();
         if (o instanceof VirtualMachine) {
@@ -181,7 +176,6 @@ public final class VirtualMachine implements Serializable {
                     //  + A static field declared by T is assigned.
                     //  + A static field declared by T is used and the field is not a constant variable (§4.12.4).
                     //  + T is a top level class (§7.6), and an assert statement (§14.10) lexically nested within T (§8.1.3) is executed.
-
                     Class clinitCls = insn.getClassForClinit();
                     if (clinitCls != null && InvokeStaticInitializer.shouldClinit(this, clinitCls)) {
                         InvokeStaticInitializer.invoke(this, clinitCls);
@@ -242,7 +236,7 @@ public final class VirtualMachine implements Serializable {
     public void save(OutputStream out) throws VirtualMachineException {
         synchronized (this) {
             try {
-                ObjectOutputStream oos = new ObjectOutputStream(out);
+                CustomClassLoaderObjectOutputStream oos = new CustomClassLoaderObjectOutputStream(out);
                 oos.writeObject(this);
             } catch (NotSerializableException e) {
                 throw new VirtualMachineException("Instance of illegal class [" + e.getMessage() + "] at " + getPointer(), e);
@@ -362,29 +356,47 @@ public final class VirtualMachine implements Serializable {
 class CustomClassLoaderObjectInputStream extends ObjectInputStream {
     private ClassLoader classLoader;
 
+    final static byte SOURCE_DEFAULT_CLASSLOADER = 0;
+    final static byte SOURCE_VM_CLASSLOADER = 1;
+    private byte source = 0;
+
     public CustomClassLoaderObjectInputStream(InputStream in, ClassLoader classLoader) throws IOException {
         super(in);
         this.classLoader = classLoader;
     }
 
-    List<String> vm = Arrays.asList(
-            "[Lcom.googlecode.jvmvm.vm.",
-            "com.googlecode.jvmvm.vm.",
-            "sun.reflect.SerializationConstructorAccessorImpl"
-    );
+    public void setLoadingSource(byte source) {
+        this.source = source;
+    }
+
+    @Override
+    protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
+        setLoadingSource(readByte());
+        return super.readClassDescriptor();
+    }
 
     protected Class<?> resolveClass(ObjectStreamClass desc) throws ClassNotFoundException {
-        boolean system = false;
-        for (String s : vm) {
-            if (desc.getName().startsWith(s)) {
-                system = true;
-                break;
-            }
-        }
-        if (system) {
-            return Class.forName(desc.getName(), false, this.getClass().getClassLoader());
-        } else {
+        if (source == SOURCE_VM_CLASSLOADER) {
             return Class.forName(desc.getName(), false, classLoader);
+        } else {
+            return Class.forName(desc.getName(), false, this.getClass().getClassLoader());
         }
+    }
+}
+
+class CustomClassLoaderObjectOutputStream extends ObjectOutputStream {
+
+    public CustomClassLoaderObjectOutputStream(OutputStream out) throws IOException {
+        super(out);
+    }
+
+    @Override
+    protected void writeClassDescriptor(ObjectStreamClass desc) throws IOException {
+        if (desc.forClass().getClassLoader() instanceof MemoryClassLoader) {
+            writeByte(CustomClassLoaderObjectInputStream.SOURCE_VM_CLASSLOADER);
+        } else {
+            writeByte(CustomClassLoaderObjectInputStream.SOURCE_DEFAULT_CLASSLOADER);
+        }
+        super.writeClassDescriptor(desc);
     }
 }

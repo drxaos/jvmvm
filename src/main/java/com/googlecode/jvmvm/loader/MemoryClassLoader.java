@@ -1,6 +1,5 @@
 package com.googlecode.jvmvm.loader;
 
-import com.googlecode.jvmvm.compiler.javac.JavaClassObject;
 import org.objectweb.asm.*;
 
 import java.io.ByteArrayInputStream;
@@ -10,7 +9,6 @@ import java.security.SecureClassLoader;
 import java.util.*;
 
 class Modifier extends ClassAdapter {
-
     public Modifier(ClassVisitor cv) {
         super(cv);
     }
@@ -52,34 +50,23 @@ class Modifier extends ClassAdapter {
 }
 
 public class MemoryClassLoader extends SecureClassLoader {
-    static class Classes extends HashMap<String, byte[]> implements Serializable {
-    }
+    List<String> serviceClasses = Arrays.asList(
+            "sun.reflect.SerializationConstructorAccessorImpl"
+    );
 
-    Classes classes = new Classes();
+    Map<String, byte[]> classes = new HashMap<String, byte[]>();
     boolean vmDisabled = false;
-    boolean projectCompiled = false;
     Set<String> modifiedClasses = new HashSet<String>();
+    ClassLoader fallbackClassLoader;
 
-    MemoryClassLoader(Classes classes) {
+    public MemoryClassLoader(ClassLoader fallbackClassLoader, Map<String, byte[]> classes) {
         super(null);
+        this.fallbackClassLoader = fallbackClassLoader;
         this.classes = classes;
     }
 
     public void onVmDisabled() {
         vmDisabled = true;
-    }
-
-    public void onProjectCompiled() {
-        projectCompiled = true;
-    }
-
-    public MemoryClassLoader(Map<String, JavaClassObject> jclassObjectMap) {
-        super(null);
-        for (Map.Entry<String, JavaClassObject> e : jclassObjectMap.entrySet()) {
-            byte[] bytes = e.getValue().getBytes();
-            classes.put(e.getKey(), bytes);
-        }
-
     }
 
     MemoryClassLoader addClass(String className, byte[] bytecode) {
@@ -132,10 +119,10 @@ public class MemoryClassLoader extends SecureClassLoader {
                 return c;
             }
         } else {
-            if (projectCompiled) {
-                throw new ClassNotFoundException(name);
-            } else {
+            if (serviceClasses.contains(name)) {
                 return super.loadClass(name, resolve);
+            } else {
+                throw new ClassNotFoundException(name);
             }
         }
     }

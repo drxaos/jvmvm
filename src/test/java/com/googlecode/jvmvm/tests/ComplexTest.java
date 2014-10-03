@@ -22,10 +22,14 @@ public class ComplexTest {
             "java.lang.Object",
             "java.lang.String",
             "java.lang.StringBuilder",
+            "java.lang.Iterable",
+            "java.util.Iterator",
             "java.lang.StackTraceElement",
             "java.lang.Throwable",
             "java.lang.Exception",
             "java.lang.RuntimeException",
+            "java.lang.UnsupportedOperationException",
+            "java.util.NoSuchElementException",
             "java.io.Serializable"
     );
 

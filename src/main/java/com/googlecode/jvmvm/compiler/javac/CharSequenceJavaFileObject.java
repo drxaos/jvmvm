@@ -3,9 +3,6 @@ package com.googlecode.jvmvm.compiler.javac;
 import javax.tools.SimpleJavaFileObject;
 import java.net.URI;
 
-/**
- * Created by xaos on 10/2/14.
- */
 class CharSequenceJavaFileObject extends SimpleJavaFileObject {
 
     /**

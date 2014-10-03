@@ -19,7 +19,6 @@ public class Project implements Serializable {
     boolean started = false;
     boolean vmDisabled = false;
     byte[] vmState;
-    boolean autoSerializationCheck = true;
 
     boolean shouldCompile = false;
     transient boolean compiled = false;
@@ -74,7 +73,7 @@ public class Project implements Serializable {
         if (compiled) {
             throw new ProjectException("already compiled");
         }
-        classLoader = compiler.compile(files);
+        classLoader = new MemoryClassLoader(this.getClass().getClassLoader(), compiler.compile(files));
         for (String bootstrapClass : systemClasses) {
             classLoader.addSystemClass(bootstrapClass);
         }

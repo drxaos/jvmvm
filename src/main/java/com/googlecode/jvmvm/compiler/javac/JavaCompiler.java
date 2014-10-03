@@ -1,17 +1,17 @@
 package com.googlecode.jvmvm.compiler.javac;
 
-import com.googlecode.jvmvm.loader.MemoryClassLoader;
 import com.googlecode.jvmvm.loader.ProjectCompilerException;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class JavaCompiler implements com.googlecode.jvmvm.compiler.Compiler {
-    public MemoryClassLoader compile(Map<String, String> files) throws ProjectCompilerException {
+    public Map<String, byte[]> compile(Map<String, String> files) throws ProjectCompilerException {
         javax.tools.JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
         ClassFileManager fileManager = new ClassFileManager(compiler.getStandardFileManager(null, null, null));
@@ -23,7 +23,13 @@ public class JavaCompiler implements com.googlecode.jvmvm.compiler.Compiler {
         if (!res) {
             throw new ProjectCompilerException(diagnostics.getDiagnostics());
         }
-        return fileManager.getClassLoader(null);
+        Map<String, JavaClassObject> jclassObjectMap = fileManager.getJclassObjectMap();
+        Map<String, byte[]> classes = new HashMap<String, byte[]>();
+        for (Map.Entry<String, JavaClassObject> e : jclassObjectMap.entrySet()) {
+            byte[] bytes = e.getValue().getBytes();
+            classes.put(e.getKey(), bytes);
+        }
+        return classes;
     }
 }
 
