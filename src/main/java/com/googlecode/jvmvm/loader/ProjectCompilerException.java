@@ -1,17 +1,23 @@
 package com.googlecode.jvmvm.loader;
 
-import javax.tools.Diagnostic;
-import javax.tools.JavaFileObject;
-import java.util.List;
-
 public class ProjectCompilerException extends RuntimeException {
-    List<Diagnostic<? extends JavaFileObject>> diagnostics;
+    Object data;
 
-    public ProjectCompilerException(List<Diagnostic<? extends JavaFileObject>> diagnostics) {
-        this.diagnostics = diagnostics;
+    public ProjectCompilerException(String message, Throwable cause, Object data) {
+        super(message, cause);
+        this.data = data;
     }
 
-    public List<Diagnostic<? extends JavaFileObject>> getDiagnostics() {
-        return diagnostics;
+    public ProjectCompilerException(String message, Object data) {
+        super(message);
+        this.data = data;
+    }
+
+    public ProjectCompilerException(String message) {
+        super(message);
+    }
+
+    public ProjectCompilerException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

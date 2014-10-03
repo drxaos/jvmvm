@@ -74,13 +74,9 @@ public class MemoryClassLoader extends SecureClassLoader {
         return this;
     }
 
-    MemoryClassLoader addSystemClass(String className) {
-        try {
-            super.loadClass(className, false);
-            classes.put(className, new byte[0]);
-        } catch (ClassNotFoundException e) {
-            // don't add
-        }
+    MemoryClassLoader addSystemClass(String className) throws ClassNotFoundException {
+        super.loadClass(className, false);
+        classes.put(className, new byte[0]);
         return this;
     }
 

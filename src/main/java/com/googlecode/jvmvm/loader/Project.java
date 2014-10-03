@@ -75,7 +75,11 @@ public class Project implements Serializable {
         }
         classLoader = new MemoryClassLoader(this.getClass().getClassLoader(), compiler.compile(files));
         for (String bootstrapClass : systemClasses) {
-            classLoader.addSystemClass(bootstrapClass);
+            try {
+                classLoader.addSystemClass(bootstrapClass);
+            } catch (ClassNotFoundException e) {
+                throw new ProjectCompilerException("cannot load system class", e);
+            }
         }
         compiled = true;
         shouldCompile = true;
@@ -91,14 +95,14 @@ public class Project implements Serializable {
         return classLoader;
     }
 
-    public Project addSystemClasses(List<String> list) throws ProjectCompilerException {
+    public Project addSystemClasses(List<String> list) throws ClassNotFoundException {
         for (String className : list) {
             addSystemClass(className);
         }
         return this;
     }
 
-    public Project addSystemClass(String className) throws ProjectCompilerException {
+    public Project addSystemClass(String className) throws ClassNotFoundException {
         systemClasses.add(className);
         if (classLoader != null) {
             classLoader.addSystemClass(className);

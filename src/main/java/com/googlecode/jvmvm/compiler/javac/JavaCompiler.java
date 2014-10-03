@@ -21,7 +21,7 @@ public class JavaCompiler implements com.googlecode.jvmvm.compiler.Compiler {
         }
         Boolean res = compiler.getTask(null, fileManager, diagnostics, null, null, jfiles).call();
         if (!res) {
-            throw new ProjectCompilerException(diagnostics.getDiagnostics());
+            throw new ProjectCompilerException("compilation errors", diagnostics.getDiagnostics());
         }
         Map<String, JavaClassObject> jclassObjectMap = fileManager.getJclassObjectMap();
         Map<String, byte[]> classes = new HashMap<String, byte[]>();
