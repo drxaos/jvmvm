@@ -181,7 +181,7 @@ public class Project implements Serializable {
         try {
             return virtualMachine.run();
         } catch (Throwable throwable) {
-            throw new ProjectExecutionException("program error", throwable);
+            throw new ProjectExecutionException("program error", throwable, virtualMachine.getPointer());
         }
     }
 
@@ -203,7 +203,7 @@ public class Project implements Serializable {
                 virtualMachine.checkSerialization();
             }
         } catch (Throwable throwable) {
-            throw new ProjectExecutionException("program error", throwable);
+            throw new ProjectExecutionException("program error", throwable, virtualMachine.getPointer());
         }
     }
 

@@ -32,6 +32,10 @@ import com.googlecode.jvmvm.loader.MemoryClassLoader;
 import com.googlecode.jvmvm.loader.ProjectLoaderException;
 import com.googlecode.jvmvm.vm.insn.Insn;
 import com.googlecode.jvmvm.vm.insn.ReturnInsn;
+import com.googlecode.jvmvm.vm.placeholders.HashMap.HashMap$EntryIterator;
+import com.googlecode.jvmvm.vm.placeholders.HashMap.HashMap$EntrySet;
+import com.googlecode.jvmvm.vm.placeholders.Placeholder;
+import com.googlecode.jvmvm.vm.placeholders.PlaceholderFactory;
 import com.googlecode.jvmvm.vm.ref.FieldRef;
 import org.apache.commons.codec.binary.Base64;
 import org.objectweb.asm.Type;
@@ -363,6 +367,15 @@ class CustomClassLoaderObjectInputStream extends ObjectInputStream {
     public CustomClassLoaderObjectInputStream(InputStream in, ClassLoader classLoader) throws IOException {
         super(in);
         this.classLoader = classLoader;
+        enableResolveObject(true);
+    }
+
+    @Override
+    protected Object resolveObject(Object obj) throws IOException {
+        if (obj instanceof Placeholder) {
+            return ((Placeholder) obj).restore();
+        }
+        return super.resolveObject(obj);
     }
 
     public void setLoadingSource(byte source) {
@@ -386,8 +399,30 @@ class CustomClassLoaderObjectInputStream extends ObjectInputStream {
 
 class CustomClassLoaderObjectOutputStream extends ObjectOutputStream {
 
+    public static HashMap<String, PlaceholderFactory> placeholders = new HashMap<String, PlaceholderFactory>();
+
+    public static void addPlaceholder(PlaceholderFactory placeholder) {
+        placeholders.put(placeholder.getClassName(), placeholder);
+    }
+
+    static {
+        //addPlaceholder(new HashMap$Entry());
+        addPlaceholder(new HashMap$EntrySet());
+        addPlaceholder(new HashMap$EntryIterator());
+    }
+
     public CustomClassLoaderObjectOutputStream(OutputStream out) throws IOException {
         super(out);
+        enableReplaceObject(true);
+    }
+
+    @Override
+    protected Object replaceObject(Object obj) throws IOException {
+        PlaceholderFactory placeholderFactory = placeholders.get(obj.getClass().getName());
+        if (placeholderFactory != null) {
+            return placeholderFactory.replace(obj);
+        }
+        return super.replaceObject(obj);
     }
 
     @Override

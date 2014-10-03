@@ -48,7 +48,7 @@ public final class TypeInsn extends Insn {
     }
 
     public final static class LazyNewObject implements Serializable {
-        class SetTo {
+        class SetTo implements Serializable {
             FieldRef fieldRef;
             Object target;
             Object value;
