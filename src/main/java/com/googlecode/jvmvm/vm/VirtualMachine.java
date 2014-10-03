@@ -411,6 +411,9 @@ class CustomClassLoaderObjectOutputStream extends ObjectOutputStream {
         addPlaceholder(new HashMap$EntryIterator());
     }
 
+    // TODO try to serialize non-Serializable classes from list
+    // http://stackoverflow.com/questions/10142991/using-javassist-to-instrument-a-private-method-of-a-parent-class
+
     public CustomClassLoaderObjectOutputStream(OutputStream out) throws IOException {
         super(out);
         enableReplaceObject(true);
