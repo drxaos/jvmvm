@@ -238,6 +238,9 @@ public final class VirtualMachine implements Serializable {
     }
 
     public void save(OutputStream out) throws VirtualMachineException {
+        
+        // TODO try https://github.com/EsotericSoftware/kryo
+        
         synchronized (this) {
             try {
                 CustomClassLoaderObjectOutputStream oos = new CustomClassLoaderObjectOutputStream(out);
