@@ -34,6 +34,7 @@ import com.googlecode.jvmvm.vm.insn.Insn;
 import com.googlecode.jvmvm.vm.insn.ReturnInsn;
 import com.googlecode.jvmvm.vm.placeholders.HashMap.HashMap$EntryIterator;
 import com.googlecode.jvmvm.vm.placeholders.HashMap.HashMap$EntrySet;
+import com.googlecode.jvmvm.vm.placeholders.Mapper;
 import com.googlecode.jvmvm.vm.placeholders.Placeholder;
 import com.googlecode.jvmvm.vm.placeholders.PlaceholderFactory;
 import com.googlecode.jvmvm.vm.ref.FieldRef;
@@ -238,9 +239,9 @@ public final class VirtualMachine implements Serializable {
     }
 
     public void save(OutputStream out) throws VirtualMachineException {
-        
+
         // TODO try https://github.com/EsotericSoftware/kryo
-        
+
         synchronized (this) {
             try {
                 CustomClassLoaderObjectOutputStream oos = new CustomClassLoaderObjectOutputStream(out);
@@ -427,6 +428,8 @@ class CustomClassLoaderObjectOutputStream extends ObjectOutputStream {
         PlaceholderFactory placeholderFactory = placeholders.get(obj.getClass().getName());
         if (placeholderFactory != null) {
             return placeholderFactory.replace(obj);
+        } else if (!(obj instanceof Serializable) && !(obj instanceof Enum) && !obj.getClass().isArray()) {
+            return new Mapper().replace(obj);
         }
         return super.replaceObject(obj);
     }
