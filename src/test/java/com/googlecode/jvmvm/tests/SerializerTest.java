@@ -1,8 +1,9 @@
 package com.googlecode.jvmvm.tests;
 
 import com.googlecode.jvmvm.loader.Project;
+import com.googlecode.jvmvm.loader.ProjectExecutionException;
 import com.googlecode.jvmvm.tests.interpretable.HashMapExamples;
-import com.googlecode.jvmvm.tests.interpretable.third.BalancedBinaryTree;
+import com.googlecode.jvmvm.tests.interpretable.SystemExamples;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -89,5 +90,17 @@ public class SerializerTest {
         }
         Object res2 = project2.getResult();
         Assert.assertEquals("result2", expected, res2);
+    }
+
+    @Test(expected = ProjectExecutionException.class)
+    public void test_vm_system() throws Exception {
+        String src1 = SystemExamples.class.getCanonicalName().replace(".", "/") + ".java";
+
+        Project project = new Project("complex-test")
+                .addFile(src1, FileUtils.readFileToString(new File("src/test/java/" + src1)))
+                .addSystemClasses(bootstrap)
+                .compile()
+                .setupVM(SystemExamples.class.getCanonicalName(), "test");
+        Object res = project.run();
     }
 }
