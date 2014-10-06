@@ -8,6 +8,38 @@ import java.io.Serializable;
 import java.security.SecureClassLoader;
 import java.util.*;
 
+class RemapMethodVisitor extends MethodAdapter {
+    public RemapMethodVisitor(MethodVisitor mv) {
+        super(mv);
+    }
+
+    public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+        if ("java/io/File".equals(owner)) {
+            // TODO values from remapping
+            mv.visitMethodInsn(opcode, "com/googlecode/jvmvm/tests/interpretable/FileStub", name, desc);
+        } else {
+            mv.visitMethodInsn(opcode, owner, name, desc);
+        }
+    }
+
+    public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
+        mv.visitLocalVariable(name, desc, signature, start, end, index);
+    }
+
+    public void visitTypeInsn(int opcode, String type) {
+        if ("java/io/File".equals(type)) {
+            // TODO values from remapping
+            mv.visitTypeInsn(opcode, "com/googlecode/jvmvm/tests/interpretable/FileStub");
+        } else {
+            mv.visitTypeInsn(opcode, type);
+        }
+    }
+
+    public void visitVarInsn(int opcode, int var) {
+        mv.visitVarInsn(opcode, var);
+    }
+}
+
 class Modifier extends ClassAdapter {
     public Modifier(ClassVisitor cv) {
         super(cv);
@@ -24,7 +56,11 @@ class Modifier extends ClassAdapter {
             name = "void";
         }
         access &= ~Opcodes.ACC_TRANSIENT;
-        return super.visitMethod(access, name, desc, signature, exceptions);
+        MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
+        if (null != mv) {
+            return new RemapMethodVisitor(mv);
+        }
+        return mv;
     }
 
     @Override
