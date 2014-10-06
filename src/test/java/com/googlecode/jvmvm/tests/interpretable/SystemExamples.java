@@ -11,7 +11,9 @@ public class SystemExamples {
     public static String x() {
         String x = "qwerty";
         x += "12345";
+        System.out.println("hello out!");
         System.out.println(x);
+        System.err.println("hello err!");
         System.err.println(x);
         return x;
     }
@@ -25,25 +27,5 @@ public class SystemExamples {
         res += (file.getName().equals("file1.bin") ? "name ok;" : "name fail;");
         res += (file.exists() ? "file exists;" : "no file;");
         return res;
-    }
-}
-
-class FileStub {
-    String name;
-
-    FileStub(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean delete() {
-        return true;
-    }
-
-    public boolean exists() {
-        return false;
     }
 }

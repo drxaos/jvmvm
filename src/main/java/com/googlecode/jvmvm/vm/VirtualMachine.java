@@ -409,7 +409,6 @@ class CustomClassLoaderObjectOutputStream extends ObjectOutputStream {
     }
 
     static {
-        //addPlaceholder(new HashMap$Entry());
         addPlaceholder(new HashMap$EntrySet());
         addPlaceholder(new HashMap$EntryIterator());
     }

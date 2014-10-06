@@ -7,9 +7,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.*;
 
 public class SubstitutionTest {
@@ -25,6 +23,8 @@ public class SubstitutionTest {
             String.class.getName(),
             StringBuilder.class.getName(),
             CharSequence.class.getName(),
+
+            PrintStream.class.getName(),
 
             Character.class.getName(),
             Boolean.class.getName(),
@@ -67,6 +67,82 @@ public class SubstitutionTest {
             TreeMap.class.getName()
     );
 
+    Map<String, String> remapping = new HashMap<String, String>() {{
+        put(File.class.getName(), FileStub.class.getName());
+        put(System.class.getName(), SystemStub.class.getName());
+    }};
+
+    public static class FileStub {
+        String name;
+
+        public FileStub(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean delete() {
+            return true;
+        }
+
+        public boolean exists() {
+            return false;
+        }
+    }
+
+    public static class SystemStub {
+        public static ByteArrayOutputStream outBytes;
+        public static ByteArrayOutputStream errBytes;
+        public static PrintStream out;
+        public static PrintStream err;
+
+        static {
+            reset();
+        }
+
+        public static void reset() {
+            outBytes = new ByteArrayOutputStream();
+            errBytes = new ByteArrayOutputStream();
+            out = new PrintStream(outBytes);
+            err = new PrintStream(errBytes);
+        }
+    }
+
+    @Test
+    public void test_vm_system() throws Exception {
+        String src1 = SystemExamples.class.getCanonicalName().replace(".", "/") + ".java";
+
+        Project project = new Project("serializer-test")
+                .addFile(src1, FileUtils.readFileToString(new File("src/test/java/" + src1)))
+                .addSystemClasses(bootstrap)
+                .remap(remapping)
+                .addSystemClasses(remapping.values())
+                .compile()
+                .setupVM(SystemExamples.class.getCanonicalName(), "test");
+
+        byte[] bytes = project.saveToBytes();
+
+        SystemStub.reset();
+        Object res = project.run();
+
+        String expected = "qwerty12345";
+        Assert.assertEquals("result", expected, res);
+        Assert.assertEquals("out", "hello out!\n" + expected + "\n", new String(SystemStub.outBytes.toByteArray()));
+        Assert.assertEquals("err", "hello err!\n" + expected + "\n", new String(SystemStub.errBytes.toByteArray()));
+
+        SystemStub.reset();
+        Project project2 = Project.fromBytes(bytes);
+        while (project2.isActive()) {
+            project2.step(true);
+        }
+        Object res2 = project2.getResult();
+        Assert.assertEquals("result2", expected, res2);
+        Assert.assertEquals("out", "hello out!\n" + expected + "\n", new String(SystemStub.outBytes.toByteArray()));
+        Assert.assertEquals("err", "hello err!\n" + expected + "\n", new String(SystemStub.errBytes.toByteArray()));
+    }
+
     @Test
     public void test_vm_system_file() throws Exception {
         String src1 = SystemExamples.class.getCanonicalName().replace(".", "/") + ".java";
@@ -74,7 +150,8 @@ public class SubstitutionTest {
         Project project = new Project("serializer-test")
                 .addFile(src1, FileUtils.readFileToString(new File("src/test/java/" + src1)))
                 .addSystemClasses(bootstrap)
-                .remap("java/io/File", "com/googlecode/jvmvm/tests/interpretable/FileStub")
+                .remap("java/io/File", FileStub.class.getName())
+                .addSystemClass(FileStub.class.getName())
                 .compile()
                 .setupVM(SystemExamples.class.getCanonicalName(), "test1");
 

@@ -9,14 +9,25 @@ import java.security.SecureClassLoader;
 import java.util.*;
 
 class RemapMethodVisitor extends MethodAdapter {
-    public RemapMethodVisitor(MethodVisitor mv) {
+    Map<String, String> remapping;
+
+    public RemapMethodVisitor(MethodVisitor mv, Map<String, String> remapping) {
         super(mv);
+        this.remapping = remapping;
+    }
+
+    @Override
+    public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+        if (remapping.keySet().contains(owner)) {
+            mv.visitFieldInsn(opcode, remapping.get(owner), name, desc);
+        } else {
+            mv.visitFieldInsn(opcode, owner, name, desc);
+        }
     }
 
     public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-        if ("java/io/File".equals(owner)) {
-            // TODO values from remapping
-            mv.visitMethodInsn(opcode, "com/googlecode/jvmvm/tests/interpretable/FileStub", name, desc);
+        if (remapping.keySet().contains(owner)) {
+            mv.visitMethodInsn(opcode, remapping.get(owner), name, desc);
         } else {
             mv.visitMethodInsn(opcode, owner, name, desc);
         }
@@ -27,9 +38,8 @@ class RemapMethodVisitor extends MethodAdapter {
     }
 
     public void visitTypeInsn(int opcode, String type) {
-        if ("java/io/File".equals(type)) {
-            // TODO values from remapping
-            mv.visitTypeInsn(opcode, "com/googlecode/jvmvm/tests/interpretable/FileStub");
+        if (remapping.keySet().contains(type)) {
+            mv.visitTypeInsn(opcode, remapping.get(type));
         } else {
             mv.visitTypeInsn(opcode, type);
         }
@@ -41,8 +51,11 @@ class RemapMethodVisitor extends MethodAdapter {
 }
 
 class Modifier extends ClassAdapter {
-    public Modifier(ClassVisitor cv) {
+    Map<String, String> remapping;
+
+    public Modifier(ClassVisitor cv, Map<String, String> remapping) {
         super(cv);
+        this.remapping = remapping;
     }
 
     @Override
@@ -58,7 +71,7 @@ class Modifier extends ClassAdapter {
         access &= ~Opcodes.ACC_TRANSIENT;
         MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
         if (null != mv) {
-            return new RemapMethodVisitor(mv);
+            return new RemapMethodVisitor(mv, remapping);
         }
         return mv;
     }
@@ -91,6 +104,7 @@ public class MemoryClassLoader extends SecureClassLoader {
     );
 
     Map<String, byte[]> classes = new HashMap<String, byte[]>();
+    Map<String, String> remapping = new HashMap<String, String>();
     boolean vmDisabled = false;
     Set<String> modifiedClasses = new HashSet<String>();
     ClassLoader fallbackClassLoader;
@@ -111,8 +125,12 @@ public class MemoryClassLoader extends SecureClassLoader {
     }
 
     MemoryClassLoader addSystemClass(String className) throws ClassNotFoundException {
-        super.loadClass(className, false);
         classes.put(className, new byte[0]);
+        return this;
+    }
+
+    MemoryClassLoader addRemapping(String className, String toClassName) {
+        remapping.put(className.replace(".", "/"), toClassName.replace(".", "/"));
         return this;
     }
 
@@ -126,7 +144,7 @@ public class MemoryClassLoader extends SecureClassLoader {
 
                     if (classes.get(name).length == 0) {
                         try {
-                            c = super.loadClass(name, resolve);
+                            c = fallbackClassLoader.loadClass(name);
                         } catch (ClassNotFoundException e) {
                             // ClassNotFoundException thrown if class not found
                             // from the non-null parent class loader
@@ -163,10 +181,14 @@ public class MemoryClassLoader extends SecureClassLoader {
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         byte[] b = classes.get(name);
 
+        if (b.length == 0) {
+            return super.findClass(name);
+        }
+
         if (!vmDisabled && !modifiedClasses.contains(name)) {
             ClassReader cr = new ClassReader(b);
             ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-            Modifier mcw = new Modifier(cw);
+            Modifier mcw = new Modifier(cw, remapping);
             cr.accept(mcw, 0);
             b = cw.toByteArray();
             classes.put(name, b);

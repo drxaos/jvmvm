@@ -6,15 +6,13 @@ import com.googlecode.jvmvm.vm.GlobalCodeLoader;
 import com.googlecode.jvmvm.vm.VirtualMachine;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Project implements Serializable {
     String projectName;
     Map<String, String> files = new HashMap<String, String>();
     List<String> systemClasses = new ArrayList<String>();
+    Map<String, String> remapping = new HashMap<String, String>();
     com.googlecode.jvmvm.compiler.Compiler compiler = new JavaCompiler();
     boolean started = false;
     boolean vmDisabled = false;
@@ -81,6 +79,9 @@ public class Project implements Serializable {
                 throw new ProjectCompilerException("cannot load system class", e);
             }
         }
+        for (Map.Entry<String, String> remapClass : remapping.entrySet()) {
+            classLoader.addRemapping(remapClass.getKey(), remapClass.getValue());
+        }
         compiled = true;
         shouldCompile = true;
         return this;
@@ -95,7 +96,7 @@ public class Project implements Serializable {
         return classLoader;
     }
 
-    public Project addSystemClasses(List<String> list) throws ClassNotFoundException {
+    public Project addSystemClasses(Collection<String> list) throws ClassNotFoundException {
         for (String className : list) {
             addSystemClass(className);
         }
@@ -220,5 +221,20 @@ public class Project implements Serializable {
 
     public Object getResult() {
         return virtualMachine.getResult();
+    }
+
+    public Project remap(Map<String, String> remapping) {
+        for (Map.Entry<String, String> e : remapping.entrySet()) {
+            remap(e.getKey(), e.getValue());
+        }
+        return this;
+    }
+
+    public Project remap(String fromClass, String toClass) {
+        remapping.put(fromClass, toClass);
+        if (classLoader != null) {
+            classLoader.addRemapping(fromClass, toClass);
+        }
+        return this;
     }
 }
