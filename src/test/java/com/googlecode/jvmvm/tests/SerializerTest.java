@@ -2,7 +2,7 @@ package com.googlecode.jvmvm.tests;
 
 import com.googlecode.jvmvm.loader.Project;
 import com.googlecode.jvmvm.loader.ProjectExecutionException;
-import com.googlecode.jvmvm.tests.interpretable.HashMapExamples;
+import com.googlecode.jvmvm.tests.interpretable.MapExamples;
 import com.googlecode.jvmvm.tests.interpretable.SystemExamples;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -41,6 +41,7 @@ public class SerializerTest {
 
             Iterable.class.getName(),
             Iterator.class.getName(),
+            Collection.class.getName(),
 
             StackTraceElement.class.getName(),
             Throwable.class.getName(),
@@ -62,26 +63,50 @@ public class SerializerTest {
             HashSet.class.getName(),
 
             Map.class.getName(),
-            Map.Entry.class.getName(),
             HashMap.class.getName(),
-            "java.util.HashMap$EntrySet"
+            TreeMap.class.getName()
     );
 
     @Test
     public void test_vm_hashmap_entry() throws Exception {
-        String src1 = HashMapExamples.class.getCanonicalName().replace(".", "/") + ".java";
+        String src1 = MapExamples.class.getCanonicalName().replace(".", "/") + ".java";
 
-        Project project = new Project("complex-test")
+        Project project = new Project("serializer-test")
                 .addFile(src1, FileUtils.readFileToString(new File("src/test/java/" + src1)))
                 .addSystemClasses(bootstrap)
                 .compile()
-                .setupVM(HashMapExamples.class.getCanonicalName(), "test");
+                .setupVM(MapExamples.class.getCanonicalName(), "testHashMapEntry");
 
         byte[] bytes = project.saveToBytes();
 
         Object res = project.run();
 
-        String expected = HashMapExamples.test();
+        String expected = MapExamples.testHashMapEntry();
+        Assert.assertEquals("result", expected, res);
+
+        Project project2 = Project.fromBytes(bytes);
+        while (project2.isActive()) {
+            project2.step(true);
+        }
+        Object res2 = project2.getResult();
+        Assert.assertEquals("result2", expected, res2);
+    }
+
+    @Test
+    public void test_vm_treemap_entry() throws Exception {
+        String src1 = MapExamples.class.getCanonicalName().replace(".", "/") + ".java";
+
+        Project project = new Project("serializer-test")
+                .addFile(src1, FileUtils.readFileToString(new File("src/test/java/" + src1)))
+                .addSystemClasses(bootstrap)
+                .compile()
+                .setupVM(MapExamples.class.getCanonicalName(), "testTreeMapEntry");
+
+        byte[] bytes = project.saveToBytes();
+
+        Object res = project.run();
+
+        String expected = MapExamples.testTreeMapEntry();
         Assert.assertEquals("result", expected, res);
 
         Project project2 = Project.fromBytes(bytes);
@@ -96,7 +121,7 @@ public class SerializerTest {
     public void test_vm_system() throws Exception {
         String src1 = SystemExamples.class.getCanonicalName().replace(".", "/") + ".java";
 
-        Project project = new Project("complex-test")
+        Project project = new Project("serializer-test")
                 .addFile(src1, FileUtils.readFileToString(new File("src/test/java/" + src1)))
                 .addSystemClasses(bootstrap)
                 .compile()
