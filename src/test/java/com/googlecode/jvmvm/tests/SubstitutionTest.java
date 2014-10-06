@@ -133,8 +133,8 @@ public class SubstitutionTest {
 
         String expected = "qwerty12345";
         Assert.assertEquals("result", expected, res);
-        Assert.assertEquals("out", "hello out!\n" + expected + "\n", new String(SystemStub.outBytes.toByteArray()));
-        Assert.assertEquals("err", "hello err!\n" + expected + "\n", new String(SystemStub.errBytes.toByteArray()));
+        Assert.assertEquals("out", "hello out!\n" + expected + "\n", new String(SystemStub.outBytes.toByteArray()).replace("\r\n", "\n").replace("\r", "\n"));
+        Assert.assertEquals("err", "hello err!\n" + expected + "\n", new String(SystemStub.errBytes.toByteArray()).replace("\r\n", "\n").replace("\r", "\n"));
 
         SystemStub.reset();
         Project project2 = Project.fromBytes(bytes);
@@ -143,8 +143,8 @@ public class SubstitutionTest {
         }
         Object res2 = project2.getResult();
         Assert.assertEquals("result2", expected, res2);
-        Assert.assertEquals("out", "hello out!\n" + expected + "\n", new String(SystemStub.outBytes.toByteArray()));
-        Assert.assertEquals("err", "hello err!\n" + expected + "\n", new String(SystemStub.errBytes.toByteArray()));
+        Assert.assertEquals("out", "hello out!\n" + expected + "\n", new String(SystemStub.outBytes.toByteArray()).replace("\r\n", "\n").replace("\r", "\n"));
+        Assert.assertEquals("err", "hello err!\n" + expected + "\n", new String(SystemStub.errBytes.toByteArray()).replace("\r\n", "\n").replace("\r", "\n"));
     }
 
     @Test
