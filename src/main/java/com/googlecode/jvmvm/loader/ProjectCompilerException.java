@@ -9,7 +9,7 @@ public class ProjectCompilerException extends RuntimeException {
     }
 
     public ProjectCompilerException(String message, Object data) {
-        super(message);
+        super(message + ": " + data);
         this.data = data;
     }
 

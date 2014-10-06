@@ -26,6 +26,8 @@ public class Project implements Serializable {
     boolean shouldCompile = false;
     transient boolean compiled = false;
 
+    Map<String, Object> marks = new HashMap<String, Object>();
+
     transient MemoryClassLoader classLoader;
     transient VirtualMachine virtualMachine;
 
@@ -85,7 +87,7 @@ public class Project implements Serializable {
         if (compiled) {
             throw new ProjectException("already compiled");
         }
-        Map<String, byte[]> classes = compiler.compile(files, jars);
+        Map<String, byte[]> classes = compiler.compile(files, systemClasses, jars);
         ClassLoader fallbackClassLoader = this.getClass().getClassLoader();
         classLoader = new MemoryClassLoader(fallbackClassLoader, classes);
         for (String bootstrapClass : systemClasses) {
@@ -107,7 +109,7 @@ public class Project implements Serializable {
         if (compiled) {
             throw new ProjectException("already compiled");
         }
-        Map<String, byte[]> classes = compiler.compile(files, jars);
+        Map<String, byte[]> classes = compiler.compile(files, systemClasses, jars);
         compiled = true;
         shouldCompile = false;
 
@@ -181,6 +183,11 @@ public class Project implements Serializable {
         if (vmDisabled) {
             throw new ProjectLoaderException("vm disabled");
         }
+        for (int i = 0; i < paramValues.length; i++) {
+            if (paramValues[i] instanceof Marker) {
+                paramValues[i] = findMarkedObject(((Marker) paramValues[i]).name);
+            }
+        }
         if (vmState != null && virtualMachine == null) {
             try {
                 virtualMachine = VirtualMachine.create(classLoader, vmState);
@@ -199,6 +206,12 @@ public class Project implements Serializable {
             } catch (Throwable throwable) {
                 throw new ProjectLoaderException("vm start error", throwable);
             }
+        }
+        if (marks != null) {
+            for (Map.Entry<String, Object> e : marks.entrySet()) {
+                virtualMachine.setMark(e.getKey(), e.getValue());
+            }
+            marks = null;
         }
         started = true;
         return this;
@@ -256,6 +269,37 @@ public class Project implements Serializable {
         return virtualMachine.isActive();
     }
 
+    public Project markObject(String name, Serializable obj) {
+        if (vmState != null && virtualMachine == null) {
+            try {
+                virtualMachine = VirtualMachine.create(classLoader, vmState);
+            } catch (Throwable throwable) {
+                throw new ProjectLoaderException("vm load error", throwable);
+            }
+        }
+        if (virtualMachine != null) {
+            virtualMachine.setMark(name, obj);
+        } else {
+            marks.put(name, obj);
+        }
+        return this;
+    }
+
+    public Object findMarkedObject(String name) {
+        if (vmState != null && virtualMachine == null) {
+            try {
+                virtualMachine = VirtualMachine.create(classLoader, vmState);
+            } catch (Throwable throwable) {
+                throw new ProjectLoaderException("vm load error", throwable);
+            }
+        }
+        if (virtualMachine != null) {
+            return virtualMachine.getMark(name);
+        } else {
+            return marks.get(name);
+        }
+    }
+
     public Object getResult() {
         return virtualMachine.getResult();
     }
@@ -273,5 +317,17 @@ public class Project implements Serializable {
             classLoader.addRemapping(fromClass, toClass);
         }
         return this;
+    }
+
+    public static class Marker {
+        String name;
+
+        public Marker(String name) {
+            this.name = name;
+        }
+
+        public static Marker byName(String name) {
+            return new Marker(name);
+        }
     }
 }

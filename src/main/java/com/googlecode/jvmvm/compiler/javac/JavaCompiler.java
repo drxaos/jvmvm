@@ -1,6 +1,7 @@
 package com.googlecode.jvmvm.compiler.javac;
 
 import com.googlecode.jvmvm.loader.ProjectCompilerException;
+import org.apache.commons.io.IOUtils;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.FileObject;
@@ -16,7 +17,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
 public class JavaCompiler implements com.googlecode.jvmvm.compiler.Compiler {
-    public Map<String, byte[]> compile(Map<String, String> files, List<byte[]> jars) throws ProjectCompilerException {
+    public Map<String, byte[]> compile(Map<String, String> files, List<String> systemClasses, List<byte[]> jars) throws ProjectCompilerException {
         javax.tools.JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
         ClassFileManager fileManager = new ClassFileManager(compiler.getStandardFileManager(null, null, null), files, jars);
@@ -37,6 +38,15 @@ public class JavaCompiler implements com.googlecode.jvmvm.compiler.Compiler {
                 in.close();
             } catch (IOException e) {
                 throw new ProjectCompilerException("jar parse error", e);
+            }
+        }
+        for (String systemClass : systemClasses) {
+            try {
+                String path = systemClass.replace(".", "/") + ".class";
+                byte[] b = IOUtils.toByteArray(Class.forName(systemClass).getClassLoader().getResourceAsStream(path));
+                fileManager.addClassInput(path, systemClass, b);
+            } catch (Exception e) {
+                // don't add
             }
         }
         Boolean res = compiler.getTask(null, fileManager, diagnostics, null, null, fileManager.getSourceObjects()).call();

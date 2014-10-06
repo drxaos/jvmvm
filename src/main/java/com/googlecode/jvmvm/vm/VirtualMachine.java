@@ -59,6 +59,7 @@ public final class VirtualMachine implements Serializable {
 
     private Map<FieldRef, Object> staticValues = new LinkedHashMap<FieldRef, Object>();
     private Set<Class> clinitedClasses = new HashSet<Class>();
+    Map<String, Object> marks = new HashMap<String, Object>();
 
     transient ClassLoader classLoader;
 
@@ -357,6 +358,14 @@ public final class VirtualMachine implements Serializable {
     public void setStaticValue(FieldRef f, Object value) {
         staticValues.remove(f);
         staticValues.put(f, value);
+    }
+
+    public void setMark(String name, Object object) {
+        marks.put(name, object);
+    }
+
+    public Object getMark(String name) {
+        return marks.get(name);
     }
 }
 
