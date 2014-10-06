@@ -4,13 +4,18 @@ import com.googlecode.jvmvm.compiler.Compiler;
 import com.googlecode.jvmvm.compiler.javac.JavaCompiler;
 import com.googlecode.jvmvm.vm.GlobalCodeLoader;
 import com.googlecode.jvmvm.vm.VirtualMachine;
+import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 public class Project implements Serializable {
     String projectName;
     Map<String, String> files = new HashMap<String, String>();
+    List<byte[]> jars = new ArrayList<byte[]>();
     List<String> systemClasses = new ArrayList<String>();
     Map<String, String> remapping = new HashMap<String, String>();
     com.googlecode.jvmvm.compiler.Compiler compiler = new JavaCompiler();
@@ -51,6 +56,15 @@ public class Project implements Serializable {
         this.projectName = projectName;
     }
 
+    public Project addJar(String fileName) throws IOException {
+        return addJar(FileUtils.readFileToByteArray(new File(fileName)));
+    }
+
+    public Project addJar(byte[] contents) {
+        jars.add(contents);
+        return this;
+    }
+
     public Project addFile(String fileName, String contents) {
         files.put(fileName, contents);
         return this;
@@ -71,7 +85,9 @@ public class Project implements Serializable {
         if (compiled) {
             throw new ProjectException("already compiled");
         }
-        classLoader = new MemoryClassLoader(this.getClass().getClassLoader(), compiler.compile(files));
+        Map<String, byte[]> classes = compiler.compile(files, jars);
+        ClassLoader fallbackClassLoader = this.getClass().getClassLoader();
+        classLoader = new MemoryClassLoader(fallbackClassLoader, classes);
         for (String bootstrapClass : systemClasses) {
             try {
                 classLoader.addSystemClass(bootstrapClass);
@@ -85,6 +101,27 @@ public class Project implements Serializable {
         compiled = true;
         shouldCompile = true;
         return this;
+    }
+
+    public byte[] compileJar() throws IOException {
+        if (compiled) {
+            throw new ProjectException("already compiled");
+        }
+        Map<String, byte[]> classes = compiler.compile(files, jars);
+        compiled = true;
+        shouldCompile = false;
+
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
+        JarOutputStream jar = new JarOutputStream(b, new Manifest());
+        for (Map.Entry<String, byte[]> e : classes.entrySet()) {
+            JarEntry jarAdd = new JarEntry(e.getKey().replace(".", "/") + ".class");
+            jarAdd.setTime(System.currentTimeMillis());
+            jar.putNextEntry(jarAdd);
+            jar.write(e.getValue());
+        }
+        jar.close();
+
+        return b.toByteArray();
     }
 
     public MemoryClassLoader getClassLoader() {
