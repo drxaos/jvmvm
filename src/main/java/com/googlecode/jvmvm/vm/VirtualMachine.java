@@ -173,7 +173,7 @@ public final class VirtualMachine implements Serializable {
         while (frame != null) {
             try {
                 synchronized (this) {
-                    Insn insn = insns[cp];
+                    Insn insn = insns[cp++];
 
                     // clinit executed immediately if:
                     //  + T is a class and an instance of T is created.
@@ -183,11 +183,10 @@ public final class VirtualMachine implements Serializable {
                     //  + T is a top level class (§7.6), and an assert statement (§14.10) lexically nested within T (§8.1.3) is executed.
                     Class clinitCls = insn.getClassForClinit();
                     if (clinitCls != null && InvokeStaticInitializer.shouldClinit(this, clinitCls)) {
+                        cp--;
                         InvokeStaticInitializer.invoke(this, clinitCls);
-                        insn = insns[cp];
+                        insn = insns[cp++];
                     }
-
-                    cp++;
                     insn.execute(this);
 
                     stepNumber++;
