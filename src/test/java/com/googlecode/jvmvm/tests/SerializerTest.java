@@ -2,6 +2,7 @@ package com.googlecode.jvmvm.tests;
 
 import com.googlecode.jvmvm.loader.Project;
 import com.googlecode.jvmvm.loader.ProjectExecutionException;
+import com.googlecode.jvmvm.tests.interpretable.CustomExamples;
 import com.googlecode.jvmvm.tests.interpretable.MapExamples;
 import com.googlecode.jvmvm.tests.interpretable.SystemExamples;
 import org.apache.commons.io.FileUtils;
@@ -11,6 +12,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 public class SerializerTest {
@@ -49,6 +51,7 @@ public class SerializerTest {
             RuntimeException.class.getName(),
             UnsupportedOperationException.class.getName(),
             NoSuchElementException.class.getName(),
+            UnsupportedEncodingException.class.getName(),
 
             Serializable.class.getName(),
 
@@ -107,6 +110,31 @@ public class SerializerTest {
         Object res = project.run();
 
         String expected = MapExamples.testTreeMapEntry();
+        Assert.assertEquals("result", expected, res);
+
+        Project project2 = Project.fromBytes(bytes);
+        while (project2.isActive()) {
+            project2.step(true);
+        }
+        Object res2 = project2.getResult();
+        Assert.assertEquals("result2", expected, res2);
+    }
+
+    @Test
+    public void test_vm_custom1() throws Exception {
+        String src1 = CustomExamples.class.getCanonicalName().replace(".", "/") + ".java";
+
+        Project project = new Project("serializer-test")
+                .addFile(src1, FileUtils.readFileToString(new File("src/test/java/" + src1)))
+                .addSystemClasses(bootstrap)
+                .compile()
+                .setupVM(CustomExamples.class.getCanonicalName(), "test");
+
+        byte[] bytes = project.saveToBytes();
+
+        Object res = project.run();
+
+        String expected = CustomExamples.test();
         Assert.assertEquals("result", expected, res);
 
         Project project2 = Project.fromBytes(bytes);

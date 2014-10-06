@@ -33,7 +33,8 @@ public class Mapper implements PlaceholderFactory {
                 for (Field field : fieldList) {
                     field.setAccessible(true);
                     modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-                    field.set(obj, fields.get(field.getDeclaringClass().getName() + "/" + field.getName()));
+                    Object val = fields.get(field.getDeclaringClass().getName() + "/" + field.getName());
+                    field.set(obj, val);
                 }
                 return obj;
             } catch (IllegalAccessException e) {
@@ -73,7 +74,9 @@ public class Mapper implements PlaceholderFactory {
             for (Field field : fieldList) {
                 field.setAccessible(true);
                 modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-                placeholder.fields.put(field.getDeclaringClass().getName() + "/" + field.getName(), field.get(original));
+                Object val = field.get(original);
+                String key = field.getDeclaringClass().getName() + "/" + field.getName();
+                placeholder.fields.put(key, val);
             }
             return placeholder;
         } catch (IllegalAccessException e) {

@@ -1,6 +1,7 @@
 package com.googlecode.jvmvm.tests.interpretable;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.TreeMap;
 
 public class MapExamples {
@@ -18,10 +19,20 @@ public class MapExamples {
         map.put("c", "3");
         map.put("d", "4");
 
-        Object e1 = map.entrySet().iterator().next();
+        Iterator iterator = map.entrySet().iterator();
+        Object e1 = iterator.next();
         Object e2 = sameObj(e1);
         if (sameObj(e1) == sameObj(e2)) {
             result += "success:" + e1 + ":" + e2 + ";";
+        } else {
+            result += "fail;";
+        }
+        iterator.next();
+        iterator.next();
+        Object e3 = iterator.next();
+        Object e4 = sameObj(e1);
+        if (sameObj(e3) == sameObj(e4)) {
+            result += "success:" + e3 + ":" + e4 + ";";
         } else {
             result += "fail;";
         }
@@ -54,10 +65,20 @@ public class MapExamples {
         map.put("c", "3");
         map.put("d", "4");
 
-        Object e1 = map.entrySet().iterator().next();
+        Iterator iterator = map.entrySet().iterator();
+        Object e1 = iterator.next();
         Object e2 = sameObj(e1);
         if (sameObj(e1) == sameObj(e2)) {
             result += "success:" + e1 + ":" + e2 + ";";
+        } else {
+            result += "fail;";
+        }
+        iterator.next();
+        iterator.next();
+        Object e3 = iterator.next();
+        Object e4 = sameObj(e1);
+        if (sameObj(e3) == sameObj(e4)) {
+            result += "success:" + e3 + ":" + e4 + ";";
         } else {
             result += "fail;";
         }
