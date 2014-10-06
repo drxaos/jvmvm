@@ -10,14 +10,13 @@ public class SystemExamples {
 
     public static String x() {
         String x = "qwerty";
-        x += "12345";
+        x += System.currentTimeMillis();
         System.out.println("hello out!");
         System.out.println(x);
         System.err.println("hello err!");
         System.err.println(x);
         return x;
     }
-
 
     public static String test1() {
         String res = "";

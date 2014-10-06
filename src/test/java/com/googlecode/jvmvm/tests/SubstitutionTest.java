@@ -102,6 +102,10 @@ public class SubstitutionTest {
             reset();
         }
 
+        public static long currentTimeMillis() {
+            return 12345l;
+        }
+
         public static void reset() {
             outBytes = new ByteArrayOutputStream();
             errBytes = new ByteArrayOutputStream();
