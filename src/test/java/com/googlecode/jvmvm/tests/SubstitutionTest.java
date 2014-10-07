@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.util.*;
 
 public class SubstitutionTest {
@@ -25,6 +26,7 @@ public class SubstitutionTest {
             CharSequence.class.getName(),
 
             PrintStream.class.getName(),
+            BufferedInputStream.class.getName(),
 
             Character.class.getName(),
             Boolean.class.getName(),
@@ -49,6 +51,8 @@ public class SubstitutionTest {
             UnsupportedOperationException.class.getName(),
             NoSuchElementException.class.getName(),
             UnsupportedEncodingException.class.getName(),
+            IOException.class.getName(),
+            MalformedURLException.class.getName(),
 
             Serializable.class.getName(),
 
@@ -114,6 +118,42 @@ public class SubstitutionTest {
         }
     }
 
+    public static class UrlStub {
+        String url;
+
+        public UrlStub(String url) {
+            this.url = url;
+        }
+
+        public final InputStream openStream() throws java.io.IOException {
+            return new ByteArrayInputStream("file contents".getBytes());
+        }
+    }
+
+    public static class FileOutputStreamStub {
+        String fileName;
+        static ByteArrayOutputStream file = new ByteArrayOutputStream();
+
+        static String getFileContents() {
+            return new String(file.toByteArray());
+        }
+
+        static void resetFileContents() {
+            file = new ByteArrayOutputStream();
+        }
+
+        public FileOutputStreamStub(String fileName) {
+            this.fileName = fileName;
+        }
+
+        public void close() throws IOException {
+        }
+
+        public void write(byte b[], int off, int len) throws IOException {
+            file.write(b, off, len);
+        }
+    }
+
     @Test
     public void test_vm_system() throws Exception {
         String src1 = SystemExamples.class.getCanonicalName().replace(".", "/") + ".java";
@@ -172,5 +212,36 @@ public class SubstitutionTest {
         }
         Object res2 = project2.getResult();
         Assert.assertEquals("result2", expected, res2);
+    }
+
+    @Test
+    public void test_vm_system_network() throws Exception {
+        String src1 = SystemExamples.class.getCanonicalName().replace(".", "/") + ".java";
+
+        Project project = new Project("serializer-test")
+                .addFile(src1, FileUtils.readFileToString(new File("src/test/java/" + src1)))
+                .addSystemClasses(bootstrap)
+                .remap("java/net/URL", UrlStub.class.getName())
+                .addSystemClass(UrlStub.class.getName())
+                .remap("java/io/FileOutputStream", FileOutputStreamStub.class.getName())
+                .addSystemClass(FileOutputStreamStub.class.getName())
+                .compile()
+                .setupVM(SystemExamples.class.getCanonicalName(), "test2");
+
+        byte[] bytes = project.saveToBytes();
+
+        FileOutputStreamStub.resetFileContents();
+        project.run();
+
+        String expected = "file contents";
+        Assert.assertEquals("result", expected, FileOutputStreamStub.getFileContents());
+
+        Project project2 = Project.fromBytes(bytes);
+
+        FileOutputStreamStub.resetFileContents();
+        while (project2.isActive()) {
+            project2.step(true);
+        }
+        Assert.assertEquals("result2", expected, FileOutputStreamStub.getFileContents());
     }
 }
