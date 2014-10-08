@@ -1,26 +1,26 @@
 package com.googlecode.jvmvm.ui;
 
 import org.apache.commons.io.FileUtils;
-import org.fife.rsta.ac.java.JavaCompletionProvider;
-import org.fife.rsta.ac.java.buildpath.ClasspathLibraryInfo;
 import org.fife.rsta.ui.GoToDialog;
 import org.fife.rsta.ui.search.FindDialog;
 import org.fife.rsta.ui.search.ReplaceDialog;
 import org.fife.rsta.ui.search.SearchDialogSearchContext;
-import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.SearchEngine;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.io.File;
-import java.util.Arrays;
+import java.util.*;
+import java.util.List;
 
 
 /**
@@ -35,9 +35,10 @@ import java.util.Arrays;
 public class Editor extends JFrame implements ActionListener {
 
     private RSyntaxTextArea textArea;
+    private RTextScrollPane textScroll;
+    private JConsole playArea;
     private FindDialog findDialog;
     private ReplaceDialog replaceDialog;
-
 
     public Editor() {
 
@@ -47,37 +48,94 @@ public class Editor extends JFrame implements ActionListener {
         JPanel cp = new JPanel(new BorderLayout());
         setContentPane(cp);
 
-        textArea = new RSyntaxTextArea(30, 100);
+        playArea = new JConsole(50, 25);
+        playArea.setFocusable(true);
+        playArea.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                playArea.grabFocus();
+            }
+        });
+        playArea.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() == 'a') {
+                    textScroll.setVisible(true);
+                    pack();
+                    pack();
+                    setLocationRelativeTo(null);
+                }
+            }
+        });
+        cp.add(playArea, BorderLayout.WEST);
+
+        textArea = new RSyntaxTextArea();
+        textArea.setFont(JConsole.DEFAULT_FONT);
         textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
         textArea.setCodeFoldingEnabled(true);
         textArea.setBracketMatchingEnabled(true);
         textArea.setAnimateBracketMatching(true);
         textArea.setTabsEmulated(true);
         textArea.setAntiAliasingEnabled(true);
-        RTextScrollPane sp = new RTextScrollPane(textArea);
-        cp.add(sp);
+        textScroll = new RTextScrollPane(textArea);
+        textScroll.setPreferredSize(playArea.getPreferredSize());
+        textScroll.setVisible(false);
+        cp.add(textScroll, BorderLayout.CENTER);
 
-        JavaCompletionProvider provider = new JavaCompletionProvider();
-        try {
-            provider.addJar(new ClasspathLibraryInfo(Arrays.asList(
-                    Editor.class.getName()
-            )));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        AutoCompletion ac = new AutoCompletion(provider);
-        ac.install(textArea);
+        textArea.addVetoableChangeListener(new VetoableChangeListener() {
+            @Override
+            public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+
+            }
+        });
 
         setTitle("Editor");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         pack();
+
+        textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
         setLocationRelativeTo(null);
+
+        setResizable(false);
     }
 
 
     public void setText(String text) {
         textArea.setText(text);
         textArea.setCaretPosition(0);
+    }
+
+    public void setMap(char[][] map) {
+
+        playArea.setBackground(Color.BLACK);
+        playArea.setForeground(Color.GRAY);
+        playArea.setCursorPos(49, 24);
+        playArea.write('\n');
+
+        for (int y = 0; y < map.length; y++) {
+            for (int x = 0; x < map[y].length; x++) {
+                char c = map[y][x];
+                if (c == 0) {
+                    playArea.setBackground(Color.BLACK);
+                    playArea.setForeground(Color.GRAY);
+                    playArea.write(' ');
+                } else {
+                    playArea.setBackground(Color.BLACK);
+                    playArea.setForeground(Color.GRAY);
+                    playArea.write(c);
+                }
+            }
+        }
+
+
+//        try {
+//            RSyntaxDocument doc = (RSyntaxDocument) playArea.getDocument();
+//            doc.replace(0, doc.getLength(), mapStr, null);
+//        } catch (BadLocationException e) {
+//            UIManager.getLookAndFeel().provideErrorFeedback(playArea);
+//        }
+
     }
 
     private JMenuBar createMenuBar() {
@@ -206,9 +264,16 @@ public class Editor extends JFrame implements ActionListener {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     Editor editor = new Editor();
 
-                    String src1 = Editor.class.getCanonicalName().replace(".", "/") + ".java";
-                    String s = FileUtils.readFileToString(new File("src/main/java/" + src1));
-                    editor.setText(s);
+                    final Game game=new Game();
+                    new Timer(100, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            game.step();
+                            for (Action action : game.getActions()) {
+                                if(action instanceof ...)
+                            }
+                        }
+                    });
 
                     editor.setVisible(true);
                 } catch (Exception e) {
