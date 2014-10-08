@@ -1,5 +1,6 @@
 package com.googlecode.jvmvm.ui;
 
+import org.apache.commons.io.FileUtils;
 import org.fife.rsta.ac.java.JavaCompletionProvider;
 import org.fife.rsta.ac.java.buildpath.ClasspathLibraryInfo;
 import org.fife.rsta.ui.GoToDialog;
@@ -18,6 +19,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.util.Arrays;
 
 
@@ -45,7 +47,7 @@ public class Editor extends JFrame implements ActionListener {
         JPanel cp = new JPanel(new BorderLayout());
         setContentPane(cp);
 
-        textArea = new RSyntaxTextArea(25, 60);
+        textArea = new RSyntaxTextArea(30, 100);
         textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
         textArea.setCodeFoldingEnabled(true);
         textArea.setBracketMatchingEnabled(true);
@@ -72,6 +74,11 @@ public class Editor extends JFrame implements ActionListener {
         setLocationRelativeTo(null);
     }
 
+
+    public void setText(String text) {
+        textArea.setText(text);
+        textArea.setCaretPosition(0);
+    }
 
     private JMenuBar createMenuBar() {
         JMenuBar mb = new JMenuBar();
@@ -197,10 +204,16 @@ public class Editor extends JFrame implements ActionListener {
             public void run() {
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                    Editor editor = new Editor();
+
+                    String src1 = Editor.class.getCanonicalName().replace(".", "/") + ".java";
+                    String s = FileUtils.readFileToString(new File("src/main/java/" + src1));
+                    editor.setText(s);
+
+                    editor.setVisible(true);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                new Editor().setVisible(true);
             }
         });
     }
