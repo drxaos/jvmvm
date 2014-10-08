@@ -11,8 +11,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.util.*;
 
 public class SerializerTest {
@@ -52,6 +54,8 @@ public class SerializerTest {
             UnsupportedOperationException.class.getName(),
             NoSuchElementException.class.getName(),
             UnsupportedEncodingException.class.getName(),
+            IOException.class.getName(),
+            MalformedURLException.class.getName(),
 
             Serializable.class.getName(),
 
