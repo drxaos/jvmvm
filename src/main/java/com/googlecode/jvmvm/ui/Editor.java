@@ -126,11 +126,33 @@ public class Editor extends JFrame implements ActionListener {
 
     private JMenuBar createMenuBar() {
         JMenuBar mb = new JMenuBar();
-        menuSerach = new JMenu("Search");
-        menuSerach.add(new JMenuItem(new ShowFindDialogAction()));
-        menuSerach.add(new JMenuItem(new ShowReplaceDialogAction()));
-        menuSerach.add(new JMenuItem(new GoToLineAction()));
-        mb.add(menuSerach);
+        {
+            JMenu menu = new JMenu("API");
+            mb.add(menu);
+        }
+        {
+            JMenu menu = new JMenu("Toggle Focus");
+            mb.add(menu);
+        }
+        {
+            JMenu menu = new JMenu("Notepad");
+            mb.add(menu);
+        }
+        {
+            JMenu menu = new JMenu("Reset");
+            mb.add(menu);
+        }
+        {
+            JMenu menu = new JMenu("Execute");
+            mb.add(menu);
+        }
+        {
+            menuSerach = new JMenu("Search");
+            menuSerach.add(new JMenuItem(new ShowFindDialogAction()));
+            menuSerach.add(new JMenuItem(new ShowReplaceDialogAction()));
+            menuSerach.add(new JMenuItem(new GoToLineAction()));
+            mb.add(menuSerach);
+        }
         return mb;
     }
 
