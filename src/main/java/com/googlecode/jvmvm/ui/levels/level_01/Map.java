@@ -1,7 +1,5 @@
 package com.googlecode.jvmvm.ui.levels.level_01;
 
-import com.googlecode.jvmvm.ui.Game;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,15 +13,15 @@ public class Map implements Serializable {
     }
 
     public void displayChapter(String title) {
-
+        game.displayChapter(title);
     }
 
     public void placePlayer(int x, int y) {
-
+        game.placePlayer(x, y);
     }
 
     public void placeObject(int x, int y, String type) {
-
+        game.placeObject(x, y, type);
     }
 
     public int getWidth() {

@@ -1,28 +1,21 @@
 package com.googlecode.jvmvm.ui;
 
 import com.googlecode.jvmvm.loader.Project;
-import org.apache.commons.io.FileUtils;
 
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-public class Game {
+public abstract class Game {
     protected List<Action> actions = new ArrayList<Action>();
     protected Project levelVm;
-
+    protected Integer key;
+    protected Game loadLevel;
 
 
     public Game(String level, String code) {
         actions.add(new Action.MoveCaretToBottomLeft());
         actions.add(new Action.Print(Color.GREEN, "\n> " + code));
-    }
-
-    public void step() {
-
     }
 
     public List<Action> getActions() {
@@ -62,4 +55,25 @@ public class Game {
     }
 
 
+    public void setKey(Integer key) {
+        this.key = key;
+    }
+
+    public Integer getKey() {
+        return key;
+    }
+
+    public Game getNextLevel() {
+        return loadLevel;
+    }
+
+    public void load(Game game) {
+        loadLevel = game;
+    }
+
+    public abstract void start();
+
+    public abstract void step();
+
+    public abstract void stop();
 }

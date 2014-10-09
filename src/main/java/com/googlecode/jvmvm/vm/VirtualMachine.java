@@ -47,6 +47,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 
 public final class VirtualMachine implements Serializable {
     private long stepNumber = 0;
@@ -154,7 +155,12 @@ public final class VirtualMachine implements Serializable {
     }
 
     public Object run() throws Throwable {
-        run(-1);
+        run(-1, -1);
+        return getResult();
+    }
+
+    public Object run(long timeout) throws Throwable {
+        run(-1, timeout);
         return getResult();
     }
 
@@ -163,16 +169,20 @@ public final class VirtualMachine implements Serializable {
     }
 
     public void step() throws Throwable {
-        run(1);
+        run(1, -1);
     }
 
     public long getStepNumber() {
         return stepNumber;
     }
 
-    void run(long cycles) throws Throwable {
+    void run(long cycles, long timeout) throws Throwable {
+        long endTime = timeout >= 0 ? System.currentTimeMillis() + timeout : Long.MAX_VALUE;
         while (frame != null) {
             try {
+                if (System.currentTimeMillis() > endTime) {
+                    throw new TimeoutException("Maximum execution time of " + timeout + " ms exceeded.");
+                }
                 synchronized (this) {
                     Insn insn = insns[cp++];
 

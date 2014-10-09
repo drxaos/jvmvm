@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
 
@@ -17,7 +19,20 @@ public class JConsole extends JComponent {
 
     public static final Color DEFAULT_FOREGROUND = Color.LIGHT_GRAY;
     public static final Color DEFAULT_BACKGROUND = Color.BLACK;
-    public static final Font DEFAULT_FONT = new Font("Monospaced", Font.PLAIN, 20);
+    public static Font DEFAULT_FONT = new Font("Monospaced", Font.PLAIN, 16);
+
+    static {
+        try {
+            InputStream fres = ClassLoader.getSystemClassLoader().getResourceAsStream("DejaVuSansMono.ttf");
+            Font font1 = Font.createFont(Font.TRUETYPE_FONT, fres);
+            GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font1);
+            DEFAULT_FONT = new Font(font1.getName(), Font.PLAIN, 16);
+        } catch (FontFormatException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private int size;
     private int rows;
@@ -69,10 +84,7 @@ public class JConsole extends JComponent {
         background = new Color[size];
         foreground = new Color[size];
         font = new Font[size];
-        Arrays.fill(background, DEFAULT_BACKGROUND);
-        Arrays.fill(foreground, DEFAULT_FOREGROUND);
-        Arrays.fill(font, DEFAULT_FONT);
-        Arrays.fill(text, ' ');
+        clear();
 
         currentFont = DEFAULT_FONT;
         FontRenderContext fontRenderContext = new FontRenderContext(DEFAULT_FONT.getTransform(), false, false);
@@ -84,14 +96,21 @@ public class JConsole extends JComponent {
         setPreferredSize(new Dimension(columns * fontWidth, rows * fontHeight));
     }
 
+    public void clear() {
+        Arrays.fill(background, DEFAULT_BACKGROUND);
+        Arrays.fill(foreground, DEFAULT_FOREGROUND);
+        Arrays.fill(font, DEFAULT_FONT);
+        Arrays.fill(text, ' ');
+    }
+
     @Override
     public void paint(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics;
         Rectangle r = g.getClipBounds();
 
-        //AffineTransform textTransform=new AffineTransform();
-        //textTransform.scale(fontWidth, fontHeight);
-        //g.setTransform(textTransform);
+//        AffineTransform textTransform=new AffineTransform();
+//        textTransform.scale(fontWidth, fontHeight);
+//        g.setTransform(textTransform);
 
         int x1 = (int) (r.getMinX() / fontWidth);
         int x2 = (int) (r.getMaxX() / fontWidth) + 1;

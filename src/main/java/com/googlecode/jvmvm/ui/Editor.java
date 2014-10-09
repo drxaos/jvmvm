@@ -8,6 +8,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.SearchEngine;
+import sun.font.FontUtilities;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
@@ -25,6 +26,8 @@ public class Editor extends JFrame implements ActionListener {
     private FindDialog findDialog;
     private ReplaceDialog replaceDialog;
     private JMenu menuSerach;
+
+    private Integer keyCode;
 
     public Editor() {
 
@@ -44,10 +47,13 @@ public class Editor extends JFrame implements ActionListener {
         });
         playArea.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyTyped(KeyEvent e) {
-                if (e.getKeyChar() == 'a') {
+            public void keyPressed(KeyEvent e) {
+                keyCode = e.getKeyCode();
+            }
 
-                }
+            @Override
+            public void keyReleased(KeyEvent e) {
+                keyCode = null;
             }
         });
         cp.add(playArea, BorderLayout.WEST);
@@ -147,6 +153,10 @@ public class Editor extends JFrame implements ActionListener {
             mb.add(menu);
         }
         {
+            JMenu menu = new JMenu("Menu");
+            mb.add(menu);
+        }
+        {
             menuSerach = new JMenu("Search");
             menuSerach.add(new JMenuItem(new ShowFindDialogAction()));
             menuSerach.add(new JMenuItem(new ShowReplaceDialogAction()));
@@ -205,7 +215,7 @@ public class Editor extends JFrame implements ActionListener {
         textScroll.setVisible(true);
         menuSerach.setEnabled(true);
         pack();
-        EventQueue.invokeLater(new Runnable() {
+        SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 setLocationRelativeTo(null);
@@ -217,7 +227,7 @@ public class Editor extends JFrame implements ActionListener {
         textScroll.setVisible(false);
         menuSerach.setEnabled(false);
         pack();
-        EventQueue.invokeLater(new Runnable() {
+        SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 setLocationRelativeTo(null);
@@ -304,12 +314,29 @@ public class Editor extends JFrame implements ActionListener {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     final Editor editor = new Editor();
 
-                    final Game game = new com.googlecode.jvmvm.ui.levels.intro.Game();
                     new Timer(15, new ActionListener() {
+                        Game game;
+
                         @Override
                         public void actionPerformed(ActionEvent e) {
+                            if (game == null) {
+                                try {
+                                    //game = new com.googlecode.jvmvm.ui.levels.intro.Game();
+                                    game = new com.googlecode.jvmvm.ui.levels.level_01.Game(null);
+                                    game.start();
+                                } catch (Exception e1) {
+                                    e1.printStackTrace();
+                                }
+                            }
+                            game.setKey(editor.keyCode);
                             game.step();
                             editor.execute(game.getActions());
+                            if (game.getNextLevel() != null) {
+                                game.stop();
+                                editor.playArea.clear();
+                                game = game.getNextLevel();
+                                game.start();
+                            }
                         }
                     }).start();
 

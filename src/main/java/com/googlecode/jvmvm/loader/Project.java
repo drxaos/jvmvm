@@ -222,6 +222,10 @@ public class Project implements Serializable {
     }
 
     public Object run() throws ProjectExecutionException, ProjectLoaderException {
+        return run(-1);
+    }
+
+    public Object run(long timeout) throws ProjectExecutionException, ProjectLoaderException {
         if (vmState != null && virtualMachine == null) {
             try {
                 virtualMachine = VirtualMachine.create(classLoader, vmState);
@@ -230,7 +234,7 @@ public class Project implements Serializable {
             }
         }
         try {
-            return virtualMachine.run();
+            return virtualMachine.run(timeout);
         } catch (Throwable throwable) {
             throw new ProjectExecutionException("program error", throwable, virtualMachine.getPointer());
         }

@@ -9,8 +9,10 @@ public abstract class Level {
 
     public abstract boolean onExit(Map map);
 
+    private static Level level;
+
     private static void execute(Map map) {
-        Level level = new CellBlockA();
+        level = new CellBlockA();
         level.startLevel(map);
     }
 }
