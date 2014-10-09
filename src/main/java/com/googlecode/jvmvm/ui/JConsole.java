@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
-import java.io.*;
 import java.util.Arrays;
 
 
@@ -30,6 +29,7 @@ public class JConsole extends JComponent {
     private int fontWidth;
     private int fontHeight;
     private int fontYOffset;
+    private boolean cycle = false;
 
     private int curPosition = 0;
     private Font currentFont = DEFAULT_FONT;
@@ -162,6 +162,10 @@ public class JConsole extends JComponent {
         return curBackground;
     }
 
+    public void setCycle(boolean cycle) {
+        this.cycle = cycle;
+    }
+
     public void write(char c) {
         int pos = curPosition;
         pos = writeChar(c, pos);
@@ -183,8 +187,33 @@ public class JConsole extends JComponent {
                 font[pos] = currentFont;
                 pos++;
         }
-        if (pos >= size) pos = 0;
+        if (pos >= size) {
+            if (cycle) {
+                pos = 0;
+            } else {
+                pushRow();
+                setCursorPos(0, getRows() - 1);
+                pos = curPosition;
+            }
+        }
         return pos;
+    }
+
+    private void pushRow() {
+        int cols = getColumns();
+        for (int i = 0; i < size; i++) {
+            if (i < size - cols) {
+                text[i] = text[i + cols];
+                font[i] = font[i + cols];
+                background[i] = background[i + cols];
+                foreground[i] = foreground[i + cols];
+            } else {
+                text[i] = ' ';
+                font[i] = currentFont;
+                background[i] = curBackground;
+                foreground[i] = curForeground;
+            }
+        }
     }
 
     public void write(String string, Color foreGround, Color backGround) {

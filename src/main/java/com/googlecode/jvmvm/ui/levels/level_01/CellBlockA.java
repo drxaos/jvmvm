@@ -21,13 +21,13 @@
  * to do anything extra. In fact, you should be doing less.
  */
 
-package com.googlecode.jvmvm.ui;
+package com.googlecode.jvmvm.ui.levels.level_01;
 
-public class CellBlockA {
+public class CellBlockA extends Level {
 
-    public static void startLevel(Map map) {
+    public void startLevel(Map map) {
 
-        map.displayChapter("Chapter 1\nBreakout");
+        map.displayChapter("Chapter 1 - Breakout");
 
         map.placePlayer(7, 5);
 
@@ -48,7 +48,7 @@ public class CellBlockA {
         map.placeObject(map.getWidth() - 7, map.getHeight() - 5, "exit");
     }
 
-    public static boolean onExit(Map map) {
+    public boolean onExit(Map map) {
         if (!map.getPlayer().hasItem("computer")) {
             map.writeStatus("Don't forget to pick up the computer!");
             return false;

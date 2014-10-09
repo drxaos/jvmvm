@@ -1,6 +1,5 @@
 package com.googlecode.jvmvm.ui;
 
-import org.apache.commons.io.FileUtils;
 import org.fife.rsta.ui.GoToDialog;
 import org.fife.rsta.ui.search.FindDialog;
 import org.fife.rsta.ui.search.ReplaceDialog;
@@ -11,27 +10,13 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.SearchEngine;
 
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
-import java.io.File;
-import java.util.*;
-import java.util.List;
 
-
-/**
- * An application that demonstrates use of the RSTAUI project.  Please don't
- * take this as good application design; it's just a simple example.<p>
- * <p/>
- * Unlike the library itself, this class is public domain.
- *
- * @author Robert Futrell
- * @version 1.0
- */
 public class Editor extends JFrame implements ActionListener {
 
     private RSyntaxTextArea textArea;
@@ -39,6 +24,7 @@ public class Editor extends JFrame implements ActionListener {
     private JConsole playArea;
     private FindDialog findDialog;
     private ReplaceDialog replaceDialog;
+    private JMenu menuSerach;
 
     public Editor() {
 
@@ -60,10 +46,7 @@ public class Editor extends JFrame implements ActionListener {
             @Override
             public void keyTyped(KeyEvent e) {
                 if (e.getKeyChar() == 'a') {
-                    textScroll.setVisible(true);
-                    pack();
-                    pack();
-                    setLocationRelativeTo(null);
+
                 }
             }
         });
@@ -80,6 +63,7 @@ public class Editor extends JFrame implements ActionListener {
         textScroll = new RTextScrollPane(textArea);
         textScroll.setPreferredSize(playArea.getPreferredSize());
         textScroll.setVisible(false);
+        menuSerach.setEnabled(false);
         cp.add(textScroll, BorderLayout.CENTER);
 
         textArea.addVetoableChangeListener(new VetoableChangeListener() {
@@ -89,8 +73,8 @@ public class Editor extends JFrame implements ActionListener {
             }
         });
 
-        setTitle("Editor");
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setTitle("J-Untrusted");
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         pack();
 
         textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -127,24 +111,26 @@ public class Editor extends JFrame implements ActionListener {
                 }
             }
         }
-
-
-//        try {
-//            RSyntaxDocument doc = (RSyntaxDocument) playArea.getDocument();
-//            doc.replace(0, doc.getLength(), mapStr, null);
-//        } catch (BadLocationException e) {
-//            UIManager.getLookAndFeel().provideErrorFeedback(playArea);
-//        }
-
     }
+
+
+    private void execute(java.util.List<Action> actions) {
+        if (actions != null) {
+            for (Action action : actions) {
+                action.execute(this);
+            }
+        }
+        playArea.repaint();
+    }
+
 
     private JMenuBar createMenuBar() {
         JMenuBar mb = new JMenuBar();
-        JMenu menu = new JMenu("Search");
-        menu.add(new JMenuItem(new ShowFindDialogAction()));
-        menu.add(new JMenuItem(new ShowReplaceDialogAction()));
-        menu.add(new JMenuItem(new GoToLineAction()));
-        mb.add(menu);
+        menuSerach = new JMenu("Search");
+        menuSerach.add(new JMenuItem(new ShowFindDialogAction()));
+        menuSerach.add(new JMenuItem(new ShowReplaceDialogAction()));
+        menuSerach.add(new JMenuItem(new GoToLineAction()));
+        mb.add(menuSerach);
         return mb;
     }
 
@@ -187,6 +173,38 @@ public class Editor extends JFrame implements ActionListener {
                     + " occurrences replaced.");
         }
 
+    }
+
+    public JConsole getConsole() {
+        return playArea;
+    }
+
+    public void showCode() {
+        textScroll.setVisible(true);
+        menuSerach.setEnabled(true);
+        pack();
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                setLocationRelativeTo(null);
+            }
+        });
+    }
+
+    public void hideCode() {
+        textScroll.setVisible(false);
+        menuSerach.setEnabled(false);
+        pack();
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                setLocationRelativeTo(null);
+            }
+        });
+    }
+
+    public void loadCode(String code) {
+        setText(code);
     }
 
     private class GoToLineAction extends AbstractAction {
@@ -262,18 +280,16 @@ public class Editor extends JFrame implements ActionListener {
             public void run() {
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                    Editor editor = new Editor();
+                    final Editor editor = new Editor();
 
-                    final Game game=new Game();
-                    new Timer(100, new ActionListener() {
+                    final Game game = new com.googlecode.jvmvm.ui.levels.intro.Game();
+                    new Timer(15, new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             game.step();
-                            for (Action action : game.getActions()) {
-                                if(action instanceof ...)
-                            }
+                            editor.execute(game.getActions());
                         }
-                    });
+                    }).start();
 
                     editor.setVisible(true);
                 } catch (Exception e) {
