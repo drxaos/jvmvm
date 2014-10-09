@@ -2,6 +2,8 @@ package com.googlecode.jvmvm.ui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
@@ -19,14 +21,14 @@ public class JConsole extends JComponent {
 
     public static final Color DEFAULT_FOREGROUND = Color.LIGHT_GRAY;
     public static final Color DEFAULT_BACKGROUND = Color.BLACK;
-    public static Font DEFAULT_FONT = new Font("Monospaced", Font.PLAIN, 16);
+    public static Font DEFAULT_FONT = new Font("Monospaced", Font.PLAIN, 18);
 
     static {
         try {
             InputStream fres = ClassLoader.getSystemClassLoader().getResourceAsStream("DejaVuSansMono.ttf");
             Font font1 = Font.createFont(Font.TRUETYPE_FONT, fres);
             GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font1);
-            DEFAULT_FONT = new Font(font1.getName(), Font.PLAIN, 16);
+            DEFAULT_FONT = new Font(font1.getName(), Font.PLAIN, 18);
         } catch (FontFormatException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -53,6 +55,15 @@ public class JConsole extends JComponent {
 
     public JConsole(int columns, int rows) {
         init(columns, rows);
+        setFocusable(true);
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                grabFocus();
+                repaint();
+            }
+        });
     }
 
     public void setRows(int rows) {
@@ -148,6 +159,10 @@ public class JConsole extends JComponent {
 
                 start = i;
             }
+        }
+        if (hasFocus()) {
+            g.setColor(Color.MAGENTA);
+            g.drawRect(0, 0, this.getWidth() - 1, this.getHeight() - 1);
         }
     }
 

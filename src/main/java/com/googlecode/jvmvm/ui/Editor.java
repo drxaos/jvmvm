@@ -33,18 +33,12 @@ public class Editor extends JFrame implements ActionListener {
 
         initSearchDialogs();
 
-        setJMenuBar(createMenuBar());
+        //setJMenuBar(createMenuBar());
         JPanel cp = new JPanel(new BorderLayout());
         setContentPane(cp);
 
         playArea = new JConsole(50, 25);
-        playArea.setFocusable(true);
-        playArea.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                playArea.grabFocus();
-            }
-        });
+
         playArea.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -69,7 +63,6 @@ public class Editor extends JFrame implements ActionListener {
         textScroll = new RTextScrollPane(textArea);
         textScroll.setPreferredSize(playArea.getPreferredSize());
         textScroll.setVisible(false);
-        menuSerach.setEnabled(false);
         cp.add(textScroll, BorderLayout.CENTER);
 
         textArea.addVetoableChangeListener(new VetoableChangeListener() {
@@ -213,7 +206,6 @@ public class Editor extends JFrame implements ActionListener {
 
     public void showCode() {
         textScroll.setVisible(true);
-        menuSerach.setEnabled(true);
         pack();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -225,7 +217,6 @@ public class Editor extends JFrame implements ActionListener {
 
     public void hideCode() {
         textScroll.setVisible(false);
-        menuSerach.setEnabled(false);
         pack();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
