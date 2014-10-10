@@ -13,7 +13,12 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.SearchEngine;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -369,6 +374,25 @@ public class Editor extends JFrame implements ActionListener {
                                     }
                                 }
                             });
+
+                            ((AbstractDocument)editor.textArea.getDocument()).setDocumentFilter(
+                                    new DocumentFilter(){
+                                        @Override
+                                        public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
+                                            super.remove(fb, offset, length);
+                                        }
+
+                                        @Override
+                                        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+                                            super.insertString(fb, offset, string, attr);
+                                        }
+
+                                        @Override
+                                        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                                            super.replace(fb, offset, length, text, attrs);
+                                        }
+                                    }
+                            );
 
                             if (game == null) {
                                 try {
