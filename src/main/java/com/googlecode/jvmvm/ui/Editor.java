@@ -7,8 +7,7 @@ import org.fife.rsta.ui.search.SearchDialogSearchContext;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.Theme;
-import org.fife.ui.rtextarea.RTextScrollPane;
-import org.fife.ui.rtextarea.SearchEngine;
+import org.fife.ui.rtextarea.*;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
@@ -22,6 +21,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 
 public class Editor extends JFrame implements ActionListener {
 
@@ -58,6 +58,14 @@ public class Editor extends JFrame implements ActionListener {
         cp.add(playArea, BorderLayout.WEST);
 
         textArea = new RSyntaxTextArea();
+        try {
+            Field lhmField = RTextArea.class.getDeclaredField("lineHighlightManager");
+            lhmField.setAccessible(true);
+            lhmField.set(textArea, new CustomLineHighlightManager(textArea));
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
         textArea.setFont(JConsole.DEFAULT_FONT);
         textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
         textArea.setCodeFoldingEnabled(true);
@@ -65,6 +73,8 @@ public class Editor extends JFrame implements ActionListener {
         textArea.setAnimateBracketMatching(true);
         textArea.setTabsEmulated(true);
         textArea.setAntiAliasingEnabled(true);
+        textArea.setCodeFoldingEnabled(false);
+        textArea.setHighlightCurrentLine(false);
 
         InputStream in = getClass().getResourceAsStream("/dark.xml");
         try {
@@ -97,9 +107,29 @@ public class Editor extends JFrame implements ActionListener {
         setResizable(false);
     }
 
-
     public void setText(String text) {
-        textArea.setText(text);
+        boolean editable = false;
+        int count = 0;
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < text.length(); i++) {
+            if (text.substring(i).startsWith("/*EDITABLE START*/")) {
+                editable = true;
+                i += "/*EDITABLE START*/".length();
+            } else if (text.substring(i).startsWith("/*EDITABLE END*/")) {
+                editable = false;
+                i += "/*EDITABLE END*/".length();
+            } else {
+                b.append(text.charAt(i));
+                count++;
+            }
+        }
+
+        textArea.setText(b.toString());
+        try {
+            textArea.addLineHighlight(3, Color.RED);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
         textArea.setCaretPosition(0);
     }
 
