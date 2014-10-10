@@ -90,13 +90,6 @@ public class Editor extends JFrame implements ActionListener {
         textScroll.setVisible(false);
         cp.add(textScroll, BorderLayout.CENTER);
 
-        textArea.addVetoableChangeListener(new VetoableChangeListener() {
-            @Override
-            public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
-
-            }
-        });
-
         bottomPanel = new JPanel();
         bottomPanel.setBackground(Color.BLACK);
         bottomPanel.setPreferredSize(new Dimension(100, 25));
@@ -364,6 +357,18 @@ public class Editor extends JFrame implements ActionListener {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             BigClip play = null;
+
+
+                            editor.textArea.addVetoableChangeListener(new VetoableChangeListener() {
+                                @Override
+                                public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+                                    if (game != null) {
+                                        if (!game.validateCode(evt.getNewValue().toString())) {
+                                            throw new PropertyVetoException("readonly", evt);
+                                        }
+                                    }
+                                }
+                            });
 
                             if (game == null) {
                                 try {

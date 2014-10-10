@@ -59,4 +59,8 @@ public class Map implements Serializable {
     public void writeStatus(String text) {
         game.writeStatus(text);
     }
+
+    public void __auth(String command, String secrret) {
+        // TODO call game
+    }
 }

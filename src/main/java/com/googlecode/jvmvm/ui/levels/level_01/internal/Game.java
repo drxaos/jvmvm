@@ -26,6 +26,7 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     private int state = START;
     private String code;
 
+    private String secret = "secret" + Math.random();
     private Obj player = null;
     private ArrayList<Obj> objs = new ArrayList<Obj>();
     private HashMap<String, Definition> defMap = new HashMap<String, Definition>();
@@ -130,12 +131,16 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
             String lvlSrc = CellBlockA.class.getCanonicalName().replace(".", "/") + ".java";
             String baseSrc = Level.class.getCanonicalName().replace(".", "/") + ".java";
             String bootstrapSrc = Bootstrap.class.getCanonicalName().replace(".", "/") + ".java";
-            String lvlCode = code != null ? code : FileUtils.readFileToString(new File(path + lvlSrc));
+            Code lvlCode = Code.parse(FileUtils.readFileToString(new File(path + lvlSrc)));
+            if (code != null) {
+                lvlCode.apply(code, false);
+            }
+
             if (code == null) {
-                actions.add(new Action.LoadCode(lvlCode));
+                actions.add(new Action.LoadCode(lvlCode.toString()));
             }
             levelVm = new Project("level-vm")
-                    .addFile(lvlSrc, lvlCode)
+                    .addFile(lvlSrc, lvlCode.toCompilationUnit(secret))
                     .addFile(baseSrc, FileUtils.readFileToString(new File(path + baseSrc)))
                     .addFile(bootstrapSrc, FileUtils.readFileToString(new File(path + bootstrapSrc)))
                     .addSystemClass(Map.class.getName())

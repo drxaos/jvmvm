@@ -26,12 +26,13 @@ package com.googlecode.jvmvm.ui.levels.level_01;
 public class CellBlockA extends Level {
 
     public void startLevel(Map map) {
+/*START_OF_START_LEVEL*/
 
-        map.displayChapter("Chapter 1 - Breakout");
+        map.displayChapter/*{*/("Chapter 1 - Breakout")/*}*/;
 
         map.placePlayer(7, 5);
 
-/*EDITABLE START*/
+/*BEGIN_EDITABLE*/
         for (int y = 3; y <= map.getHeight() - 10; y++) {
             map.placeObject(5, y, "block");
             map.placeObject(map.getWidth() - 5, y, "block");
@@ -41,11 +42,12 @@ public class CellBlockA extends Level {
             map.placeObject(x, 3, "block");
             map.placeObject(x, map.getHeight() - 10, "block");
         }
-/*EDITABLE END*/
+/*END_EDITABLE*/
 
         map.placeObject(15, 12, "computer");
 
         map.placeObject(map.getWidth() - 7, map.getHeight() - 5, "exit");
+/*END_OF_START_LEVEL*/
     }
 
     public boolean onExit(Map map) {

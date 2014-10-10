@@ -77,4 +77,8 @@ public abstract class Game {
     public abstract void stop();
 
     public abstract String getMusic();
+
+    public boolean validateCode(String code) {
+        return false;
+    }
 }
