@@ -371,8 +371,8 @@ public class Editor extends JFrame implements ActionListener {
 
                             if (game == null) {
                                 try {
-//                                    game = new com.googlecode.jvmvm.ui.levels.intro.Game();
-                                    game = new com.googlecode.jvmvm.ui.levels.level_01.internal.Game(null);
+                                    game = new com.googlecode.jvmvm.ui.levels.intro.Game();
+//                                    game = new com.googlecode.jvmvm.ui.levels.level_01.internal.Game(null);
                                     game.start();
                                     editor.playMusic(game.getMusic());
                                 } catch (Exception e1) {
@@ -398,10 +398,6 @@ public class Editor extends JFrame implements ActionListener {
                 }
             }
         });
-    }
-
-    static class Music extends Thread {
-
     }
 
     private Player player;
