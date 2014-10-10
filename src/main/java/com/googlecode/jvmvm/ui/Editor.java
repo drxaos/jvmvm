@@ -6,17 +6,22 @@ import org.fife.rsta.ui.search.ReplaceDialog;
 import org.fife.rsta.ui.search.SearchDialogSearchContext;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rsyntaxtextarea.Theme;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.SearchEngine;
-import sun.font.FontUtilities;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class Editor extends JFrame implements ActionListener {
 
@@ -60,6 +65,15 @@ public class Editor extends JFrame implements ActionListener {
         textArea.setAnimateBracketMatching(true);
         textArea.setTabsEmulated(true);
         textArea.setAntiAliasingEnabled(true);
+
+        InputStream in = getClass().getResourceAsStream("/dark.xml");
+        try {
+            Theme theme = Theme.load(in);
+            theme.apply(textArea);
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+
         textScroll = new RTextScrollPane(textArea);
         textScroll.setPreferredSize(playArea.getPreferredSize());
         textScroll.setVisible(false);

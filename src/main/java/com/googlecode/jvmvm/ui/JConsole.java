@@ -117,11 +117,10 @@ public class JConsole extends JComponent {
     @Override
     public void paint(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics;
+        g.setRenderingHint(
+                RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         Rectangle r = g.getClipBounds();
-
-//        AffineTransform textTransform=new AffineTransform();
-//        textTransform.scale(fontWidth, fontHeight);
-//        g.setTransform(textTransform);
 
         int x1 = (int) (r.getMinX() / fontWidth);
         int x2 = (int) (r.getMaxX() / fontWidth) + 1;
