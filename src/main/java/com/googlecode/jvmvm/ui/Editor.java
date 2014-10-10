@@ -389,7 +389,9 @@ public class Editor extends JFrame implements ActionListener {
 
                                         @Override
                                         public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-                                            super.replace(fb, offset, length, text, attrs);
+                                            super.remove(fb, offset, length);
+                                            super.insertString(fb, offset, text, attrs);
+                                            //super.replace(fb, offset, length, text, attrs);
                                         }
                                     }
                             );
