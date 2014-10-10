@@ -32,6 +32,13 @@ public abstract class Action {
         }
     }
 
+    public static class HideCode extends Action {
+        @Override
+        public void execute(Editor editor) {
+            editor.hideCode();
+        }
+    }
+
     public static class DisplayTitle extends Action {
         String title;
 
@@ -75,6 +82,14 @@ public abstract class Action {
     public static class MoveCaretToTopLEft extends MoveCaret {
         public MoveCaretToTopLEft() {
             super(0, 0);
+        }
+    }
+
+    public static class Clear extends Action {
+
+        @Override
+        public void execute(Editor editor) {
+            editor.getConsole().clear();
         }
     }
 

@@ -3,8 +3,6 @@ package com.googlecode.jvmvm.ui.levels.level_01;
 import com.googlecode.jvmvm.ui.levels.level_01.internal.Game;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Map implements Serializable {
     private Player player;
@@ -12,6 +10,7 @@ public class Map implements Serializable {
 
     public Map(Game game) {
         this.game = game;
+        player = new Player(game);
     }
 
     /**
@@ -56,24 +55,8 @@ public class Map implements Serializable {
         return player;
     }
 
+
     public void writeStatus(String text) {
-        List<String> strings = new ArrayList<String>();
-        strings.add(text);
-
-        if (text.length() > getWidth()) {
-            // split into two lines
-            int minCutoff = getWidth() - 10;
-            int cutoff = minCutoff + text.substring(minCutoff).indexOf(" ");
-            strings.clear();
-            strings.add(text.substring(0, cutoff));
-            strings.add(text.substring(cutoff + 1));
-        }
-
-        for (int i = 0; i < strings.size(); i++) {
-            String str = strings.get(i);
-            int x = (int) Math.floor((getWidth() - str.length()) / 2);
-            int y = getHeight() + i - strings.size() - 1;
-            game.drawText(x, y, str);
-        }
+        game.writeStatus(text);
     }
 }

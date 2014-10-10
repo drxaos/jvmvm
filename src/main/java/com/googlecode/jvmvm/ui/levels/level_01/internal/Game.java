@@ -10,10 +10,12 @@ import com.googlecode.jvmvm.ui.levels.level_01.Player;
 import org.apache.commons.io.FileUtils;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class Game extends com.googlecode.jvmvm.ui.Game {
 
@@ -27,6 +29,7 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     private Obj player = null;
     private ArrayList<Obj> objs = new ArrayList<Obj>();
     private HashMap<String, Definition> defMap = new HashMap<String, Definition>();
+    private HashSet<Definition> inventory = new HashSet<Definition>();
 
     private int pushCounter = 0;
 
@@ -55,15 +58,30 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
             }
         });
         defMap.put("computer", new Definition() {
+            @Override
+            public String getType() {
+                return "item";
+            }
 
             @Override
             public Color getColor() {
-                return Color.LIGHT_GRAY;
+                return new Color(0x99, 0x99, 0x99);
             }
 
             @Override
             public char getSymbol() {
                 return '⌘';
+            }
+
+            @Override
+            public void onPickUp(Player player) {
+                writeStatus("You have picked up the computer!");
+                actions.add(new Action.ShowCode());
+            }
+
+            @Override
+            public void onDrop() {
+                actions.add(new Action.HideCode());
             }
         });
         defMap.put("block", new Definition() {
@@ -77,6 +95,11 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
             public char getSymbol() {
                 return '#';
             }
+
+            @Override
+            public boolean impassable() {
+                return true;
+            }
         });
         defMap.put("exit", new Definition() {
 
@@ -89,6 +112,16 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
             public char getSymbol() {
                 return '⎕';
             }
+
+            @Override
+            public void onCollision(Player player) {
+                try {
+                    // TODO next
+                    //  load(new com.googlecode.jvmvm.ui.levels.level_02.internal.Game(null));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         });
 
 
@@ -100,7 +133,6 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
             String lvlCode = code != null ? code : FileUtils.readFileToString(new File(path + lvlSrc));
             if (code == null) {
                 actions.add(new Action.LoadCode(lvlCode));
-                actions.add(new Action.ShowCode());
             }
             levelVm = new Project("level-vm")
                     .addFile(lvlSrc, lvlCode)
@@ -136,6 +168,51 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
             if (++pushCounter >= 25) {
                 state = PLAY;
             }
+        } else if (state == PLAY) {
+            int toX = player.x, toY = player.y;
+            if (key == null) {
+                // no action
+            } else {
+                // repaint on user action
+                actions.add(new Action.Clear());
+                for (Obj obj : objs) {
+                    Definition d = defMap.get(obj.type);
+                    actions.add(new Action.MoveCaret(obj.x, obj.y));
+                    actions.add(new Action.Print(d.getColor(), "" + d.getSymbol()));
+                }
+
+                // move player
+                if (key == KeyEvent.VK_DOWN && player.y < 49) {
+                    toY++;
+                } else if (key == KeyEvent.VK_UP && player.y > 0) {
+                    toY--;
+                } else if (key == KeyEvent.VK_RIGHT && player.y < 24) {
+                    toX++;
+                } else if (key == KeyEvent.VK_LEFT && player.y > 0) {
+                    toX--;
+                }
+            }
+            Obj found = findObj(toX, toY);
+            if (found != null && found != player) {
+                Definition d = defMap.get(found.type);
+                if (d.impassable()) {
+                    toX = player.x;
+                    toY = player.y;
+                }
+                if ("item".equals(d.getType())) {
+                    d.onPickUp(new Player(this));
+                    objs.remove(found);
+                    inventory.add(d);
+                } else {
+                    d.onCollision(new Player(this));
+                }
+            }
+            actions.add(new Action.MoveCaret(player.x, player.y));
+            actions.add(new Action.Print(" "));
+            actions.add(new Action.MoveCaret(toX, toY));
+            actions.add(new Action.Print(defMap.get("player").getColor(), "" + defMap.get(player.type).getSymbol()));
+            player.x = toX;
+            player.y = toY;
         }
     }
 
@@ -152,10 +229,7 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
         objs.add(player);
     }
 
-    public void placeObject(int x, int y, String type) {
-        if (!defMap.containsKey(type)) {
-            throw new RuntimeException("There is no type of object named " + type);
-        }
+    private Obj findObj(int x, int y) {
         Obj found = null;
         for (Obj obj : objs) {
             if (obj.x == x && obj.y == y) {
@@ -163,9 +237,51 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
                 break;
             }
         }
+        return found;
+    }
+
+    public void placeObject(int x, int y, String type) {
+        if (!defMap.containsKey(type)) {
+            throw new RuntimeException("There is no type of object named " + type);
+        }
+        Obj found = findObj(x, y);
         if (found != null) {
             objs.remove(found);
         }
         objs.add(new Obj(x, y, type));
+    }
+
+    public int getWidth() {
+        return 50;
+    }
+
+    public int getHeight() {
+        return 25;
+    }
+
+
+    public void writeStatus(String text) {
+        java.util.List<String> strings = new ArrayList<String>();
+        strings.add(text);
+
+        if (text.length() > getWidth()) {
+            // split into two lines
+            int minCutoff = getWidth() - 10;
+            int cutoff = minCutoff + text.substring(minCutoff).indexOf(" ");
+            strings.clear();
+            strings.add(text.substring(0, cutoff));
+            strings.add(text.substring(cutoff + 1));
+        }
+
+        for (int i = 0; i < strings.size(); i++) {
+            String str = strings.get(i);
+            int x = (int) Math.floor((getWidth() - str.length()) / 2);
+            int y = getHeight() + i - strings.size() - 1;
+            drawText(x, y, str);
+        }
+    }
+
+    public boolean hasItem(String type) {
+        return false;
     }
 }

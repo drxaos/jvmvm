@@ -41,7 +41,7 @@ public abstract class Game {
             }
         }
         actions.add(new Action.MoveCaret(x, y));
-        actions.add(new Action.Print(str));
+        actions.add(new Action.Print(Color.LIGHT_GRAY, str));
     }
 
     public void pushLine() {

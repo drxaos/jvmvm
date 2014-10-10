@@ -52,12 +52,8 @@ public class Editor extends JFrame implements ActionListener {
         playArea.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+                // called multiple times during long key press
                 keyCode = e.getKeyCode();
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                keyCode = null;
             }
         });
         cp.add(playArea, BorderLayout.WEST);
@@ -379,7 +375,10 @@ public class Editor extends JFrame implements ActionListener {
                                     e1.printStackTrace();
                                 }
                             }
+
                             game.setKey(editor.keyCode);
+                            editor.keyCode = null;
+
                             game.step();
                             editor.execute(game.getActions());
                             if (game.getNextLevel() != null) {
