@@ -12,7 +12,6 @@ public abstract class Game {
     protected Integer key;
     protected Game loadLevel;
 
-
     public Game(String level, String code) {
         actions.add(new Action.MoveCaretToBottomLeft());
         actions.add(new Action.Print(Color.GREEN, "\n> " + code));
@@ -76,4 +75,6 @@ public abstract class Game {
     public abstract void step();
 
     public abstract void stop();
+
+    public abstract String getMusic();
 }

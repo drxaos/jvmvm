@@ -44,7 +44,7 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
         } else {
             if (key != null) {
                 try {
-                    load(new com.googlecode.jvmvm.ui.levels.level_01.Game(null));
+                    load(new com.googlecode.jvmvm.ui.levels.level_01.internal.Game(null));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -55,5 +55,10 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     @Override
     public void stop() {
 
+    }
+
+    @Override
+    public String getMusic() {
+        return null;
     }
 }

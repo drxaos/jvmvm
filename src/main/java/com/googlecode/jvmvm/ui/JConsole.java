@@ -25,7 +25,7 @@ public class JConsole extends JComponent {
 
     static {
         try {
-            InputStream fres = ClassLoader.getSystemClassLoader().getResourceAsStream("DejaVuSansMono.ttf");
+            InputStream fres = ClassLoader.getSystemClassLoader().getResourceAsStream("fonts/DejaVuSansMono.ttf");
             Font font1 = Font.createFont(Font.TRUETYPE_FONT, fres);
             GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font1);
             DEFAULT_FONT = new Font(font1.getName(), Font.PLAIN, 18);

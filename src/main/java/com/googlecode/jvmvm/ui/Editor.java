@@ -1,5 +1,6 @@
 package com.googlecode.jvmvm.ui;
 
+import javazoom.spi.mpeg.sampled.file.MpegAudioFileReader;
 import org.fife.rsta.ui.GoToDialog;
 import org.fife.rsta.ui.search.FindDialog;
 import org.fife.rsta.ui.search.ReplaceDialog;
@@ -7,8 +8,14 @@ import org.fife.rsta.ui.search.SearchDialogSearchContext;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.Theme;
-import org.fife.ui.rtextarea.*;
+import org.fife.ui.rtextarea.CustomLineHighlightManager;
+import org.fife.ui.rtextarea.RTextArea;
+import org.fife.ui.rtextarea.RTextScrollPane;
+import org.fife.ui.rtextarea.SearchEngine;
 
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
@@ -31,6 +38,7 @@ public class Editor extends JFrame implements ActionListener {
     private FindDialog findDialog;
     private ReplaceDialog replaceDialog;
     private JMenu menuSerach;
+    private JPanel bottomPanel;
 
     private Integer keyCode;
 
@@ -62,7 +70,7 @@ public class Editor extends JFrame implements ActionListener {
             Field lhmField = RTextArea.class.getDeclaredField("lineHighlightManager");
             lhmField.setAccessible(true);
             lhmField.set(textArea, new CustomLineHighlightManager(textArea));
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -95,6 +103,12 @@ public class Editor extends JFrame implements ActionListener {
 
             }
         });
+
+        bottomPanel = new JPanel();
+        bottomPanel.setBackground(Color.BLACK);
+        bottomPanel.setPreferredSize(new Dimension(100, 25));
+        bottomPanel.setVisible(false);
+        cp.add(bottomPanel, BorderLayout.SOUTH);
 
         setTitle("J-Untrusted");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -250,6 +264,7 @@ public class Editor extends JFrame implements ActionListener {
 
     public void showCode() {
         textScroll.setVisible(true);
+        bottomPanel.setVisible(true);
         pack();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -261,6 +276,7 @@ public class Editor extends JFrame implements ActionListener {
 
     public void hideCode() {
         textScroll.setVisible(false);
+        bottomPanel.setVisible(false);
         pack();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -354,11 +370,14 @@ public class Editor extends JFrame implements ActionListener {
 
                         @Override
                         public void actionPerformed(ActionEvent e) {
+                            BigClip play = null;
+
                             if (game == null) {
                                 try {
-                                    //game = new com.googlecode.jvmvm.ui.levels.intro.Game();
-                                    game = new com.googlecode.jvmvm.ui.levels.level_01.Game(null);
+//                                    game = new com.googlecode.jvmvm.ui.levels.intro.Game();
+                                    game = new com.googlecode.jvmvm.ui.levels.level_01.internal.Game(null);
                                     game.start();
+                                    editor.playMusic(game.getMusic());
                                 } catch (Exception e1) {
                                     e1.printStackTrace();
                                 }
@@ -371,6 +390,7 @@ public class Editor extends JFrame implements ActionListener {
                                 editor.playArea.clear();
                                 game = game.getNextLevel();
                                 game.start();
+                                editor.playMusic(game.getMusic());
                             }
                         }
                     }).start();
@@ -381,6 +401,28 @@ public class Editor extends JFrame implements ActionListener {
                 }
             }
         });
+    }
+
+    private BigClip player;
+
+    private void playMusic(String music) {
+        if (player != null) {
+            player.close();
+        }
+        if (music != null) {
+            player = new BigClip();
+            try {
+                player.open(new MpegAudioFileReader().getAudioInputStream(ClassLoader.getSystemClassLoader().getResourceAsStream("music/" + music)));
+                //player.open(AudioSystem.getAudioInputStream(ClassLoader.getSystemClassLoader().getResourceAsStream("music/" + music)));
+                player.loop(Clip.LOOP_CONTINUOUSLY);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (LineUnavailableException e) {
+                e.printStackTrace();
+            } catch (UnsupportedAudioFileException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }

@@ -1,6 +1,6 @@
-package com.googlecode.jvmvm.ui.levels.level_01;
+package com.googlecode.jvmvm.ui.levels.level_01.internal;
 
-public class Obj {
+class Obj {
     int x, y;
     String type;
 

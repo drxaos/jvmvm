@@ -1,0 +1,3 @@
+# for the mp3 decoder
+com.googlecode.jvmvm.ui.CustomMpegFormatConversionProvider
+javazoom.spi.mpeg.sampled.file.MpegAudioFileReader

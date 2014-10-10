@@ -1,8 +1,12 @@
-package com.googlecode.jvmvm.ui.levels.level_01;
+package com.googlecode.jvmvm.ui.levels.level_01.internal;
 
 import com.googlecode.jvmvm.loader.Project;
 import com.googlecode.jvmvm.ui.Action;
 import com.googlecode.jvmvm.ui.Vm;
+import com.googlecode.jvmvm.ui.levels.level_01.CellBlockA;
+import com.googlecode.jvmvm.ui.levels.level_01.Level;
+import com.googlecode.jvmvm.ui.levels.level_01.Map;
+import com.googlecode.jvmvm.ui.levels.level_01.Player;
 import org.apache.commons.io.FileUtils;
 
 import java.awt.*;
@@ -29,6 +33,10 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     public Game(String code) {
         super("level_01", "CellBlockA.java");
         this.code = code;
+    }
+
+    final public String getMusic() {
+        return "Yonnie_The_Green.mp3";
     }
 
     @Override
@@ -88,6 +96,7 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
             String path = "src/main/java/";
             String lvlSrc = CellBlockA.class.getCanonicalName().replace(".", "/") + ".java";
             String baseSrc = Level.class.getCanonicalName().replace(".", "/") + ".java";
+            String bootstrapSrc = Bootstrap.class.getCanonicalName().replace(".", "/") + ".java";
             String lvlCode = code != null ? code : FileUtils.readFileToString(new File(path + lvlSrc));
             if (code == null) {
                 actions.add(new Action.LoadCode(lvlCode));
@@ -96,12 +105,13 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
             levelVm = new Project("level-vm")
                     .addFile(lvlSrc, lvlCode)
                     .addFile(baseSrc, FileUtils.readFileToString(new File(path + baseSrc)))
+                    .addFile(bootstrapSrc, FileUtils.readFileToString(new File(path + bootstrapSrc)))
                     .addSystemClass(Map.class.getName())
                     .addSystemClass(Player.class.getName())
                     .addSystemClasses(Vm.bootstrap)
                     .compile()
                     .markObject("map", new Map(this))
-                    .setupVM(Level.class.getCanonicalName(), "execute", null, new Class[]{Map.class}, new Object[]{Project.Marker.byName("map")});
+                    .setupVM(Bootstrap.class.getCanonicalName(), "execute", null, new Class[]{Map.class}, new Object[]{Project.Marker.byName("map")});
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {

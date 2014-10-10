@@ -1,8 +1,10 @@
-package com.googlecode.jvmvm.ui.levels.level_01;
+package com.googlecode.jvmvm.ui.levels.level_01.internal;
+
+import com.googlecode.jvmvm.ui.levels.level_01.Player;
 
 import java.awt.*;
 
-abstract public class Definition {
+abstract class Definition {
     abstract public Color getColor();
 
     public String getType() {
