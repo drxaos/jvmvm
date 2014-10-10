@@ -1,6 +1,5 @@
 package com.googlecode.jvmvm.ui;
 
-import javazoom.spi.mpeg.sampled.file.MpegAudioFileReader;
 import org.fife.rsta.ui.GoToDialog;
 import org.fife.rsta.ui.search.FindDialog;
 import org.fife.rsta.ui.search.ReplaceDialog;
@@ -13,9 +12,6 @@ import org.fife.ui.rtextarea.RTextArea;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.SearchEngine;
 
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
@@ -26,6 +22,7 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -403,23 +400,24 @@ public class Editor extends JFrame implements ActionListener {
         });
     }
 
-    private BigClip player;
+    static class Music extends Thread {
+
+    }
+
+    private Player player;
 
     private void playMusic(String music) {
         if (player != null) {
-            player.close();
+            player.requestStop();
         }
         if (music != null) {
-            player = new BigClip();
+
             try {
-                player.open(new MpegAudioFileReader().getAudioInputStream(ClassLoader.getSystemClassLoader().getResourceAsStream("music/" + music)));
-                //player.open(AudioSystem.getAudioInputStream(ClassLoader.getSystemClassLoader().getResourceAsStream("music/" + music)));
-                player.loop(Clip.LOOP_CONTINUOUSLY);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (LineUnavailableException e) {
-                e.printStackTrace();
-            } catch (UnsupportedAudioFileException e) {
+                player = new Player(
+                        new BufferedInputStream(ClassLoader.getSystemClassLoader().getResourceAsStream("music/" + music))
+                );
+                player.start();
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
