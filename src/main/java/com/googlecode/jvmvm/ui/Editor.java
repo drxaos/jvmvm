@@ -13,12 +13,7 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.SearchEngine;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
+import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -131,7 +126,7 @@ public class Editor extends JFrame implements ActionListener {
 
         textArea.setText(b.toString());
         try {
-            textArea.addLineHighlight(3, Color.RED);
+            textArea.addLineHighlight(3, new Color(74, 4, 0));
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
@@ -375,23 +370,40 @@ public class Editor extends JFrame implements ActionListener {
                                 }
                             });
 
-                            ((AbstractDocument)editor.textArea.getDocument()).setDocumentFilter(
-                                    new DocumentFilter(){
+                            ((AbstractDocument) editor.textArea.getDocument()).setDocumentFilter(
+                                    new DocumentFilter() {
                                         @Override
                                         public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
-                                            super.remove(fb, offset, length);
+                                            Document document = fb.getDocument();
+                                            String text = document.getText(0, document.getLength());
+                                            String edit = text.substring(0, offset) + text.substring(offset + length, text.length());
+                                            if (game.validateCode(edit)) {
+                                                super.remove(fb, offset, length);
+                                            }
                                         }
 
                                         @Override
                                         public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-                                            super.insertString(fb, offset, string, attr);
+                                            Document document = fb.getDocument();
+                                            String text = document.getText(0, document.getLength());
+                                            String edit = new StringBuilder(text).insert(offset, string).toString();
+                                            if (game.validateCode(edit)) {
+                                                super.insertString(fb, offset, string, attr);
+                                            }
+                                            try {
+                                                editor.textArea.removeAllLineHighlights();
+                                                for (Integer line : game.redLines()) {
+                                                    editor.textArea.addLineHighlight(line, new Color(0x36, 0x1B, 0x15));
+                                                }
+                                            } catch (BadLocationException e) {
+                                                e.printStackTrace();
+                                            }
                                         }
 
                                         @Override
                                         public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-                                            super.remove(fb, offset, length);
-                                            super.insertString(fb, offset, text, attrs);
-                                            //super.replace(fb, offset, length, text, attrs);
+                                            remove(fb, offset, length);
+                                            insertString(fb, offset, text, attrs);
                                         }
                                     }
                             );

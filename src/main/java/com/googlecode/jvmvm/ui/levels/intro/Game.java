@@ -6,6 +6,8 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 public class Game extends com.googlecode.jvmvm.ui.Game {
 
@@ -60,5 +62,15 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     @Override
     public String getMusic() {
         return null;
+    }
+
+    @Override
+    public boolean validateCode(String code) {
+        return true;
+    }
+
+    @Override
+    public List<Integer> redLines() {
+        return Collections.emptyList();
     }
 }

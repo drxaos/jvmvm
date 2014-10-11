@@ -1,5 +1,7 @@
 package com.googlecode.jvmvm.ui.levels.level_01.internal;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +24,17 @@ public class Code {
             this.text = text;
         }
 
+        @Override
+        public String toString() {
+            return "Section{" +
+                    "editable=" + editable +
+                    ", startOfStartLevel=" + startOfStartLevel +
+                    ", endOfStartLevel=" + endOfStartLevel +
+                    ", leading=" + leading +
+                    ", trailing=" + trailing +
+                    ", text='" + text + '\'' +
+                    '}';
+        }
     }
 
     List<Section> sections = new ArrayList<Section>();
@@ -31,7 +44,7 @@ public class Code {
         StringBuilder b = new StringBuilder();
         for (Section section : sections) {
             if (section.text != null) {
-                b.append(section.text).append("\n");
+                b.append(section.text);
             }
         }
         return b.toString();
@@ -41,7 +54,7 @@ public class Code {
         StringBuilder b = new StringBuilder();
         for (Section section : sections) {
             if (section.text != null) {
-                b.append(section.text).append("\n");
+                b.append(section.text);
             }
             if (section.startOfStartLevel) {
                 b.append("map.__auth(\"startOfStartLevel\",\"").append(secret).append("\");").append("\n");
@@ -61,57 +74,83 @@ public class Code {
         code = code.replace("\r\n", "\n").replace("\r", "\n");
         Section waitingEditable = null;
         for (Section section : sections) {
-            if (!section.editable && section.leading) {
+            if (!section.editable && section.startOfStartLevel) {
+            } else if (!section.editable && section.endOfStartLevel) {
+            } else if (!section.editable && section.leading && !section.trailing) {
                 if (!code.startsWith(section.text)) {
                     return false;
                 }
                 code = code.substring(section.text.length());
-            }
-
-            if (!section.editable && !section.leading) {
+            } else if (!section.editable && !section.leading && !section.trailing) {
                 int found = code.indexOf(section.text);
-                if (found <= 0) {
+                if (found < 0) {
                     return false;
                 }
-                if (!verify) {
-                    waitingEditable.text = code.substring(0, found);
+                if (waitingEditable != null) {
+                    String editable = code.substring(0, found);
+                    if (editable.isEmpty() || !editable.endsWith("\n")) {
+                        return false;
+                    }
+                    if (!verify) {
+                        waitingEditable.text = editable;
+                    }
+                    waitingEditable = null;
                 }
                 code = code.substring(found);
                 code = code.substring(section.text.length());
-            }
-
-            if (!section.editable && section.trailing) {
+            } else if (!section.editable && !section.leading && section.trailing) {
                 int found = code.indexOf(section.text);
-                if (found <= 0) {
+                if (found < 0) {
                     return false;
                 }
-                if (!verify) {
-                    waitingEditable.text = code.substring(0, found);
+                if (waitingEditable != null) {
+                    String editable = code.substring(0, found);
+                    if (editable.isEmpty() || !editable.endsWith("\n")) {
+                        return false;
+                    }
+                    if (!verify) {
+                        waitingEditable.text = editable;
+                    }
+                    waitingEditable = null;
                 }
                 code = code.substring(found);
                 code = code.substring(section.text.length());
                 if (!code.isEmpty()) {
                     return false;
                 }
-            }
-
-            if (!verify) {
-                if (section.editable && section.leading) {
-                    waitingEditable = section;
+            } else if (section.editable && section.leading && !section.trailing) {
+                waitingEditable = section;
+            } else if (section.editable && !section.leading && !section.trailing) {
+                waitingEditable = section;
+            } else if (section.editable && !section.leading && section.trailing) {
+                if (code.isEmpty()) {
+                    return false;
                 }
-
-                if (section.editable && !section.leading) {
-                    waitingEditable = section;
-                }
-
-                if (section.editable && section.trailing) {
+                if (!verify) {
                     section.text = code;
                 }
+            } else {
+                throw new RuntimeException("section error: " + section);
             }
+
         }
         return true;
     }
 
+    public List<Integer> getReadonlyLines() {
+        List<Integer> res = new ArrayList<Integer>();
+        int line = 0;
+        for (Section section : sections) {
+            for (int i = 0; i < StringUtils.countMatches(section.text, "\n"); i++) {
+                if (!section.editable) {
+                    res.add(line);
+                }
+                line++;
+            }
+        }
+        res.add(line);
+        return res;
+    }
 
     public static Code parse(String template) {
         Code code = new Code();
@@ -145,7 +184,7 @@ public class Code {
                 b.append(s).append("\n");
             }
         }
-        code.sections.add(new Section(editable, false, false, leading, true, b.toString()));
+        code.sections.add(new Section(editable, false, false, leading, true, b.toString() + "\n"));
 
         return code;
     }

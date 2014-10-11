@@ -78,7 +78,7 @@ public abstract class Game {
 
     public abstract String getMusic();
 
-    public boolean validateCode(String code) {
-        return false;
-    }
+    public abstract boolean validateCode(String code);
+
+    public abstract List<Integer> redLines();
 }

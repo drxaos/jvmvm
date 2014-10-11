@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 public class Game extends com.googlecode.jvmvm.ui.Game {
 
@@ -32,6 +33,8 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     private HashMap<String, Definition> defMap = new HashMap<String, Definition>();
     private HashSet<Definition> inventory = new HashSet<Definition>();
 
+    private Code lvlCode;
+
     private int pushCounter = 0;
 
     public Game(String code) {
@@ -41,6 +44,16 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
 
     final public String getMusic() {
         return "Yonnie_The_Green.mp3";
+    }
+
+    @Override
+    public boolean validateCode(String code) {
+        return lvlCode.apply(code, false);
+    }
+
+    @Override
+    public List<Integer> redLines() {
+        return lvlCode.getReadonlyLines();
     }
 
     @Override
@@ -131,7 +144,7 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
             String lvlSrc = CellBlockA.class.getCanonicalName().replace(".", "/") + ".java";
             String baseSrc = Level.class.getCanonicalName().replace(".", "/") + ".java";
             String bootstrapSrc = Bootstrap.class.getCanonicalName().replace(".", "/") + ".java";
-            Code lvlCode = Code.parse(FileUtils.readFileToString(new File(path + lvlSrc)));
+            lvlCode = Code.parse(FileUtils.readFileToString(new File(path + lvlSrc)));
             if (code != null) {
                 lvlCode.apply(code, false);
             }
