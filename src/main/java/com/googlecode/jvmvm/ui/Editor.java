@@ -127,16 +127,20 @@ public class Editor extends JFrame implements ActionListener {
             bottomPanel.add(apiBtn);
         }
         {
-            JButton inventory = new JButton("[F2]Toggle Focus");
-            inventory.setForeground(Color.WHITE);
-            inventory.setBackground(Color.BLACK);
-            inventory.setFocusable(false);
+            JButton toggleBtn = new JButton("[^2]Toggle Focus");
+            toggleBtn.setForeground(Color.WHITE);
+            toggleBtn.setBackground(Color.BLACK);
+            toggleBtn.setFocusable(false);
             Border line = new LineBorder(Color.BLACK);
             Border margin = new EmptyBorder(5, 3, 5, 3);
             Border compound = new CompoundBorder(line, margin);
-            inventory.setBorder(compound);
-            inventory.setFont(btnFont);
-            bottomPanel.add(inventory);
+            toggleBtn.setBorder(compound);
+            toggleBtn.setFont(btnFont);
+            toggleBtn.getActionMap().put("Toggle", toggleAction);
+            toggleBtn.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                    (KeyStroke) toggleAction.getValue(javax.swing.Action.ACCELERATOR_KEY), "Toggle");
+            toggleBtn.addActionListener(toggleAction);
+            bottomPanel.add(toggleBtn);
         }
         {
             JButton inventory = new JButton("[F3]Notepad");
@@ -238,6 +242,23 @@ public class Editor extends JFrame implements ActionListener {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            }
+        }
+    };
+
+    AbstractAction toggleAction = new AbstractAction("Toggle") {
+        {
+            putValue(javax.swing.Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control 2"));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            JConsole console = Editor.this.getConsole();
+            RSyntaxTextArea codeEditor = Editor.this.getCodeEditor();
+            if (console.hasFocus()) {
+                codeEditor.grabFocus();
+            } else {
+                console.grabFocus();
             }
         }
     };
