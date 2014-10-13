@@ -12,6 +12,13 @@ public abstract class Action {
         }
     }
 
+    public static class ShowApi extends Action {
+        @Override
+        public void execute(Editor editor) {
+            editor.apiAction.actionPerformed(null);
+        }
+    }
+
     public static class LoadCode extends Action {
         String code;
 

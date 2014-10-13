@@ -27,9 +27,11 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.net.URI;
 
 public class Editor extends JFrame implements ActionListener {
 
+    public static final int API_PORT = 7241;
     private RSyntaxTextArea textArea;
     private RTextScrollPane textScroll;
     private JConsole playArea;
@@ -37,6 +39,7 @@ public class Editor extends JFrame implements ActionListener {
     private ReplaceDialog replaceDialog;
     private JMenu menuSerach;
     private JPanel bottomPanel;
+    private ApiWindow apiWindow;
 
     private Integer keyCode;
 
@@ -101,22 +104,27 @@ public class Editor extends JFrame implements ActionListener {
         bottomPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
         {
             JLabel inventory = new JLabel("Inventory: #$%");
+            inventory.setForeground(Color.WHITE);
             inventory.setPreferredSize(new Dimension((int) playArea.getPreferredSize().getWidth(), 35));
             inventory.setFont(JConsole.DEFAULT_FONT);
             //layout.setConstraints(inventory, new GridBagConstraints(0,0,));
             bottomPanel.add(inventory);
         }
         {
-            JButton inventory = new JButton("[F1]API");
-            inventory.setForeground(Color.WHITE);
-            inventory.setBackground(Color.BLACK);
-            inventory.setFocusable(false);
+            JButton apiBtn = new JButton("[^1]API");
+            apiBtn.setForeground(Color.WHITE);
+            apiBtn.setBackground(Color.BLACK);
+            apiBtn.setFocusable(false);
             Border line = new LineBorder(Color.BLACK);
             Border margin = new EmptyBorder(5, 3, 5, 3);
             Border compound = new CompoundBorder(line, margin);
-            inventory.setBorder(compound);
-            inventory.setFont(btnFont);
-            bottomPanel.add(inventory);
+            apiBtn.setBorder(compound);
+            apiBtn.setFont(btnFont);
+            apiBtn.getActionMap().put("API", apiAction);
+            apiBtn.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                    (KeyStroke) apiAction.getValue(javax.swing.Action.ACCELERATOR_KEY), "API");
+            apiBtn.addActionListener(apiAction);
+            bottomPanel.add(apiBtn);
         }
         {
             JButton inventory = new JButton("[F2]Toggle Focus");
@@ -211,7 +219,28 @@ public class Editor extends JFrame implements ActionListener {
                 setLocationRelativeTo(null);
             }
         });
+
+        apiWindow = new ApiWindow(this);
+        apiWindow.setVisible(false);
     }
+
+    AbstractAction apiAction = new AbstractAction("API") {
+        {
+            putValue(javax.swing.Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control 1"));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+            if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+                try {
+                    desktop.browse(new URI("http://localhost:" + API_PORT + "/index.html"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
 
     public Integer getKeyCode() {
         return keyCode;

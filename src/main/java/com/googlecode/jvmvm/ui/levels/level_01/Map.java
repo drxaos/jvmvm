@@ -60,7 +60,7 @@ public class Map implements Serializable {
         game.writeStatus(text);
     }
 
-    public void __auth(String command, String secrret) {
+    void __auth(String command, String secrret) {
         // TODO call game
     }
 }

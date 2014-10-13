@@ -2,17 +2,23 @@ package com.googlecode.jvmvm.ui.levels.level_01.internal;
 
 import com.googlecode.jvmvm.loader.Project;
 import com.googlecode.jvmvm.ui.Action;
+import com.googlecode.jvmvm.ui.Editor;
 import com.googlecode.jvmvm.ui.Vm;
 import com.googlecode.jvmvm.ui.levels.level_01.CellBlockA;
 import com.googlecode.jvmvm.ui.levels.level_01.Level;
 import com.googlecode.jvmvm.ui.levels.level_01.Map;
 import com.googlecode.jvmvm.ui.levels.level_01.Player;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 import org.apache.commons.io.FileUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +32,7 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
 
     private int state = START;
     private String code;
+    HttpServer server;
 
     private String secret = "secret" + Math.random();
     private Obj player = null;
@@ -167,6 +174,26 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+
+        try {
+            server = HttpServer.create(new InetSocketAddress(Editor.API_PORT), 0);
+            server.createContext("/", new ApiHandler());
+            server.setExecutor(null);
+            server.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static class ApiHandler implements HttpHandler {
+        public void handle(HttpExchange t) throws IOException {
+            String baseSrc = "src/main/resources/docs/level_01/";
+            byte[] response = FileUtils.readFileToByteArray(new File(baseSrc + t.getRequestURI().getPath()));
+            t.sendResponseHeaders(200, response.length);
+            OutputStream os = t.getResponseBody();
+            os.write(response);
+            os.close();
+        }
     }
 
     @Override
@@ -236,8 +263,9 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
 
     @Override
     public void stop() {
-
+        server.stop(0);
     }
+
 
     public void placePlayer(int x, int y) {
         if (player != null) {

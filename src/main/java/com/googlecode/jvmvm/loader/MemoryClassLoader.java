@@ -194,7 +194,12 @@ public class MemoryClassLoader extends SecureClassLoader {
             classes.put(name, b);
             modifiedClasses.add(name);
         }
-
+        int i = name.lastIndexOf('.');
+        String pkgname = name.substring(0, i);
+        Package pkg = getPackage(pkgname);
+        if (pkg == null) {
+            definePackage(pkgname, null, null, null, null, null, null, null);
+        }
         return super.defineClass(name, b, 0, b.length);
     }
 

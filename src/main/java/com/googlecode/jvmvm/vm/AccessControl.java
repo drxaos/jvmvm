@@ -42,16 +42,28 @@ public class AccessControl {
         throw new IllegalAccessError(Types.getInternalName(cls));
     }
 
+    private static boolean equalPackages(Package p1, Package p2) {
+        if (p1 == p2) {
+            return true;
+        }
+        if (p1 != null && p2 != null && p1.getName().equals(p2.getName())) {
+            // packages from different classloaders
+            return true;
+        }
+        return false;
+    }
+
     public static void checkPermission(Member member, Class<?> referringCls) {
         Class<?> cls = member.getDeclaringClass();
         switch (member.getModifiers() & (PUBLIC | PROTECTED | PRIVATE)) {
             case PUBLIC:
                 return;
             case PROTECTED:
-                if (cls.getPackage() == referringCls.getPackage() || cls.isAssignableFrom(referringCls)) return;
+                if (equalPackages(cls.getPackage(), referringCls.getPackage()) ||
+                        cls.isAssignableFrom(referringCls)) return;
                 else break;
             default:
-                if (cls.getPackage() == referringCls.getPackage()) return;
+                if (equalPackages(cls.getPackage(), referringCls.getPackage())) return;
                 else break;
             case PRIVATE:
                 if (cls == referringCls) return;
