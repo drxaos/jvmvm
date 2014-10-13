@@ -44,6 +44,7 @@ public class Editor extends JFrame implements ActionListener {
 
     private Integer keyCode;
     private boolean resetRequest;
+    private String resetCode;
 
     public Editor() {
 
@@ -177,35 +178,40 @@ public class Editor extends JFrame implements ActionListener {
             bottomPanel.add(resetBtn);
         }
         {
-            JButton inventory = new JButton("[F5]Execute");
-            inventory.setForeground(Color.WHITE);
-            inventory.setBackground(Color.BLACK);
-            inventory.setFocusable(false);
+            JButton executeBtn = new JButton("[^5]Execute");
+            executeBtn.setForeground(Color.WHITE);
+            executeBtn.setBackground(Color.BLACK);
+            executeBtn.setFocusable(false);
             Border line = new LineBorder(Color.BLACK);
             Border margin = new EmptyBorder(5, 3, 5, 3);
             Border compound = new CompoundBorder(line, margin);
-            inventory.setBorder(compound);
-            inventory.setFont(btnFont);
-            bottomPanel.add(inventory);
+            executeBtn.setBorder(compound);
+            executeBtn.setFont(btnFont);
+            executeBtn.getActionMap().put("Execute", executeAction);
+            executeBtn.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                    (KeyStroke) executeAction.getValue(javax.swing.Action.ACCELERATOR_KEY), "Execute");
+            executeBtn.addActionListener(executeAction);
+            bottomPanel.add(executeBtn);
         }
         {
-            JButton inventory = new JButton("[Q]Phone");
-            inventory.setForeground(Color.WHITE);
-            inventory.setBackground(Color.BLACK);
-            inventory.setFocusable(false);
+            JButton phoneBtn = new JButton("[Q]Phone");
+            phoneBtn.setForeground(Color.WHITE);
+            phoneBtn.setBackground(Color.BLACK);
+            phoneBtn.setFocusable(false);
             Border line = new LineBorder(Color.BLACK);
             Border margin = new EmptyBorder(5, 3, 5, 3);
             Border compound = new CompoundBorder(line, margin);
-            inventory.setBorder(compound);
-            inventory.setFont(btnFont);
-            bottomPanel.add(inventory);
+            phoneBtn.setBorder(compound);
+            phoneBtn.setFont(btnFont);
+            phoneBtn.addActionListener(phoneAction);
+            bottomPanel.add(phoneBtn);
         }
         {
             JLabel span = new JLabel("        ");
             bottomPanel.add(span);
         }
         {
-            JButton inventory = new JButton("[Esc]Menu");
+            JButton inventory = new JButton("[^0]Menu");
             inventory.setForeground(Color.WHITE);
             inventory.setBackground(Color.BLACK);
             inventory.setFocusable(false);
@@ -295,8 +301,26 @@ public class Editor extends JFrame implements ActionListener {
             int answer = JOptionPane.showConfirmDialog(Editor.this, message, "Reset",
                     JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (answer == JOptionPane.YES_OPTION) {
+                resetCode = null;
                 resetRequest = true;
             }
+        }
+    };
+    AbstractAction executeAction = new AbstractAction("Execute") {
+        {
+            putValue(javax.swing.Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control 5"));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            resetCode = getCodeEditor().getText();
+            resetRequest = true;
+        }
+    };
+    AbstractAction phoneAction = new AbstractAction("Phone") {
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            keyCode = KeyEvent.VK_Q;
         }
     };
 
@@ -312,7 +336,12 @@ public class Editor extends JFrame implements ActionListener {
         return resetRequest;
     }
 
+    public String getResetCode() {
+        return resetCode;
+    }
+
     public void resetResetRequest() {
+        resetCode = null;
         resetRequest = false;
     }
 

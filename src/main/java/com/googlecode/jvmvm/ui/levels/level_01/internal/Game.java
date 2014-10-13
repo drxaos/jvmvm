@@ -220,17 +220,7 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
             }
         } else if (state == PLAY) {
             int toX = player.x, toY = player.y;
-            if (key == null) {
-                // no action
-            } else {
-                // repaint on user action
-                actions.add(new Action.Clear());
-                for (Obj obj : objs) {
-                    Definition d = defMap.get(obj.type);
-                    actions.add(new Action.MoveCaret(obj.x, obj.y));
-                    actions.add(new Action.Print(d.getColor(), "" + d.getSymbol()));
-                }
-
+            if (key != null) {
                 // move player
                 if (key == KeyEvent.VK_DOWN && player.y < 49) {
                     toY++;
@@ -257,12 +247,20 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
                     d.onCollision(new Player(this));
                 }
             }
-            actions.add(new Action.MoveCaret(player.x, player.y));
-            actions.add(new Action.Print(" "));
-            actions.add(new Action.MoveCaret(toX, toY));
-            actions.add(new Action.Print(defMap.get("player").getColor(), "" + defMap.get(player.type).getSymbol()));
             player.x = toX;
             player.y = toY;
+
+            if (key != null) {
+                // repaint on user action
+                actions.add(new Action.Clear());
+                for (Obj obj : objs) {
+                    Definition d = defMap.get(obj.type);
+                    actions.add(new Action.MoveCaret(obj.x, obj.y));
+                    actions.add(new Action.Print(d.getColor(), "" + d.getSymbol()));
+                }
+                actions.add(new Action.MoveCaret(toX, toY));
+                actions.add(new Action.Print(defMap.get("player").getColor(), "" + defMap.get(player.type).getSymbol()));
+            }
         }
     }
 

@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.lang.reflect.InvocationTargetException;
 
 public class Main implements ActionListener {
 
@@ -86,12 +87,16 @@ public class Main implements ActionListener {
         if (editor.hasResetRequest()) {
             try {
                 game.stop();
-                game = game.getClass().newInstance();
+                game = game.getClass().getConstructor(String.class).newInstance(editor.getResetCode());
                 game.start();
                 editor.playMusic(game.getMusic());
             } catch (InstantiationException e1) {
                 e1.printStackTrace();
             } catch (IllegalAccessException e1) {
+                e1.printStackTrace();
+            } catch (NoSuchMethodException e1) {
+                e1.printStackTrace();
+            } catch (InvocationTargetException e1) {
                 e1.printStackTrace();
             }
             editor.resetResetRequest();
