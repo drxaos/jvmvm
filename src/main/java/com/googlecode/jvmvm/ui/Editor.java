@@ -39,9 +39,11 @@ public class Editor extends JFrame implements ActionListener {
     private ReplaceDialog replaceDialog;
     private JMenu menuSerach;
     private JPanel bottomPanel;
-    private ApiWindow apiWindow;
+    private MenuWindow menuWindow;
+    private NotepadWindow notepadWindow;
 
     private Integer keyCode;
+    private boolean resetRequest;
 
     public Editor() {
 
@@ -143,28 +145,36 @@ public class Editor extends JFrame implements ActionListener {
             bottomPanel.add(toggleBtn);
         }
         {
-            JButton inventory = new JButton("[F3]Notepad");
-            inventory.setForeground(Color.WHITE);
-            inventory.setBackground(Color.BLACK);
-            inventory.setFocusable(false);
+            JButton notepadBtn = new JButton("[^3]Notepad");
+            notepadBtn.setForeground(Color.WHITE);
+            notepadBtn.setBackground(Color.BLACK);
+            notepadBtn.setFocusable(false);
             Border line = new LineBorder(Color.BLACK);
             Border margin = new EmptyBorder(5, 3, 5, 3);
             Border compound = new CompoundBorder(line, margin);
-            inventory.setBorder(compound);
-            inventory.setFont(btnFont);
-            bottomPanel.add(inventory);
+            notepadBtn.setBorder(compound);
+            notepadBtn.setFont(btnFont);
+            notepadBtn.getActionMap().put("Notepad", notepadAction);
+            notepadBtn.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                    (KeyStroke) notepadAction.getValue(javax.swing.Action.ACCELERATOR_KEY), "Notepad");
+            notepadBtn.addActionListener(notepadAction);
+            bottomPanel.add(notepadBtn);
         }
         {
-            JButton inventory = new JButton("[F4]Reset");
-            inventory.setForeground(Color.WHITE);
-            inventory.setBackground(Color.BLACK);
-            inventory.setFocusable(false);
+            JButton resetBtn = new JButton("[^4]Reset");
+            resetBtn.setForeground(Color.WHITE);
+            resetBtn.setBackground(Color.BLACK);
+            resetBtn.setFocusable(false);
             Border line = new LineBorder(Color.BLACK);
             Border margin = new EmptyBorder(5, 3, 5, 3);
             Border compound = new CompoundBorder(line, margin);
-            inventory.setBorder(compound);
-            inventory.setFont(btnFont);
-            bottomPanel.add(inventory);
+            resetBtn.setBorder(compound);
+            resetBtn.setFont(btnFont);
+            resetBtn.getActionMap().put("Reset", resetAction);
+            resetBtn.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                    (KeyStroke) resetAction.getValue(javax.swing.Action.ACCELERATOR_KEY), "Reset");
+            resetBtn.addActionListener(resetAction);
+            bottomPanel.add(resetBtn);
         }
         {
             JButton inventory = new JButton("[F5]Execute");
@@ -224,8 +234,10 @@ public class Editor extends JFrame implements ActionListener {
             }
         });
 
-        apiWindow = new ApiWindow(this);
-        apiWindow.setVisible(false);
+        menuWindow = new MenuWindow(this);
+        menuWindow.setVisible(false);
+        notepadWindow = new NotepadWindow(this);
+        notepadWindow.setVisible(false);
     }
 
     AbstractAction apiAction = new AbstractAction("API") {
@@ -262,6 +274,31 @@ public class Editor extends JFrame implements ActionListener {
             }
         }
     };
+    AbstractAction notepadAction = new AbstractAction("Notepad") {
+        {
+            putValue(javax.swing.Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control 3"));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            notepadWindow.setVisible(true);
+        }
+    };
+    AbstractAction resetAction = new AbstractAction("Reset") {
+        {
+            putValue(javax.swing.Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control 4"));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            String message = "Reset this level?";
+            int answer = JOptionPane.showConfirmDialog(Editor.this, message, "Reset",
+                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (answer == JOptionPane.YES_OPTION) {
+                resetRequest = true;
+            }
+        }
+    };
 
     public Integer getKeyCode() {
         return keyCode;
@@ -269,6 +306,14 @@ public class Editor extends JFrame implements ActionListener {
 
     public void resetKeyCode() {
         keyCode = null;
+    }
+
+    public boolean hasResetRequest() {
+        return resetRequest;
+    }
+
+    public void resetResetRequest() {
+        resetRequest = false;
     }
 
     public void setText(String text) {

@@ -73,7 +73,6 @@ public class Main implements ActionListener {
         if (game == null) {
             try {
                 game = new com.googlecode.jvmvm.ui.levels.intro.Game();
-//                                    game = new com.googlecode.jvmvm.ui.levels.level_01.internal.Game(null);
                 game.start();
                 editor.playMusic(game.getMusic());
             } catch (Exception e1) {
@@ -84,11 +83,24 @@ public class Main implements ActionListener {
         game.setKey(editor.getKeyCode());
         editor.resetKeyCode();
 
+        if (editor.hasResetRequest()) {
+            try {
+                game.stop();
+                game = game.getClass().newInstance();
+                game.start();
+                editor.playMusic(game.getMusic());
+            } catch (InstantiationException e1) {
+                e1.printStackTrace();
+            } catch (IllegalAccessException e1) {
+                e1.printStackTrace();
+            }
+            editor.resetResetRequest();
+        }
+
         game.step();
         editor.execute(game.getActions());
         if (game.getNextLevel() != null) {
             game.stop();
-            editor.getConsole().clear();
             game = game.getNextLevel();
             game.start();
             editor.playMusic(game.getMusic());

@@ -49,6 +49,10 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
         this.code = code;
     }
 
+    public Game() {
+        this(null);
+    }
+
     final public String getMusic() {
         return "Yonnie_The_Green.mp3";
     }
@@ -65,6 +69,7 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
 
     @Override
     public void start() {
+        actions.add(new Action.HideCode());
 
         defMap.put("player", new Definition() {
 

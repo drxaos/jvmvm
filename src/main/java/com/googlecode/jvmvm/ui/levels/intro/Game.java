@@ -1,6 +1,7 @@
 package com.googlecode.jvmvm.ui.levels.intro;
 
 import com.googlecode.jvmvm.loader.Project;
+import com.googlecode.jvmvm.ui.Action;
 import com.googlecode.jvmvm.ui.Vm;
 import org.apache.commons.io.FileUtils;
 
@@ -19,6 +20,7 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     @Override
     public void start() {
         try {
+            actions.add(new Action.HideCode());
             String path = "src/main/java/";
             String src = Initialize.class.getCanonicalName().replace(".", "/") + ".java";
             String src1 = Level.class.getCanonicalName().replace(".", "/") + ".java";
@@ -46,7 +48,7 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
         } else {
             if (key != null) {
                 try {
-                    load(new com.googlecode.jvmvm.ui.levels.level_01.internal.Game(null));
+                    load(new com.googlecode.jvmvm.ui.levels.level_01.internal.Game());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
