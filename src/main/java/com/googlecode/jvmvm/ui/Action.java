@@ -48,7 +48,7 @@ public abstract class Action {
 
         @Override
         public void execute(Editor editor) {
-            editor.setTitle("J-Untrusted: " + title);
+            editor.setTitle("J-Untrusted:   " + title);
         }
     }
 

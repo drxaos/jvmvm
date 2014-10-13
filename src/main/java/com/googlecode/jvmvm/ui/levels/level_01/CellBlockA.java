@@ -1,25 +1,26 @@
 /**
- * *****************
+ *******************
  * CellBlockA.java *
- * *****************
- * -
- * Good morning, Dr. Eval.
- * -
- * It wasn't easy, but I've managed to get your computer down
- * to you. This system might be unfamiliar, but the underlying
- * code is still Java. Just like we predicted.
- * -
- * Now, let's get what we came here for and then get you out of
- * here. Easy peasy.
- * -
- * I've given you as much access to their code as I could, but
- * it's not perfect. The red background indicates lines that
- * are off-limits from editing.
- * -
- * The code currently places blocks in a rectangle surrounding
- * you. All you need to do is make a gap. You don't even need
- * to do anything extra. In fact, you should be doing less.
- */
+ *******************
+ **
+ ** Good morning, Dr. Eval.
+ **
+ ** It wasn't easy, but I've managed to get your computer down
+ ** to you. This system might be unfamiliar, but the underlying
+ ** code is still Java. Just like we predicted.
+ **
+ ** Now, let's get what we came here for and then get you out of
+ ** here. Easy peasy.
+ **
+ ** I've given you as much access to their code as I could, but
+ ** it's not perfect. The red background indicates lines that
+ ** are off-limits from editing.
+ **
+ ** The code currently places blocks in a rectangle surrounding
+ ** you. All you need to do is make a gap. You don't even need
+ ** to do anything extra. In fact, you should be doing less.
+ **
+ **/
 
 package com.googlecode.jvmvm.ui.levels.level_01;
 
@@ -28,7 +29,7 @@ public class CellBlockA extends Level {
     public void startLevel(Map map) {
 /*START_OF_START_LEVEL*/
 
-        map.displayChapter/*{*/("Chapter 1 - Breakout")/*}*/;
+        map.displayChapter("Chapter 1 - Breakout");
 
         map.placePlayer(7, 5);
 

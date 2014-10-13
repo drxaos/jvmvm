@@ -13,6 +13,10 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.SearchEngine;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -65,6 +69,8 @@ public class Editor extends JFrame implements ActionListener {
         }
 
         textArea.setFont(JConsole.DEFAULT_FONT);
+        Font codeFont = new Font(JConsole.DEFAULT_FONT.getName(), Font.PLAIN, 12);
+        Font btnFont = new Font(JConsole.DEFAULT_FONT.getName(), Font.PLAIN, 10);
         textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
         textArea.setCodeFoldingEnabled(true);
         textArea.setBracketMatchingEnabled(true);
@@ -87,21 +93,124 @@ public class Editor extends JFrame implements ActionListener {
         textScroll.setVisible(false);
         cp.add(textScroll, BorderLayout.CENTER);
 
-        bottomPanel = new JPanel();
+        GridBagLayout layout = new GridBagLayout();
+        bottomPanel = new JPanel(layout);
         bottomPanel.setBackground(Color.BLACK);
-        bottomPanel.setPreferredSize(new Dimension(100, 25));
+        bottomPanel.setPreferredSize(new Dimension(100, 35));
         bottomPanel.setVisible(false);
+        bottomPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
+        {
+            JLabel inventory = new JLabel("Inventory: #$%");
+            inventory.setPreferredSize(new Dimension((int) playArea.getPreferredSize().getWidth(), 35));
+            inventory.setFont(JConsole.DEFAULT_FONT);
+            //layout.setConstraints(inventory, new GridBagConstraints(0,0,));
+            bottomPanel.add(inventory);
+        }
+        {
+            JButton inventory = new JButton("[F1]API");
+            inventory.setForeground(Color.WHITE);
+            inventory.setBackground(Color.BLACK);
+            inventory.setFocusable(false);
+            Border line = new LineBorder(Color.BLACK);
+            Border margin = new EmptyBorder(5, 3, 5, 3);
+            Border compound = new CompoundBorder(line, margin);
+            inventory.setBorder(compound);
+            inventory.setFont(btnFont);
+            bottomPanel.add(inventory);
+        }
+        {
+            JButton inventory = new JButton("[F2]Toggle Focus");
+            inventory.setForeground(Color.WHITE);
+            inventory.setBackground(Color.BLACK);
+            inventory.setFocusable(false);
+            Border line = new LineBorder(Color.BLACK);
+            Border margin = new EmptyBorder(5, 3, 5, 3);
+            Border compound = new CompoundBorder(line, margin);
+            inventory.setBorder(compound);
+            inventory.setFont(btnFont);
+            bottomPanel.add(inventory);
+        }
+        {
+            JButton inventory = new JButton("[F3]Notepad");
+            inventory.setForeground(Color.WHITE);
+            inventory.setBackground(Color.BLACK);
+            inventory.setFocusable(false);
+            Border line = new LineBorder(Color.BLACK);
+            Border margin = new EmptyBorder(5, 3, 5, 3);
+            Border compound = new CompoundBorder(line, margin);
+            inventory.setBorder(compound);
+            inventory.setFont(btnFont);
+            bottomPanel.add(inventory);
+        }
+        {
+            JButton inventory = new JButton("[F4]Reset");
+            inventory.setForeground(Color.WHITE);
+            inventory.setBackground(Color.BLACK);
+            inventory.setFocusable(false);
+            Border line = new LineBorder(Color.BLACK);
+            Border margin = new EmptyBorder(5, 3, 5, 3);
+            Border compound = new CompoundBorder(line, margin);
+            inventory.setBorder(compound);
+            inventory.setFont(btnFont);
+            bottomPanel.add(inventory);
+        }
+        {
+            JButton inventory = new JButton("[F5]Execute");
+            inventory.setForeground(Color.WHITE);
+            inventory.setBackground(Color.BLACK);
+            inventory.setFocusable(false);
+            Border line = new LineBorder(Color.BLACK);
+            Border margin = new EmptyBorder(5, 3, 5, 3);
+            Border compound = new CompoundBorder(line, margin);
+            inventory.setBorder(compound);
+            inventory.setFont(btnFont);
+            bottomPanel.add(inventory);
+        }
+        {
+            JButton inventory = new JButton("[Q]Phone");
+            inventory.setForeground(Color.WHITE);
+            inventory.setBackground(Color.BLACK);
+            inventory.setFocusable(false);
+            Border line = new LineBorder(Color.BLACK);
+            Border margin = new EmptyBorder(5, 3, 5, 3);
+            Border compound = new CompoundBorder(line, margin);
+            inventory.setBorder(compound);
+            inventory.setFont(btnFont);
+            bottomPanel.add(inventory);
+        }
+        {
+            JLabel span = new JLabel("        ");
+            bottomPanel.add(span);
+        }
+        {
+            JButton inventory = new JButton("[Esc]Menu");
+            inventory.setForeground(Color.WHITE);
+            inventory.setBackground(Color.BLACK);
+            inventory.setFocusable(false);
+            Border line = new LineBorder(Color.BLACK);
+            Border margin = new EmptyBorder(5, 3, 5, 3);
+            Border compound = new CompoundBorder(line, margin);
+            inventory.setBorder(compound);
+            inventory.setFont(btnFont);
+            bottomPanel.add(inventory);
+        }
+
         cp.add(bottomPanel, BorderLayout.SOUTH);
 
         setTitle("J-Untrusted");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         pack();
 
-        textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-
-        setLocationRelativeTo(null);
+        textArea.setFont(codeFont);
 
         setResizable(false);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                setLocationRelativeTo(null);
+            }
+        });
     }
 
     public Integer getKeyCode() {
@@ -113,28 +222,7 @@ public class Editor extends JFrame implements ActionListener {
     }
 
     public void setText(String text) {
-        boolean editable = false;
-        int count = 0;
-        StringBuilder b = new StringBuilder();
-        for (int i = 0; i < text.length(); i++) {
-            if (text.substring(i).startsWith("/*EDITABLE START*/")) {
-                editable = true;
-                i += "/*EDITABLE START*/".length();
-            } else if (text.substring(i).startsWith("/*EDITABLE END*/")) {
-                editable = false;
-                i += "/*EDITABLE END*/".length();
-            } else {
-                b.append(text.charAt(i));
-                count++;
-            }
-        }
-
-        textArea.setText(b.toString());
-        try {
-            textArea.addLineHighlight(3, new Color(74, 4, 0));
-        } catch (BadLocationException e) {
-            e.printStackTrace();
-        }
+        textArea.setText(text);
         textArea.setCaretPosition(0);
     }
 
@@ -252,6 +340,7 @@ public class Editor extends JFrame implements ActionListener {
     public JConsole getConsole() {
         return playArea;
     }
+
     public RSyntaxTextArea getCodeEditor() {
         return textArea;
     }
