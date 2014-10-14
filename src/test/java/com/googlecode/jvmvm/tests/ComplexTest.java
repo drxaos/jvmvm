@@ -57,7 +57,11 @@ public class ComplexTest {
             Arrays.class.getName(),
             Collections.class.getName(),
 
+            Deque.class.getName(),
+            AbstractSequentialList.class.getName(),
+
             List.class.getName(),
+            AbstractList.class.getName(),
             ArrayList.class.getName(),
             LinkedList.class.getName(),
 

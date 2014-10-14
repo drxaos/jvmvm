@@ -74,6 +74,8 @@ public class JavaEclipseCompiler implements com.googlecode.jvmvm.compiler.Compil
         opt.produceDebugAttributes = ClassFileConstants.ATTR_SOURCE | ClassFileConstants.ATTR_LINES;
         opt.complianceLevel = ClassFileConstants.JDK1_6;
         opt.targetJDK = ClassFileConstants.JDK1_6;
+        opt.suppressOptionalErrors = true;
+        opt.treatOptionalErrorAsFatal = false;
         Compiler compiler = new Compiler(env, DefaultErrorHandlingPolicies.exitAfterAllProblems(),
                 opt, requestor, new DefaultProblemFactory());
 
