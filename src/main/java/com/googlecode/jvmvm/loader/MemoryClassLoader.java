@@ -1,5 +1,6 @@
 package com.googlecode.jvmvm.loader;
 
+import com.googlecode.jvmvm.compiler.JarUtil;
 import org.objectweb.asm.*;
 
 import java.io.ByteArrayInputStream;
@@ -109,10 +110,15 @@ public class MemoryClassLoader extends SecureClassLoader {
     Set<String> modifiedClasses = new HashSet<String>();
     ClassLoader fallbackClassLoader;
 
-    public MemoryClassLoader(ClassLoader fallbackClassLoader, Map<String, byte[]> classes) {
+    public MemoryClassLoader(ClassLoader fallbackClassLoader, Map<String, byte[]> classes, List<byte[]> jars) {
         super(null);
         this.fallbackClassLoader = fallbackClassLoader;
         this.classes = classes;
+        for (byte[] jar : jars) {
+            for (Map.Entry<String, byte[]> e : JarUtil.unpack(jar).entrySet()) {
+                classes.put(e.getKey().replaceFirst("\\.class$", "").replace("/", "."), e.getValue());
+            }
+        }
     }
 
     public void onVmDisabled() {

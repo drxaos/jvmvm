@@ -51,6 +51,8 @@ public class ComplexTest {
             NoSuchElementException.class.getName(),
 
             Serializable.class.getName(),
+            Cloneable.class.getName(),
+            RandomAccess.class.getName(),
 
             Arrays.class.getName(),
             Collections.class.getName(),
@@ -63,9 +65,13 @@ public class ComplexTest {
             HashSet.class.getName(),
 
             Map.class.getName(),
+            AbstractMap.class.getName(),
             Map.Entry.class.getName(),
             HashMap.class.getName(),
-            "java.util.HashMap$EntrySet"
+            "java.util.HashMap$EntrySet",
+            "java.util.HashMap$Entry",
+
+            Override.class.getName()
     );
 
     @Test

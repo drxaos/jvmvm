@@ -56,11 +56,14 @@ public class LibraryTest {
             UnsupportedEncodingException.class.getName(),
 
             Serializable.class.getName(),
+            Cloneable.class.getName(),
+            RandomAccess.class.getName(),
 
             Arrays.class.getName(),
             Collections.class.getName(),
 
             List.class.getName(),
+            AbstractList.class.getName(),
             ArrayList.class.getName(),
             LinkedList.class.getName(),
 
