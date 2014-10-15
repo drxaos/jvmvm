@@ -590,6 +590,7 @@ public class Editor extends JFrame implements ActionListener {
                         new BufferedInputStream(ClassLoader.getSystemClassLoader().getResourceAsStream("music/" + music))
                 );
                 player.start();
+                currentMusic = music;
             } catch (Exception e) {
                 e.printStackTrace();
             }

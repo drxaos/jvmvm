@@ -33,7 +33,9 @@ public class SrcUtil {
                 }
                 return IOUtils.toByteArray(in);
             } catch (Exception e1) {
-                throw new IOException("cannot load source: " + path, e1);
+                IOException z = new IOException("cannot load source: " + path, e1);
+                z.printStackTrace();
+                throw z;
             }
         }
     }

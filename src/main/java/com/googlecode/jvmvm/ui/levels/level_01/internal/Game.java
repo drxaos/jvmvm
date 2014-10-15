@@ -153,7 +153,7 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     static class ApiHandler implements HttpHandler {
         public void handle(HttpExchange t) throws IOException {
             String baseSrc = "src/main/resources";
-            byte[] response = SrcUtil.loadData(baseSrc, "docs/level_01/" + t.getRequestURI().getPath());
+            byte[] response = SrcUtil.loadData(baseSrc, "docs/level_01/" + t.getRequestURI().getPath().replace("..", "").replaceFirst("^/", ""));
             t.sendResponseHeaders(200, response.length);
             OutputStream os = t.getResponseBody();
             os.write(response);
