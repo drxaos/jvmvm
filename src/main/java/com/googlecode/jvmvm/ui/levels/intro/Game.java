@@ -74,4 +74,9 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     public List<Integer> redLines() {
         return Collections.emptyList();
     }
+
+    @Override
+    public String getLevelNumber() {
+        return "00";
+    }
 }

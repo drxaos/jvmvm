@@ -81,4 +81,6 @@ public abstract class Game {
     public abstract boolean validateCode(String code);
 
     public abstract List<Integer> redLines();
+
+    public abstract String getLevelNumber();
 }

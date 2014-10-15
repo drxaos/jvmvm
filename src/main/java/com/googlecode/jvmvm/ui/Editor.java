@@ -227,7 +227,7 @@ public class Editor extends JFrame implements ActionListener {
         cp.add(bottomPanel, BorderLayout.SOUTH);
 
         setTitle("J-Untrusted");
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         pack();
 
         textArea.setFont(codeFont);
@@ -504,6 +504,14 @@ public class Editor extends JFrame implements ActionListener {
 
     public void loadCode(String code) {
         setText(code);
+    }
+
+    public String getNotepadText() {
+        return notepadWindow.editor.getText();
+    }
+
+    public void setNotepadText(String text) {
+        notepadWindow.editor.setText(text);
     }
 
     private class GoToLineAction extends AbstractAction {

@@ -5,22 +5,70 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 
 public class Main implements ActionListener {
 
     Game game;
     Editor editor;
+    HashMap saveState = new HashMap();
 
     public Main() {
         editor = new Editor();
+        editor.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    saveState.put("notepad", editor.getNotepadText());
+                    saveState.put("code" + game.getLevelNumber(), editor.getCodeEditor().getText());
+                    ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("./savegame.dat"));
+                    out.writeObject(saveState);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                System.exit(0);
+            }
+        });
         editor.setVisible(true);
+        ((AbstractDocument) editor.getCodeEditor().getDocument()).setDocumentFilter(new PartlyReadOnly());
+
+        try {
+            ObjectInputStream in = new ObjectInputStream(new FileInputStream("./savegame.dat"));
+            saveState = (HashMap) in.readObject();
+            if (saveState.containsKey("maxLevel")) {
+                try {
+                    String lvl = (String) saveState.get("maxLevel");
+                    String code = (String) saveState.get("code" + lvl);
+                    game = (Game) Class.forName("" + saveState.get("class" + lvl)).getConstructor(String.class).newInstance(code);
+                    game.start();
+                    editor.playMusic(game.getMusic());
+                    editor.setNotepadText((String) saveState.get("notepad"));
+                    editor.setText(code);
+                } catch (InstantiationException e1) {
+                    e1.printStackTrace();
+                } catch (IllegalAccessException e1) {
+                    e1.printStackTrace();
+                } catch (NoSuchMethodException e1) {
+                    e1.printStackTrace();
+                } catch (InvocationTargetException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        } catch (ClassNotFoundException e1) {
+            e1.printStackTrace();
+        }
     }
 
-    class PartyReadOnly extends DocumentFilter {
+    class PartlyReadOnly extends DocumentFilter {
         @Override
         public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
             Document document = fb.getDocument();
@@ -90,8 +138,6 @@ public class Main implements ActionListener {
             }
         });
 
-        ((AbstractDocument) editor.getCodeEditor().getDocument()).setDocumentFilter(new PartyReadOnly());
-
         if (game == null) {
             try {
                 game = new com.googlecode.jvmvm.ui.levels.intro.Game();
@@ -126,10 +172,15 @@ public class Main implements ActionListener {
         game.step();
         editor.execute(game.getActions());
         if (game.getNextLevel() != null) {
+            saveState.put("code" + game.getLevelNumber(), editor.getCodeEditor().getText());
+
             game.stop();
             game = game.getNextLevel();
             game.start();
             editor.playMusic(game.getMusic());
+
+            saveState.put("class" + game.getLevelNumber(), game.getClass().getName());
+            saveState.put("maxLevel", game.getLevelNumber());
         }
     }
 

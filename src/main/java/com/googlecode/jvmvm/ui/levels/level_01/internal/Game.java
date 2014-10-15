@@ -73,6 +73,11 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
         return lvlCode.getReadonlyLines();
     }
 
+    @Override
+    public String getLevelNumber() {
+        return "01";
+    }
+
     public void __auth(String command, String secret) {
         if (this.secret.equals(secret)) {
             if ("startOfStartLevel".equals(command)) {
