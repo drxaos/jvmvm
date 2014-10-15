@@ -56,6 +56,9 @@ public class SubstitutionTest {
 
             Serializable.class.getName(),
 
+            InputStream.class.getName(),
+            FilterInputStream.class.getName(),
+
             Arrays.class.getName(),
             Collections.class.getName(),
 

@@ -1,6 +1,7 @@
 package com.googlecode.jvmvm.tests;
 
 import com.googlecode.jvmvm.loader.Project;
+import com.googlecode.jvmvm.loader.ProjectCompilerException;
 import com.googlecode.jvmvm.loader.ProjectExecutionException;
 import com.googlecode.jvmvm.tests.interpretable.CustomExamples;
 import com.googlecode.jvmvm.tests.interpretable.MapExamples;
@@ -10,11 +11,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.MalformedURLException;
+import java.nio.charset.Charset;
 import java.util.*;
 
 public class SerializerTest {
@@ -41,6 +40,8 @@ public class SerializerTest {
             Float.class.getName(),
             Double.class.getName(),
 
+            Charset.class.getName(),
+
             Math.class.getName(),
 
             Iterable.class.getName(),
@@ -56,8 +57,14 @@ public class SerializerTest {
             UnsupportedEncodingException.class.getName(),
             IOException.class.getName(),
             MalformedURLException.class.getName(),
+            CloneNotSupportedException.class.getName(),
+
+            InputStream.class.getName(),
+//            BufferedInputStream.class.getName(),
 
             Serializable.class.getName(),
+            Comparator.class.getName(),
+            Comparable.class.getName(),
 
             Arrays.class.getName(),
             Collections.class.getName(),
@@ -70,7 +77,13 @@ public class SerializerTest {
             HashSet.class.getName(),
 
             Map.class.getName(),
+            AbstractMap.class.getName(),
+            SortedMap.class.getName(),
+//            "java.util.Map$EntrySet",
+//            "java.util.Map$Entry",
             HashMap.class.getName(),
+//            "java.util.HashMap$EntrySet",
+//            "java.util.HashMap$Entry",
             TreeMap.class.getName()
     );
 
@@ -149,7 +162,7 @@ public class SerializerTest {
         Assert.assertEquals("result2", expected, res2);
     }
 
-    @Test(expected = ProjectExecutionException.class)
+    @Test(expected = ProjectCompilerException.class)
     public void test_vm_system() throws Exception {
         String src1 = SystemExamples.class.getCanonicalName().replace(".", "/") + ".java";
 

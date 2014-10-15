@@ -52,7 +52,7 @@ public class JavaEclipseCompiler implements com.googlecode.jvmvm.compiler.Compil
             public void acceptResult(CompilationResult result) {
                 if (result.hasErrors()) {
                     StringBuilder sb = new StringBuilder();
-                    for (CategorizedProblem problem : result.getAllProblems()) {
+                    for (CategorizedProblem problem : result.getErrors()) {
                         sb.append(problem.toString()).append("\n");
                     }
                     throw new ProjectCompilerException("compile error", sb.toString());
@@ -70,10 +70,10 @@ public class JavaEclipseCompiler implements com.googlecode.jvmvm.compiler.Compil
         };
 
         CompilerOptions opt = new CompilerOptions();
-        opt.sourceLevel = ClassFileConstants.JDK1_6;
+        opt.sourceLevel = ClassFileConstants.JDK1_7;
         opt.produceDebugAttributes = ClassFileConstants.ATTR_SOURCE | ClassFileConstants.ATTR_LINES;
-        opt.complianceLevel = ClassFileConstants.JDK1_6;
-        opt.targetJDK = ClassFileConstants.JDK1_6;
+        opt.complianceLevel = ClassFileConstants.JDK1_7;
+        opt.targetJDK = ClassFileConstants.JDK1_7;
         opt.suppressOptionalErrors = true;
         opt.treatOptionalErrorAsFatal = false;
         Compiler compiler = new Compiler(env, DefaultErrorHandlingPolicies.exitAfterAllProblems(),

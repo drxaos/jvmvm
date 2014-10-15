@@ -3,12 +3,15 @@ package com.googlecode.jvmvm.compiler.ecj;
 import com.googlecode.jvmvm.loader.ProjectCompilerException;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jdt.internal.compiler.batch.CompilationUnit;
+import org.eclipse.jdt.internal.compiler.batch.FileSystem;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFormatException;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
 import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
+import org.eclipse.jdt.internal.compiler.util.Util;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +21,7 @@ final class NameEnv implements INameEnvironment {
     private Map<String, String> files;
     private Map<String, byte[]> classpath;
     private Set<String> packagesCache;
+    private FileSystem fileSystem;
 
     public NameEnv(Map<String, String> files, Map<String, byte[]> classpath) {
         this.files = files;
@@ -37,6 +41,14 @@ final class NameEnv implements INameEnvironment {
                 }
             }
         }
+
+        ArrayList<FileSystem.Classpath> cp = new ArrayList<FileSystem.Classpath>();
+        ArrayList<String> cps = new ArrayList<String>();
+        Util.collectRunningVMBootclasspath(cp);
+        for (FileSystem.Classpath classpath1 : cp) {
+            cps.add(classpath1.getPath());
+        }
+        fileSystem = new FileSystem(cps.toArray(new String[cps.size()]), null, null);
     }
 
     @Override
@@ -48,6 +60,11 @@ final class NameEnv implements INameEnvironment {
             }
             result.append(compoundTypeName[i]);
         }
+
+        if (result.toString().startsWith("java.")) {
+            return fileSystem.findType(compoundTypeName);
+        }
+
         return findType(result.toString());
     }
 
@@ -59,6 +76,11 @@ final class NameEnv implements INameEnvironment {
             result.append('.');
         }
         result.append(typeName);
+
+        if (result.toString().startsWith("java.")) {
+            return fileSystem.findType(typeName, packageName);
+        }
+
         return findType(result.toString());
     }
 
@@ -93,6 +115,11 @@ final class NameEnv implements INameEnvironment {
         }
         sb.append(new String(packageName));
         String name = sb.toString();
+
+        if (name.startsWith("java.")) {
+            return fileSystem.isPackage(parentPackageName, packageName);
+        }
+
         return packagesCache.contains(name);
     }
 
