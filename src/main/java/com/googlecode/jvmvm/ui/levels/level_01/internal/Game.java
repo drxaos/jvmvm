@@ -3,6 +3,7 @@ package com.googlecode.jvmvm.ui.levels.level_01.internal;
 import com.googlecode.jvmvm.loader.Project;
 import com.googlecode.jvmvm.ui.Action;
 import com.googlecode.jvmvm.ui.Editor;
+import com.googlecode.jvmvm.ui.SrcUtil;
 import com.googlecode.jvmvm.ui.Vm;
 import com.googlecode.jvmvm.ui.levels.level_01.CellBlockA;
 import com.googlecode.jvmvm.ui.levels.level_01.Level;
@@ -11,11 +12,9 @@ import com.googlecode.jvmvm.ui.levels.level_01.Player;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import org.apache.commons.io.FileUtils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -152,11 +151,11 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
 
 
         try {
-            String path = "src/main/java/";
+            String path = "src/main/java";
             String lvlSrc = CellBlockA.class.getCanonicalName().replace(".", "/") + ".java";
             String baseSrc = Level.class.getCanonicalName().replace(".", "/") + ".java";
             String bootstrapSrc = Bootstrap.class.getCanonicalName().replace(".", "/") + ".java";
-            lvlCode = Code.parse(FileUtils.readFileToString(new File(path + lvlSrc)));
+            lvlCode = Code.parse(SrcUtil.loadSrc(path, lvlSrc));
             if (code != null) {
                 lvlCode.apply(code, false);
             }
@@ -166,8 +165,8 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
             }
             levelVm = new Project("level-vm")
                     .addFile(lvlSrc, lvlCode.toCompilationUnit(secret))
-                    .addFile(baseSrc, FileUtils.readFileToString(new File(path + baseSrc)))
-                    .addFile(bootstrapSrc, FileUtils.readFileToString(new File(path + bootstrapSrc)))
+                    .addFile(baseSrc, SrcUtil.loadSrc(path, baseSrc))
+                    .addFile(bootstrapSrc, SrcUtil.loadSrc(path, bootstrapSrc))
                     .addSystemClass(Map.class.getName())
                     .addSystemClass(Player.class.getName())
                     .addSystemClasses(Vm.bootstrap)
@@ -192,8 +191,8 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
 
     static class ApiHandler implements HttpHandler {
         public void handle(HttpExchange t) throws IOException {
-            String baseSrc = "src/main/resources/docs/level_01/";
-            byte[] response = FileUtils.readFileToByteArray(new File(baseSrc + t.getRequestURI().getPath()));
+            String baseSrc = "src/main/resources";
+            byte[] response = SrcUtil.loadData(baseSrc, "docs/level_01/" + t.getRequestURI().getPath());
             t.sendResponseHeaders(200, response.length);
             OutputStream os = t.getResponseBody();
             os.write(response);

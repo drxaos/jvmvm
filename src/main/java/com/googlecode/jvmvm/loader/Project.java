@@ -1,7 +1,6 @@
 package com.googlecode.jvmvm.loader;
 
 import com.googlecode.jvmvm.compiler.Compiler;
-import com.googlecode.jvmvm.compiler.ecj.JavaEclipseCompiler;
 import com.googlecode.jvmvm.compiler.javac.JavaCompiler;
 import com.googlecode.jvmvm.vm.GlobalCodeLoader;
 import com.googlecode.jvmvm.vm.VirtualMachine;
@@ -19,7 +18,7 @@ public class Project implements Serializable {
     List<byte[]> jars = new ArrayList<byte[]>();
     List<String> systemClasses = new ArrayList<String>();
     Map<String, String> remapping = new HashMap<String, String>();
-    com.googlecode.jvmvm.compiler.Compiler compiler = new JavaEclipseCompiler();
+    com.googlecode.jvmvm.compiler.Compiler compiler = new JavaCompiler();
     boolean started = false;
     boolean vmDisabled = false;
     byte[] vmState;

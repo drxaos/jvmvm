@@ -2,19 +2,19 @@ package com.googlecode.jvmvm.compiler.javac;
 
 import com.googlecode.jvmvm.compiler.JarUtil;
 import com.googlecode.jvmvm.loader.ProjectCompilerException;
+import com.sun.tools.javac.api.JavacTool;
 import org.apache.commons.io.IOUtils;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
-import javax.tools.ToolProvider;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class JavaCompiler implements com.googlecode.jvmvm.compiler.Compiler {
     public Map<String, byte[]> compile(Map<String, String> files, List<String> systemClasses, List<byte[]> jars) throws ProjectCompilerException {
-        javax.tools.JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        javax.tools.JavaCompiler compiler = JavacTool.create();
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
         ClassFileManager fileManager = new ClassFileManager(compiler.getStandardFileManager(null, null, null), files, jars);
         fileManager.addSources(files);

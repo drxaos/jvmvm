@@ -2,6 +2,7 @@ package com.googlecode.jvmvm.tests;
 
 import com.googlecode.jvmvm.loader.Project;
 import com.googlecode.jvmvm.loader.ProjectCompilerException;
+import com.googlecode.jvmvm.loader.ProjectLoaderException;
 import com.googlecode.jvmvm.tests.interpretable.libtest.Dependency;
 import com.googlecode.jvmvm.tests.interpretable.libtest.Dependent;
 import org.apache.commons.io.FileUtils;

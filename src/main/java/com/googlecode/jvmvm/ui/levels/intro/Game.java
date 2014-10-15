@@ -2,10 +2,9 @@ package com.googlecode.jvmvm.ui.levels.intro;
 
 import com.googlecode.jvmvm.loader.Project;
 import com.googlecode.jvmvm.ui.Action;
+import com.googlecode.jvmvm.ui.SrcUtil;
 import com.googlecode.jvmvm.ui.Vm;
-import org.apache.commons.io.FileUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -21,12 +20,12 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     public void start() {
         try {
             actions.add(new Action.HideCode());
-            String path = "src/main/java/";
+            String path = "src/main/java";
             String src = Initialize.class.getCanonicalName().replace(".", "/") + ".java";
             String src1 = Level.class.getCanonicalName().replace(".", "/") + ".java";
             levelVm = new Project("intro")
-                    .addFile(src, FileUtils.readFileToString(new File(path + src)))
-                    .addFile(src1, FileUtils.readFileToString(new File(path + src1)))
+                    .addFile(src, SrcUtil.loadSrc(path, src))
+                    .addFile(src1, SrcUtil.loadSrc(path, src1))
                     .addSystemClass(Map.class.getName())
                     .addSystemClasses(Vm.bootstrap)
                     .compile()

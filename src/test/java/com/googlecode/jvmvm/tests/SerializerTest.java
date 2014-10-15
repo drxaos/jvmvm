@@ -1,7 +1,6 @@
 package com.googlecode.jvmvm.tests;
 
 import com.googlecode.jvmvm.loader.Project;
-import com.googlecode.jvmvm.loader.ProjectCompilerException;
 import com.googlecode.jvmvm.loader.ProjectExecutionException;
 import com.googlecode.jvmvm.tests.interpretable.CustomExamples;
 import com.googlecode.jvmvm.tests.interpretable.MapExamples;
@@ -60,7 +59,6 @@ public class SerializerTest {
             CloneNotSupportedException.class.getName(),
 
             InputStream.class.getName(),
-//            BufferedInputStream.class.getName(),
 
             Serializable.class.getName(),
             Comparator.class.getName(),
@@ -79,11 +77,7 @@ public class SerializerTest {
             Map.class.getName(),
             AbstractMap.class.getName(),
             SortedMap.class.getName(),
-//            "java.util.Map$EntrySet",
-//            "java.util.Map$Entry",
             HashMap.class.getName(),
-//            "java.util.HashMap$EntrySet",
-//            "java.util.HashMap$Entry",
             TreeMap.class.getName()
     );
 
@@ -162,7 +156,7 @@ public class SerializerTest {
         Assert.assertEquals("result2", expected, res2);
     }
 
-    @Test(expected = ProjectCompilerException.class)
+    @Test(expected = ProjectExecutionException.class)
     public void test_vm_system() throws Exception {
         String src1 = SystemExamples.class.getCanonicalName().replace(".", "/") + ".java";
 

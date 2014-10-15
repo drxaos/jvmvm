@@ -46,12 +46,13 @@ public class SystemExamples {
                 fout.write(data, 0, count);
             }
         } finally {
-            if (in != null) {
-                in.close();
-            }
-            if (fout != null) {
-                fout.close();
-            }
+//            if (in != null) {
+//                in.close();
+//            }
+//            if (fout != null) {
+//                fout.close();
+//            }
+            int i = 1;
         }
     }
 
