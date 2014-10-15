@@ -18,7 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ *  Experimental. Compiles try/finally statements to JSR/RET so asm cannot modify compiled classes.
+ */
 public class JavaEclipseCompiler implements com.googlecode.jvmvm.compiler.Compiler {
 
     @Override
