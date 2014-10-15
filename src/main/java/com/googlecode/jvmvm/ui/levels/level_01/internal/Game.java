@@ -1,6 +1,8 @@
 package com.googlecode.jvmvm.ui.levels.level_01.internal;
 
 import com.googlecode.jvmvm.loader.Project;
+import com.googlecode.jvmvm.loader.ProjectCompilerException;
+import com.googlecode.jvmvm.loader.ProjectExecutionException;
 import com.googlecode.jvmvm.ui.Action;
 import com.googlecode.jvmvm.ui.Editor;
 import com.googlecode.jvmvm.ui.SrcUtil;
@@ -28,6 +30,7 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     private final int START = 0;
     private final int PUSH = START + 1;
     private final int PLAY = PUSH + 1;
+    private final int STOP = PLAY + 1;
 
     private int state = START;
     private String code;
@@ -70,7 +73,15 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
 
     @Override
     public void start() {
-        actions.add(new Action.HideCode());
+
+        try {
+            server = HttpServer.create(new InetSocketAddress(Editor.API_PORT), 0);
+            server.createContext("/", new ApiHandler());
+            server.setExecutor(null);
+            server.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         try {
             String path = "src/main/java";
@@ -85,31 +96,31 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
             if (code == null) {
                 actions.add(new Action.LoadCode(lvlCode.toString()));
             }
-            levelVm = new Project("level-vm")
-                    .addFile(lvlSrc, lvlCode.toCompilationUnit(secret))
-                    .addFile(baseSrc, SrcUtil.loadSrc(path, baseSrc))
-                    .addFile(bootstrapSrc, SrcUtil.loadSrc(path, bootstrapSrc))
-                    .addSystemClass(Me.class.getName())
-                    .addSystemClass(Definition.class.getName())
-                    .addSystemClass(Map.class.getName())
-                    .addSystemClass(Player.class.getName())
-                    .addSystemClasses(Vm.bootstrap)
-                    .compile()
-                    .markObject("map", new Map(this));
+            try {
+                levelVm = new Project("level-vm")
+                        .addFile(lvlSrc, lvlCode.toCompilationUnit(secret))
+                        .addFile(baseSrc, SrcUtil.loadSrc(path, baseSrc))
+                        .addFile(bootstrapSrc, SrcUtil.loadSrc(path, bootstrapSrc))
+                        .addSystemClass(Me.class.getName())
+                        .addSystemClass(Definition.class.getName())
+                        .addSystemClass(Map.class.getName())
+                        .addSystemClass(Player.class.getName())
+                        .addSystemClasses(Vm.bootstrap)
+                        .compile()
+                        .markObject("map", new Map(this));
+                actions.add(new Action.HideCode());
+            } catch (ProjectCompilerException e) {
+                actions.add(new Action.MoveCaretToBottomRight());
+                actions.add(new Action.Print("\n" + e.getMessage()));
+                actions.add(new Action.ShowCode());
+                state = STOP;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
 
-        try {
-            server = HttpServer.create(new InetSocketAddress(Editor.API_PORT), 0);
-            server.createContext("/", new ApiHandler());
-            server.setExecutor(null);
-            server.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     static class ApiHandler implements HttpHandler {
@@ -126,10 +137,22 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     @Override
     public void step() {
         if (state == START) {
-            levelVm.setupVM(Bootstrap.class.getCanonicalName(), "definitions", null, new Class[]{java.util.Map.class}, new Object[]{defMap});
-            levelVm.run(2000);
-            levelVm.setupVM(Bootstrap.class.getCanonicalName(), "execute", null, new Class[]{Map.class}, new Object[]{Project.Marker.byName("map")});
-            levelVm.run(2000);
+            try {
+                levelVm.setupVM(Bootstrap.class.getCanonicalName(), "definitions", null, new Class[]{java.util.Map.class}, new Object[]{defMap});
+                levelVm.run(2000);
+                levelVm.setupVM(Bootstrap.class.getCanonicalName(), "execute", null, new Class[]{Map.class}, new Object[]{Project.Marker.byName("map")});
+                levelVm.run(2000);
+            } catch (ProjectExecutionException e) {
+                Throwable cause = e.getCause();
+                if (cause == null) {
+                    cause = e;
+                }
+                actions.add(new Action.MoveCaretToBottomRight());
+                actions.add(new Action.Print("\n" + cause.getMessage()));
+                actions.add(new Action.ShowCode());
+                state = STOP;
+                return;
+            }
             state = PUSH;
         } else if (state == PUSH) {
             pushLine();

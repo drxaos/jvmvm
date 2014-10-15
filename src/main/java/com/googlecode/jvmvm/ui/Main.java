@@ -29,6 +29,14 @@ public class Main implements ActionListener {
             if (game.validateCode(edit)) {
                 super.remove(fb, offset, length);
             }
+            try {
+                editor.getCodeEditor().removeAllLineHighlights();
+                for (Integer line : game.redLines()) {
+                    editor.getCodeEditor().addLineHighlight(line, new Color(0x36, 0x1B, 0x15));
+                }
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
         }
 
         @Override
@@ -50,9 +58,22 @@ public class Main implements ActionListener {
         }
 
         @Override
-        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-            remove(fb, offset, length);
-            insertString(fb, offset, text, attrs);
+        public void replace(FilterBypass fb, int offset, int length, String string, AttributeSet attrs) throws BadLocationException {
+            Document document = fb.getDocument();
+            String text = document.getText(0, document.getLength());
+            String edit = text.substring(0, offset) + text.substring(offset + length, text.length());
+            edit = new StringBuilder(edit).insert(offset, string).toString();
+            if (game.validateCode(edit)) {
+                super.replace(fb, offset, length, string, attrs);
+            }
+            try {
+                editor.getCodeEditor().removeAllLineHighlights();
+                for (Integer line : game.redLines()) {
+                    editor.getCodeEditor().addLineHighlight(line, new Color(0x36, 0x1B, 0x15));
+                }
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
         }
     }
 
