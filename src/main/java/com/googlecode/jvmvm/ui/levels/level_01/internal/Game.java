@@ -47,6 +47,8 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     private int pushCounter = 0;
 
     private String status;
+    private boolean startOfStart;
+    private boolean endOfStart;
 
     public Game(String code) {
         super("level_01", "CellBlockA.java");
@@ -71,29 +73,37 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
         return lvlCode.getReadonlyLines();
     }
 
+    public void __auth(String command, String secret) {
+        if (this.secret.equals(secret)) {
+            if ("startOfStartLevel".equals(command)) {
+                startOfStart = true;
+            } else if ("endOfStartLevel".equals(command)) {
+                endOfStart = true;
+            }
+        }
+    }
+
     class DefinitionExecutor {
         Definition definition;
-        Project project;
 
-        public DefinitionExecutor(Definition definition, Project project) {
+        public DefinitionExecutor(Definition definition) {
             this.definition = definition;
-            this.project = project;
         }
 
         public void onCollision(Player player) {
-            project.setupVM(Bootstrap.class.getName(), "onCollision", null, new Class[]{Definition.class, Player.class}, new Object[]{definition, player}).run(2000);
+            levelVm.setupVM(Bootstrap.class.getName(), "onCollision", null, new Class[]{Definition.class, Player.class}, new Object[]{definition, player}).run(2000);
         }
 
         public void onPickUp(Player player) {
-            project.setupVM(Bootstrap.class.getName(), "onPickUp", null, new Class[]{Definition.class, Player.class}, new Object[]{definition, player}).run(2000);
+            levelVm.setupVM(Bootstrap.class.getName(), "onPickUp", null, new Class[]{Definition.class, Player.class}, new Object[]{definition, player}).run(2000);
         }
 
         public void behavior(Me me) {
-            project.setupVM(Bootstrap.class.getName(), "behavior", null, new Class[]{Definition.class, Me.class}, new Object[]{definition, new Me()}).run(2000);
+            levelVm.setupVM(Bootstrap.class.getName(), "behavior", null, new Class[]{Definition.class, Me.class}, new Object[]{definition, new Me()}).run(2000);
         }
 
         public void onDrop() {
-            project.setupVM(Bootstrap.class.getName(), "onDrop", null, new Class[]{Definition.class}, new Object[]{definition}).run(2000);
+            levelVm.setupVM(Bootstrap.class.getName(), "onDrop", null, new Class[]{Definition.class}, new Object[]{definition}).run(2000);
         }
 
     }
@@ -167,8 +177,22 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
             if (state == START) {
                 levelVm.setupVM(Bootstrap.class.getCanonicalName(), "definitions", null, new Class[]{java.util.Map.class}, new Object[]{defMap});
                 levelVm.run(2000);
+
+                startOfStart = false;
+                endOfStart = false;
                 levelVm.setupVM(Bootstrap.class.getCanonicalName(), "execute", null, new Class[]{Map.class}, new Object[]{Project.Marker.byName("map")});
                 levelVm.run(2000);
+                if (!startOfStart || !endOfStart) {
+                    actions.add(new Action.MoveCaretToBottomRight());
+                    if (!startOfStart) {
+                        actions.add(new Action.Print("\nstartLevel() has been tampered with!"));
+                    } else if (!endOfStart) {
+                        actions.add(new Action.Print("\nstartLevel() returned prematurely!"));
+                    }
+                    actions.add(new Action.ShowCode());
+                    state = STOP;
+                    return;
+                }
 
                 state = PUSH;
             } else if (state == PUSH) {
@@ -207,11 +231,11 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
                         toY = player.y;
                     }
                     if ("item".equals(d.type)) {
-                        new DefinitionExecutor(d, levelVm).onPickUp(new Player(this));
+                        new DefinitionExecutor(d).onPickUp(new Player(this));
                         objs.remove(found);
                         inventory.add(found.type);
                     } else {
-                        new DefinitionExecutor(d, levelVm).onCollision(new Player(this));
+                        new DefinitionExecutor(d).onCollision(new Player(this));
                     }
                 }
                 player.x = toX;
@@ -233,15 +257,20 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
                     actions.add(new Action.MoveCaret(toX, toY));
                     actions.add(new Action.Print(color, "" + symbol));
 
+                    // display statue if exists
                     if (status != null) {
                         displayStatus(status);
                         status = null;
                     }
+
+                    // hide code if no computer
                     if (inventory.contains("computer")) {
                         actions.add(new Action.ShowCode());
                     } else {
                         actions.add(new Action.HideCode());
                     }
+
+                    // format inventory
                     String inv = "";
                     for (String t : inventory) {
                         inv += defMap.get(t).symbol;
