@@ -4,14 +4,12 @@ import com.googlecode.jvmvm.ui.levels.level_01.Player;
 
 import java.awt.*;
 
-abstract class Definition {
-    abstract public Color getColor();
+public abstract class Definition {
+    public Color color = Color.LIGHT_GRAY;
 
-    public String getType() {
-        return null;
-    }
+    public String type = null;
 
-    public abstract char getSymbol();
+    public char symbol = ' ';
 
     public void onCollision(Player player) {
     }
@@ -25,9 +23,7 @@ abstract class Definition {
     public void behavior(Me me) {
     }
 
-    public boolean impassable() {
-        return false;
-    }
+    public boolean impassable = false;
 }
 
 

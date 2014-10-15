@@ -37,11 +37,13 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     private Obj player = null;
     private ArrayList<Obj> objs = new ArrayList<Obj>();
     private HashMap<String, Definition> defMap = new HashMap<String, Definition>();
-    private HashSet<Definition> inventory = new HashSet<Definition>();
+    private HashSet<String> inventory = new HashSet<String>();
 
     private Code lvlCode;
 
     private int pushCounter = 0;
+
+    private String status;
 
     public Game(String code) {
         super("level_01", "CellBlockA.java");
@@ -70,86 +72,6 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     public void start() {
         actions.add(new Action.HideCode());
 
-        defMap.put("player", new Definition() {
-
-            @Override
-            public Color getColor() {
-                return Color.GREEN;
-            }
-
-            @Override
-            public char getSymbol() {
-                return '@';
-            }
-        });
-        defMap.put("computer", new Definition() {
-            @Override
-            public String getType() {
-                return "item";
-            }
-
-            @Override
-            public Color getColor() {
-                return new Color(0x99, 0x99, 0x99);
-            }
-
-            @Override
-            public char getSymbol() {
-                return '⌘';
-            }
-
-            @Override
-            public void onPickUp(Player player) {
-                writeStatus("You have picked up the computer!");
-                actions.add(new Action.ShowCode());
-            }
-
-            @Override
-            public void onDrop() {
-                actions.add(new Action.HideCode());
-            }
-        });
-        defMap.put("block", new Definition() {
-
-            @Override
-            public Color getColor() {
-                return Color.LIGHT_GRAY;
-            }
-
-            @Override
-            public char getSymbol() {
-                return '#';
-            }
-
-            @Override
-            public boolean impassable() {
-                return true;
-            }
-        });
-        defMap.put("exit", new Definition() {
-
-            @Override
-            public Color getColor() {
-                return new Color(0f, 1f, 1f);
-            }
-
-            @Override
-            public char getSymbol() {
-                return '⎕';
-            }
-
-            @Override
-            public void onCollision(Player player) {
-                try {
-                    // TODO next
-                    //  load(new com.googlecode.jvmvm.ui.levels.level_02.internal.Game(null));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-
         try {
             String path = "src/main/java";
             String lvlSrc = CellBlockA.class.getCanonicalName().replace(".", "/") + ".java";
@@ -167,12 +89,13 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
                     .addFile(lvlSrc, lvlCode.toCompilationUnit(secret))
                     .addFile(baseSrc, SrcUtil.loadSrc(path, baseSrc))
                     .addFile(bootstrapSrc, SrcUtil.loadSrc(path, bootstrapSrc))
+                    .addSystemClass(Me.class.getName())
+                    .addSystemClass(Definition.class.getName())
                     .addSystemClass(Map.class.getName())
                     .addSystemClass(Player.class.getName())
                     .addSystemClasses(Vm.bootstrap)
                     .compile()
-                    .markObject("map", new Map(this))
-                    .setupVM(Bootstrap.class.getCanonicalName(), "execute", null, new Class[]{Map.class}, new Object[]{Project.Marker.byName("map")});
+                    .markObject("map", new Map(this));
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -203,6 +126,9 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     @Override
     public void step() {
         if (state == START) {
+            levelVm.setupVM(Bootstrap.class.getCanonicalName(), "definitions", null, new Class[]{java.util.Map.class}, new Object[]{defMap});
+            levelVm.run(2000);
+            levelVm.setupVM(Bootstrap.class.getCanonicalName(), "execute", null, new Class[]{Map.class}, new Object[]{Project.Marker.byName("map")});
             levelVm.run(2000);
             state = PUSH;
         } else if (state == PUSH) {
@@ -211,7 +137,9 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
                 if (obj.y == pushCounter) {
                     Definition d = defMap.get(obj.type);
                     actions.add(new Action.MoveCaret(obj.x, 24));
-                    actions.add(new Action.Print(d.getColor(), "" + d.getSymbol()));
+                    Color color = d.color;
+                    char symbol = d.symbol;
+                    actions.add(new Action.Print(color, "" + symbol));
                 }
             }
             if (++pushCounter >= 25) {
@@ -234,16 +162,16 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
             Obj found = findObj(toX, toY);
             if (found != null && found != player) {
                 Definition d = defMap.get(found.type);
-                if (d.impassable()) {
+                if (d.impassable) {
                     toX = player.x;
                     toY = player.y;
                 }
-                if ("item".equals(d.getType())) {
-                    d.onPickUp(new Player(this));
+                if ("item".equals(d.type)) {
+                    new DefinitionExecutor(d, levelVm).onPickUp(new Player(this));
                     objs.remove(found);
-                    inventory.add(d);
+                    inventory.add(found.type);
                 } else {
-                    d.onCollision(new Player(this));
+                    new DefinitionExecutor(d, levelVm).onCollision(new Player(this));
                 }
             }
             player.x = toX;
@@ -254,11 +182,31 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
                 actions.add(new Action.Clear());
                 for (Obj obj : objs) {
                     Definition d = defMap.get(obj.type);
+                    Color color = d.color;
+                    char symbol = d.symbol;
                     actions.add(new Action.MoveCaret(obj.x, obj.y));
-                    actions.add(new Action.Print(d.getColor(), "" + d.getSymbol()));
+                    actions.add(new Action.Print(color, "" + symbol));
                 }
+                Definition d = defMap.get("player");
+                Color color = d.color;
+                char symbol = d.symbol;
                 actions.add(new Action.MoveCaret(toX, toY));
-                actions.add(new Action.Print(defMap.get("player").getColor(), "" + defMap.get(player.type).getSymbol()));
+                actions.add(new Action.Print(color, "" + symbol));
+
+                if (status != null) {
+                    displayStatus(status);
+                    status = null;
+                }
+                if (inventory.contains("computer")) {
+                    actions.add(new Action.ShowCode());
+                } else {
+                    actions.add(new Action.HideCode());
+                }
+                String inv = "";
+                for (String t : inventory) {
+                    inv += defMap.get(t).symbol;
+                }
+                actions.add(new Action.Inventory(inv));
             }
         }
     }
@@ -309,6 +257,10 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
 
 
     public void writeStatus(String text) {
+        status = text;
+    }
+
+    public void displayStatus(String text) {
         java.util.List<String> strings = new ArrayList<String>();
         strings.add(text);
 
@@ -330,6 +282,6 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     }
 
     public boolean hasItem(String type) {
-        return false;
+        return inventory.contains(type);
     }
 }

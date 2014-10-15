@@ -41,6 +41,7 @@ public class Editor extends JFrame implements ActionListener {
     private JPanel bottomPanel;
     private MenuWindow menuWindow;
     private NotepadWindow notepadWindow;
+    private JLabel inventory;
 
     private Integer keyCode;
     private boolean resetRequest;
@@ -106,7 +107,7 @@ public class Editor extends JFrame implements ActionListener {
         bottomPanel.setVisible(false);
         bottomPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
         {
-            JLabel inventory = new JLabel("Inventory: #$%");
+            inventory = new JLabel("Inventory: #$%");
             inventory.setForeground(Color.WHITE);
             inventory.setPreferredSize(new Dimension((int) playArea.getPreferredSize().getWidth(), 35));
             inventory.setFont(JConsole.DEFAULT_FONT);
@@ -323,6 +324,14 @@ public class Editor extends JFrame implements ActionListener {
             keyCode = KeyEvent.VK_Q;
         }
     };
+
+    public void setInventory(String inv) {
+        if (inv == null || inv.isEmpty()) {
+            inventory.setText(" ");
+        } else {
+            inventory.setText("Inventory: " + inv);
+        }
+    }
 
     public Integer getKeyCode() {
         return keyCode;

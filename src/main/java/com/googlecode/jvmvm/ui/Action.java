@@ -100,6 +100,19 @@ public abstract class Action {
         }
     }
 
+    public static class Inventory extends Action {
+        String inv;
+
+        public Inventory(String inv) {
+            this.inv = inv;
+        }
+
+        @Override
+        public void execute(Editor editor) {
+            editor.setInventory(inv);
+        }
+    }
+
     public static class Print extends Action {
         Color fg, bg;
         String text;

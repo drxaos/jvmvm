@@ -217,7 +217,15 @@ public abstract class FieldInsn extends Insn {
                 if (type == int.class || type == byte.class || type == char.class || type == short.class) {
                     int t = frame.popInt();
                     Object target = frame.popObject();
-                    field.setInt(target, t);
+                    if (type == byte.class) {
+                        field.setByte(target, (byte) t);
+                    } else if (type == char.class) {
+                        field.setChar(target, (char) t);
+                    } else if (type == short.class) {
+                        field.setShort(target, (short) t);
+                    } else {
+                        field.setInt(target, t);
+                    }
                 } else if (type == long.class) {
                     long t = frame.popLong();
                     Object target = frame.popObject();

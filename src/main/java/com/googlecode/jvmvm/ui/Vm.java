@@ -1,9 +1,11 @@
 package com.googlecode.jvmvm.ui;
 
+import java.awt.*;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
+import java.util.List;
 import java.util.Map;
 
 public interface Vm {
@@ -13,6 +15,8 @@ public interface Vm {
             String.class.getName(),
             StringBuilder.class.getName(),
             CharSequence.class.getName(),
+
+            Color.class.getName(),
 
             PrintStream.class.getName(),
 
