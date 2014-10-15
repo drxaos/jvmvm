@@ -71,6 +71,33 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
         return lvlCode.getReadonlyLines();
     }
 
+    class DefinitionExecutor {
+        Definition definition;
+        Project project;
+
+        public DefinitionExecutor(Definition definition, Project project) {
+            this.definition = definition;
+            this.project = project;
+        }
+
+        public void onCollision(Player player) {
+            project.setupVM(Bootstrap.class.getName(), "onCollision", null, new Class[]{Definition.class, Player.class}, new Object[]{definition, player}).run(2000);
+        }
+
+        public void onPickUp(Player player) {
+            project.setupVM(Bootstrap.class.getName(), "onPickUp", null, new Class[]{Definition.class, Player.class}, new Object[]{definition, player}).run(2000);
+        }
+
+        public void behavior(Me me) {
+            project.setupVM(Bootstrap.class.getName(), "behavior", null, new Class[]{Definition.class, Me.class}, new Object[]{definition, new Me()}).run(2000);
+        }
+
+        public void onDrop() {
+            project.setupVM(Bootstrap.class.getName(), "onDrop", null, new Class[]{Definition.class}, new Object[]{definition}).run(2000);
+        }
+
+    }
+
     @Override
     public void start() {
 
@@ -111,7 +138,7 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
                 actions.add(new Action.HideCode());
             } catch (ProjectCompilerException e) {
                 actions.add(new Action.MoveCaretToBottomRight());
-                actions.add(new Action.Print("\n" + e.getMessage()));
+                actions.add(new Action.Print("\n" + e.toString()));
                 actions.add(new Action.ShowCode());
                 state = STOP;
             }
@@ -136,101 +163,102 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
 
     @Override
     public void step() {
-        if (state == START) {
-            try {
+        try {
+            if (state == START) {
                 levelVm.setupVM(Bootstrap.class.getCanonicalName(), "definitions", null, new Class[]{java.util.Map.class}, new Object[]{defMap});
                 levelVm.run(2000);
                 levelVm.setupVM(Bootstrap.class.getCanonicalName(), "execute", null, new Class[]{Map.class}, new Object[]{Project.Marker.byName("map")});
                 levelVm.run(2000);
-            } catch (ProjectExecutionException e) {
-                Throwable cause = e.getCause();
-                if (cause == null) {
-                    cause = e;
-                }
-                actions.add(new Action.MoveCaretToBottomRight());
-                actions.add(new Action.Print("\n" + cause.getMessage()));
-                actions.add(new Action.ShowCode());
-                state = STOP;
-                return;
-            }
-            state = PUSH;
-        } else if (state == PUSH) {
-            pushLine();
-            for (Obj obj : objs) {
-                if (obj.y == pushCounter) {
-                    Definition d = defMap.get(obj.type);
-                    actions.add(new Action.MoveCaret(obj.x, 24));
-                    Color color = d.color;
-                    char symbol = d.symbol;
-                    actions.add(new Action.Print(color, "" + symbol));
-                }
-            }
-            if (++pushCounter >= 25) {
-                state = PLAY;
-            }
-        } else if (state == PLAY) {
-            int toX = player.x, toY = player.y;
-            if (key != null) {
-                // move player
-                if (key == KeyEvent.VK_DOWN && player.y < 49) {
-                    toY++;
-                } else if (key == KeyEvent.VK_UP && player.y > 0) {
-                    toY--;
-                } else if (key == KeyEvent.VK_RIGHT && player.y < 24) {
-                    toX++;
-                } else if (key == KeyEvent.VK_LEFT && player.y > 0) {
-                    toX--;
-                }
-            }
-            Obj found = findObj(toX, toY);
-            if (found != null && found != player) {
-                Definition d = defMap.get(found.type);
-                if (d.impassable) {
-                    toX = player.x;
-                    toY = player.y;
-                }
-                if ("item".equals(d.type)) {
-                    new DefinitionExecutor(d, levelVm).onPickUp(new Player(this));
-                    objs.remove(found);
-                    inventory.add(found.type);
-                } else {
-                    new DefinitionExecutor(d, levelVm).onCollision(new Player(this));
-                }
-            }
-            player.x = toX;
-            player.y = toY;
 
-            if (key != null) {
-                // repaint on user action
-                actions.add(new Action.Clear());
+                state = PUSH;
+            } else if (state == PUSH) {
+                pushLine();
                 for (Obj obj : objs) {
-                    Definition d = defMap.get(obj.type);
+                    if (obj.y == pushCounter) {
+                        Definition d = defMap.get(obj.type);
+                        actions.add(new Action.MoveCaret(obj.x, 24));
+                        Color color = d.color;
+                        char symbol = d.symbol;
+                        actions.add(new Action.Print(color, "" + symbol));
+                    }
+                }
+                if (++pushCounter >= 25) {
+                    state = PLAY;
+                }
+            } else if (state == PLAY) {
+                int toX = player.x, toY = player.y;
+                if (key != null) {
+                    // move player
+                    if (key == KeyEvent.VK_DOWN && player.y < 49) {
+                        toY++;
+                    } else if (key == KeyEvent.VK_UP && player.y > 0) {
+                        toY--;
+                    } else if (key == KeyEvent.VK_RIGHT && player.y < 24) {
+                        toX++;
+                    } else if (key == KeyEvent.VK_LEFT && player.y > 0) {
+                        toX--;
+                    }
+                }
+                Obj found = findObj(toX, toY);
+                if (found != null && found != player) {
+                    Definition d = defMap.get(found.type);
+                    if (d.impassable) {
+                        toX = player.x;
+                        toY = player.y;
+                    }
+                    if ("item".equals(d.type)) {
+                        new DefinitionExecutor(d, levelVm).onPickUp(new Player(this));
+                        objs.remove(found);
+                        inventory.add(found.type);
+                    } else {
+                        new DefinitionExecutor(d, levelVm).onCollision(new Player(this));
+                    }
+                }
+                player.x = toX;
+                player.y = toY;
+
+                if (key != null) {
+                    // repaint on user action
+                    actions.add(new Action.Clear());
+                    for (Obj obj : objs) {
+                        Definition d = defMap.get(obj.type);
+                        Color color = d.color;
+                        char symbol = d.symbol;
+                        actions.add(new Action.MoveCaret(obj.x, obj.y));
+                        actions.add(new Action.Print(color, "" + symbol));
+                    }
+                    Definition d = defMap.get("player");
                     Color color = d.color;
                     char symbol = d.symbol;
-                    actions.add(new Action.MoveCaret(obj.x, obj.y));
+                    actions.add(new Action.MoveCaret(toX, toY));
                     actions.add(new Action.Print(color, "" + symbol));
-                }
-                Definition d = defMap.get("player");
-                Color color = d.color;
-                char symbol = d.symbol;
-                actions.add(new Action.MoveCaret(toX, toY));
-                actions.add(new Action.Print(color, "" + symbol));
 
-                if (status != null) {
-                    displayStatus(status);
-                    status = null;
+                    if (status != null) {
+                        displayStatus(status);
+                        status = null;
+                    }
+                    if (inventory.contains("computer")) {
+                        actions.add(new Action.ShowCode());
+                    } else {
+                        actions.add(new Action.HideCode());
+                    }
+                    String inv = "";
+                    for (String t : inventory) {
+                        inv += defMap.get(t).symbol;
+                    }
+                    actions.add(new Action.Inventory(inv));
                 }
-                if (inventory.contains("computer")) {
-                    actions.add(new Action.ShowCode());
-                } else {
-                    actions.add(new Action.HideCode());
-                }
-                String inv = "";
-                for (String t : inventory) {
-                    inv += defMap.get(t).symbol;
-                }
-                actions.add(new Action.Inventory(inv));
             }
+        } catch (ProjectExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause == null) {
+                cause = e;
+            }
+            actions.add(new Action.MoveCaretToBottomRight());
+            actions.add(new Action.Print("\n" + cause.toString()));
+            actions.add(new Action.ShowCode());
+            state = STOP;
+            return;
         }
     }
 

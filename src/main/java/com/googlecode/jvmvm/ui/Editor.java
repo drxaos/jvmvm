@@ -574,8 +574,12 @@ public class Editor extends JFrame implements ActionListener {
     }
 
     private Player player;
+    private String currentMusic;
 
     public void playMusic(String music) {
+        if (music != null && music.equals(currentMusic)) {
+            return;
+        }
         if (player != null) {
             player.requestStop();
         }
