@@ -3,10 +3,7 @@ package com.googlecode.jvmvm.ui.levels.level_01.internal;
 import com.googlecode.jvmvm.loader.Project;
 import com.googlecode.jvmvm.loader.ProjectCompilerException;
 import com.googlecode.jvmvm.loader.ProjectExecutionException;
-import com.googlecode.jvmvm.ui.Action;
-import com.googlecode.jvmvm.ui.Editor;
-import com.googlecode.jvmvm.ui.SrcUtil;
-import com.googlecode.jvmvm.ui.Vm;
+import com.googlecode.jvmvm.ui.*;
 import com.googlecode.jvmvm.ui.levels.level_01.CellBlockA;
 import com.googlecode.jvmvm.ui.levels.level_01.Level;
 import com.googlecode.jvmvm.ui.levels.level_01.Map;
@@ -98,6 +95,10 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
         }
     }
 
+    public HttpHandler getApiHandler() {
+        return new ApiHandler();
+    }
+
     class DefinitionExecutor {
         Definition definition;
 
@@ -128,7 +129,7 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
 
         try {
             server = HttpServer.create(new InetSocketAddress(Editor.API_PORT), 0);
-            server.createContext("/", new ApiHandler());
+            server.createContext("/", getApiHandler());
             server.setExecutor(null);
             server.start();
         } catch (Exception e) {

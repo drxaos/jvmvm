@@ -1,4 +1,4 @@
-package com.googlecode.jvmvm.ui.levels.level_01.internal;
+package com.googlecode.jvmvm.ui;
 
 import org.apache.commons.lang3.StringUtils;
 
