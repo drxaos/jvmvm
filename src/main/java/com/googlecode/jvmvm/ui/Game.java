@@ -83,4 +83,7 @@ public abstract class Game {
     public abstract List<Integer> redLines();
 
     public abstract String getLevelNumber();
+
+    public abstract Object getLevelName();
+    public abstract Object getLevelFolder();
 }

@@ -78,6 +78,16 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
         return "01";
     }
 
+    @Override
+    public Object getLevelName() {
+        return "CellBlockA.java";
+    }
+
+    @Override
+    public Object getLevelFolder() {
+        return "level_01";
+    }
+
     public void __auth(String command, String secret) {
         if (this.secret.equals(secret)) {
             if ("startOfStartLevel".equals(command)) {

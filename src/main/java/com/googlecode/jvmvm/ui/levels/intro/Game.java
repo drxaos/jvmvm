@@ -16,6 +16,10 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
         super("intro", "Initialize.java");
     }
 
+    public Game(String s) {
+        this();
+    }
+
     @Override
     public void start() {
         try {
@@ -78,5 +82,15 @@ public class Game extends com.googlecode.jvmvm.ui.Game {
     @Override
     public String getLevelNumber() {
         return "00";
+    }
+
+    @Override
+    public Object getLevelName() {
+        return "Initialize.java";
+    }
+
+    @Override
+    public Object getLevelFolder() {
+        return "intro";
     }
 }

@@ -8,7 +8,7 @@ import java.awt.event.KeyEvent;
 public class NotepadWindow extends JDialog {
     JEditorPane editor;
 
-    public NotepadWindow(Frame owner) {
+    public NotepadWindow(final Frame owner) {
         super(owner, "Notepad", ModalityType.MODELESS);
         editor = new JEditorPane();
         editor.setPreferredSize(new Dimension(400, 400));
@@ -19,6 +19,7 @@ public class NotepadWindow extends JDialog {
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     NotepadWindow.this.setVisible(false);
+                    owner.transferFocus();
                 }
             }
         });

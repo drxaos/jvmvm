@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.util.HashMap;
 
 public class Editor extends JFrame implements ActionListener {
 
@@ -46,6 +47,7 @@ public class Editor extends JFrame implements ActionListener {
     private Integer keyCode;
     private boolean resetRequest;
     private String resetCode;
+    private String loadLevelRequest;
 
     public Editor() {
 
@@ -212,16 +214,20 @@ public class Editor extends JFrame implements ActionListener {
             bottomPanel.add(span);
         }
         {
-            JButton inventory = new JButton("[^0]Menu");
-            inventory.setForeground(Color.WHITE);
-            inventory.setBackground(Color.BLACK);
-            inventory.setFocusable(false);
+            JButton menuBtn = new JButton("[^0]Menu");
+            menuBtn.setForeground(Color.WHITE);
+            menuBtn.setBackground(Color.BLACK);
+            menuBtn.setFocusable(false);
             Border line = new LineBorder(Color.BLACK);
             Border margin = new EmptyBorder(5, 3, 5, 3);
             Border compound = new CompoundBorder(line, margin);
-            inventory.setBorder(compound);
-            inventory.setFont(btnFont);
-            bottomPanel.add(inventory);
+            menuBtn.setBorder(compound);
+            menuBtn.setFont(btnFont);
+            menuBtn.getActionMap().put("Menu", menuAction);
+            menuBtn.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                    (KeyStroke) menuAction.getValue(javax.swing.Action.ACCELERATOR_KEY), "Menu");
+            menuBtn.addActionListener(menuAction);
+            bottomPanel.add(menuBtn);
         }
 
         cp.add(bottomPanel, BorderLayout.SOUTH);
@@ -322,6 +328,16 @@ public class Editor extends JFrame implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ev) {
             keyCode = KeyEvent.VK_Q;
+        }
+    };
+    AbstractAction menuAction = new AbstractAction("Menu") {
+        {
+            putValue(javax.swing.Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control 0"));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ev) {
+            menuWindow.setVisible(true);
         }
     };
 
@@ -512,6 +528,22 @@ public class Editor extends JFrame implements ActionListener {
 
     public void setNotepadText(String text) {
         notepadWindow.editor.setText(text);
+    }
+
+    public String getLoadLevelRequest() {
+        return loadLevelRequest;
+    }
+
+    public void resetLoadLevelRequest() {
+        loadLevelRequest = null;
+    }
+
+    public void dsplaySaveGames(HashMap saveState) {
+        menuWindow.updateLevels(saveState);
+    }
+
+    public void setLoadLevelRequest(String loadLevelRequest) {
+        this.loadLevelRequest = loadLevelRequest;
     }
 
     private class GoToLineAction extends AbstractAction {
