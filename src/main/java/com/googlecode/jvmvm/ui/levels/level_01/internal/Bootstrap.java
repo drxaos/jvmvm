@@ -1,9 +1,6 @@
 package com.googlecode.jvmvm.ui.levels.level_01.internal;
 
-import com.googlecode.jvmvm.ui.levels.level_01.CellBlockA;
-import com.googlecode.jvmvm.ui.levels.level_01.Level;
-import com.googlecode.jvmvm.ui.levels.level_01.Map;
-import com.googlecode.jvmvm.ui.levels.level_01.Player;
+import com.googlecode.jvmvm.ui.levels.level_01.*;
 
 import java.awt.*;
 

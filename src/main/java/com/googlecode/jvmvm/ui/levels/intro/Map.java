@@ -1,13 +1,13 @@
 package com.googlecode.jvmvm.ui.levels.intro;
 
-import com.googlecode.jvmvm.ui.Game;
+import com.googlecode.jvmvm.ui.AbstractGame;
 
 import java.io.Serializable;
 
 public class Map implements Serializable {
-    private Game game;
+    private AbstractGame game;
 
-    public Map(Game game) {
+    public Map(AbstractGame game) {
         this.game = game;
     }
 

@@ -13,6 +13,7 @@ import java.util.Map;
 
 public class MenuWindow extends JDialog {
     JTree tree;
+    DefaultTreeModel model;
     DefaultMutableTreeNode root;
 
     public MenuWindow(final Frame owner) {
@@ -25,7 +26,7 @@ public class MenuWindow extends JDialog {
         final Icon fileIcon = new ImageIcon(this.getClass().getResource("/img/class.png"));
 
         root = new DefaultMutableTreeNode("Project \"J-Untrusted\"", true);
-        tree = new JTree(new DefaultTreeModel(root));
+        tree = new JTree(model = new DefaultTreeModel(root));
         tree.setBorder(new EmptyBorder(10, 10, 10, 10));
         tree.setCellRenderer(new DefaultTreeCellRenderer() {
             @Override
@@ -113,6 +114,7 @@ public class MenuWindow extends JDialog {
         }
 
         sort(root);
+        model.reload(root);
         expandAllNodes(tree, 0, tree.getRowCount());
 
     }

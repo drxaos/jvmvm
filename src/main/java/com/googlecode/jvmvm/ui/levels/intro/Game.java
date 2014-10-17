@@ -1,6 +1,7 @@
 package com.googlecode.jvmvm.ui.levels.intro;
 
 import com.googlecode.jvmvm.loader.Project;
+import com.googlecode.jvmvm.ui.AbstractGame;
 import com.googlecode.jvmvm.ui.Action;
 import com.googlecode.jvmvm.ui.SrcUtil;
 import com.googlecode.jvmvm.ui.Vm;
@@ -9,7 +10,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-public class Game extends com.googlecode.jvmvm.ui.Game {
+public class Game extends AbstractGame {
 
 
     public Game() {

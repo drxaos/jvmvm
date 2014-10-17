@@ -13,7 +13,7 @@ import java.util.HashMap;
 
 public class Main implements ActionListener {
 
-    Game game;
+    AbstractGame game;
     Editor editor;
     HashMap saveState = new HashMap();
 
@@ -45,7 +45,7 @@ public class Main implements ActionListener {
                 try {
                     String lvl = (String) saveState.get("maxLevel");
                     String code = (String) saveState.get("code" + lvl);
-                    game = (Game) Class.forName("" + saveState.get("class" + lvl)).getConstructor(String.class).newInstance(code);
+                    game = (AbstractGame) Class.forName("" + saveState.get("class" + lvl)).getConstructor(String.class).newInstance(code);
                     game.start();
                     editor.playMusic(game.getMusic());
                     editor.setNotepadText((String) saveState.get("notepad"));
@@ -160,6 +160,7 @@ public class Main implements ActionListener {
                 game = game.getClass().getConstructor(String.class).newInstance(editor.getResetCode());
                 game.start();
                 editor.playMusic(game.getMusic());
+                editor.dsplaySaveGames(saveState);
             } catch (InstantiationException e1) {
                 e1.printStackTrace();
             } catch (IllegalAccessException e1) {
@@ -202,7 +203,7 @@ public class Main implements ActionListener {
                 String lvl = editor.getLoadLevelRequest();
                 editor.resetLoadLevelRequest();
                 String code = (String) saveState.get("code" + lvl);
-                game = (Game) Class.forName("" + saveState.get("class" + lvl)).getConstructor(String.class).newInstance(code);
+                game = (AbstractGame) Class.forName("" + saveState.get("class" + lvl)).getConstructor(String.class).newInstance(code);
                 game.start();
                 editor.playMusic(game.getMusic());
                 editor.setText(code);

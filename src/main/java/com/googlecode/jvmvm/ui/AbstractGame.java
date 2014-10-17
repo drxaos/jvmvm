@@ -6,13 +6,13 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Game {
+public abstract class AbstractGame {
     protected List<Action> actions = new ArrayList<Action>();
     protected Project levelVm;
     protected Integer key;
-    protected Game loadLevel;
+    protected AbstractGame loadLevel;
 
-    public Game(String level, String code) {
+    public AbstractGame(String level, String code) {
         actions.add(new Action.MoveCaretToBottomLeft());
         actions.add(new Action.Print(Color.GREEN, "\n> " + code));
     }
@@ -62,11 +62,11 @@ public abstract class Game {
         return key;
     }
 
-    public Game getNextLevel() {
+    public AbstractGame getNextLevel() {
         return loadLevel;
     }
 
-    public void load(Game game) {
+    public void load(AbstractGame game) {
         loadLevel = game;
     }
 

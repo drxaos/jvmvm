@@ -1,5 +1,6 @@
 package com.googlecode.jvmvm.ui.levels.level_01.internal;
 
+import com.googlecode.jvmvm.ui.levels.level_01.Me;
 import com.googlecode.jvmvm.ui.levels.level_01.Player;
 
 import java.awt.*;
