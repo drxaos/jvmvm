@@ -142,12 +142,12 @@ public class Game extends GameBase {
     }
 
     @Override
-    public Object getLevelName() {
+    public String getLevelName() {
         return "CellBlockA.java";
     }
 
     @Override
-    public Object getLevelFolder() {
+    public String getLevelFolder() {
         return "level_01";
     }
 }

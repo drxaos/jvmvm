@@ -86,12 +86,12 @@ public class Game extends AbstractGame {
     }
 
     @Override
-    public Object getLevelName() {
+    public String getLevelName() {
         return "Initialize.java";
     }
 
     @Override
-    public Object getLevelFolder() {
+    public String getLevelFolder() {
         return "intro";
     }
 }

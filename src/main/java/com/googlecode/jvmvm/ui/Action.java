@@ -59,6 +59,19 @@ public abstract class Action {
         }
     }
 
+    public static class DisplayChapter extends Action {
+        String chapter;
+
+        public DisplayChapter(String chapter) {
+            this.chapter = chapter;
+        }
+
+        @Override
+        public void execute(Editor editor) {
+            editor.displayChapter(chapter);
+        }
+    }
+
 
     public static class MoveCaret extends Action {
         int x, y;

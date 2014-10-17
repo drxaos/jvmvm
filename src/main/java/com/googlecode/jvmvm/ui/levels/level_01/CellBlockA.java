@@ -29,7 +29,7 @@ public class CellBlockA extends Level {
     public void startLevel(Map map) {
 /*START_OF_START_LEVEL*/
 
-        map.displayChapter("Chapter 1 - Breakout");
+        map.displayChapter("Chapter 1\nBreakout");
 
         map.placePlayer(7, 5);
 

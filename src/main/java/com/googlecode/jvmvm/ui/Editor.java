@@ -42,6 +42,7 @@ public class Editor extends JFrame implements ActionListener {
     private JPanel bottomPanel;
     private MenuWindow menuWindow;
     private NotepadWindow notepadWindow;
+    private ChapterWindow chapterWindow;
     private JLabel inventory;
 
     private Integer keyCode;
@@ -251,6 +252,8 @@ public class Editor extends JFrame implements ActionListener {
         menuWindow.setVisible(false);
         notepadWindow = new NotepadWindow(this);
         notepadWindow.setVisible(false);
+        chapterWindow = new ChapterWindow(this);
+        chapterWindow.setVisible(false);
     }
 
     AbstractAction apiAction = new AbstractAction("API") {
@@ -538,12 +541,16 @@ public class Editor extends JFrame implements ActionListener {
         loadLevelRequest = null;
     }
 
-    public void dsplaySaveGames(HashMap saveState) {
+    public void displaySaveGames(HashMap saveState) {
         menuWindow.updateLevels(saveState);
     }
 
     public void setLoadLevelRequest(String loadLevelRequest) {
         this.loadLevelRequest = loadLevelRequest;
+    }
+
+    public void displayChapter(String chapter) {
+        chapterWindow.displayChapter(chapter);
     }
 
     private class GoToLineAction extends AbstractAction {

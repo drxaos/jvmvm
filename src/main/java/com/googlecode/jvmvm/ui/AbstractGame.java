@@ -50,7 +50,7 @@ public abstract class AbstractGame {
     }
 
     public void displayChapter(String title) {
-        actions.add(new Action.DisplayTitle(title));
+        actions.add(new Action.DisplayChapter(title));
     }
 
 
@@ -84,6 +84,7 @@ public abstract class AbstractGame {
 
     public abstract String getLevelNumber();
 
-    public abstract Object getLevelName();
-    public abstract Object getLevelFolder();
+    public abstract String getLevelName();
+
+    public abstract String getLevelFolder();
 }

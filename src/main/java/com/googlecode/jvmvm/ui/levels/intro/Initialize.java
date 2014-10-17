@@ -4,9 +4,6 @@ package com.googlecode.jvmvm.ui.levels.intro;
 public class Initialize extends Level {
 
     public void startLevel(Map map) {
-
-        map.displayChapter("initialize");
-
         map.draw(0, "");
         map.draw(0, "");
         map.draw(0, "");
@@ -32,6 +29,5 @@ public class Initialize extends Level {
         map.draw(10, "Press any key to begin ...");
         map.draw(0, "");
         map.draw(0, "");
-
     }
 }

@@ -175,6 +175,7 @@ public abstract class GameBase extends AbstractGame {
 
     @Override
     public void start() {
+        actions.add(new Action.DisplayTitle(getLevelFolder() + "/" + getLevelName()));
         startApiServer();
         configureLevel();
     }
@@ -293,7 +294,7 @@ public abstract class GameBase extends AbstractGame {
             } else if (state == PLAY || state == PLAY_INIT) {
                 int toX = player.x, toY = player.y;
                 if (key != null || state == PLAY_INIT) {
-                    if(state == PLAY_INIT){
+                    if (state == PLAY_INIT) {
                         key = 0;
                     }
                     // move player

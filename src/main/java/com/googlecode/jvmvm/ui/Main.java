@@ -60,7 +60,7 @@ public class Main implements ActionListener {
                     e1.printStackTrace();
                 }
             }
-            editor.dsplaySaveGames(saveState);
+            editor.displaySaveGames(saveState);
         } catch (IOException e1) {
             e1.printStackTrace();
         } catch (ClassNotFoundException e1) {
@@ -143,7 +143,7 @@ public class Main implements ActionListener {
                     if (!saveState.containsKey("maxLevel")) {
                         saveState.put("maxLevel", game.getLevelNumber());
                     }
-                    editor.dsplaySaveGames(saveState);
+                    editor.displaySaveGames(saveState);
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }
@@ -160,7 +160,7 @@ public class Main implements ActionListener {
                     game = game.getClass().getConstructor(String.class).newInstance(editor.getResetCode());
                     game.start();
                     editor.playMusic(game.getMusic());
-                    editor.dsplaySaveGames(saveState);
+                    editor.displaySaveGames(saveState);
                 } catch (InstantiationException e1) {
                     e1.printStackTrace();
                 } catch (IllegalAccessException e1) {
@@ -191,7 +191,7 @@ public class Main implements ActionListener {
                 saveState.put("dir" + game.getLevelNumber(), game.getLevelFolder());
                 saveState.put("maxLevel", game.getLevelNumber());
 
-                editor.dsplaySaveGames(saveState);
+                editor.displaySaveGames(saveState);
             }
 
             // load level menu event
@@ -210,7 +210,7 @@ public class Main implements ActionListener {
 
                     saveState.put("name" + game.getLevelNumber(), game.getLevelName());
                     saveState.put("dir" + game.getLevelNumber(), game.getLevelFolder());
-                    editor.dsplaySaveGames(saveState);
+                    editor.displaySaveGames(saveState);
                 } catch (InstantiationException e1) {
                     e1.printStackTrace();
                 } catch (IllegalAccessException e1) {
