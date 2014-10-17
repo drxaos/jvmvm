@@ -3,6 +3,11 @@ package com.googlecode.jvmvm.ui;
 import java.awt.*;
 
 public abstract class Action {
+    Exception point;
+
+    protected Action() {
+        point = new Exception();
+    }
 
     abstract public void execute(Editor editor);
 
@@ -155,6 +160,40 @@ public abstract class Action {
                 editor.getConsole().setForeground(fg);
             }
             editor.getConsole().write(text);
+        }
+    }
+
+    public static class PutChar extends Action {
+        Color fg, bg;
+        char ch;
+
+        public PutChar(Color fg, Color bg, char ch) {
+            this.fg = fg;
+            this.bg = bg;
+            this.ch = ch;
+        }
+
+        public PutChar(Color fg, char ch) {
+            this.fg = fg;
+            this.bg = Color.BLACK;
+            this.ch = ch;
+        }
+
+        public PutChar(String text) {
+            this.ch = ch;
+        }
+
+        @Override
+        public void execute(Editor editor) {
+            if (bg != null) {
+                editor.getConsole().setBackground(bg);
+            }
+            if (fg != null) {
+                editor.getConsole().setForeground(fg);
+            }
+            editor.getConsole().setCycle(true);
+            editor.getConsole().write(ch);
+            editor.getConsole().setCycle(false);
         }
     }
 

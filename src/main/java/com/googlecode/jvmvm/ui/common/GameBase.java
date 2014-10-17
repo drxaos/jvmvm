@@ -285,7 +285,7 @@ public abstract class GameBase extends AbstractGame {
                         actions.add(new Action.MoveCaret(obj.x, 24));
                         Color color = new DefinitionExecutor(d).getColor();
                         char symbol = new DefinitionExecutor(d).getSymbol();
-                        actions.add(new Action.Print(color, "" + symbol));
+                        actions.add(new Action.PutChar(color, symbol));
                     }
                 }
                 if (++pushCounter >= 25) {
@@ -334,13 +334,13 @@ public abstract class GameBase extends AbstractGame {
                         Color color = new DefinitionExecutor(d).getColor();
                         char symbol = new DefinitionExecutor(d).getSymbol();
                         actions.add(new Action.MoveCaret(obj.x, obj.y));
-                        actions.add(new Action.Print(color, "" + symbol));
+                        actions.add(new Action.PutChar(color, symbol));
                     }
                     Object d = defMap.get("player");
                     Color color = new DefinitionExecutor(d).getColor();
                     char symbol = new DefinitionExecutor(d).getSymbol();
                     actions.add(new Action.MoveCaret(toX, toY));
-                    actions.add(new Action.Print(color, "" + symbol));
+                    actions.add(new Action.PutChar(color, symbol));
 
                     // display statue if exists
                     if (status != null) {
@@ -418,12 +418,18 @@ public abstract class GameBase extends AbstractGame {
     }
 
     public void placeObject(int x, int y, String type) {
-        if (!defMap.containsKey(type)) {
-            throw new RuntimeException("There is no type of object named " + type);
-        }
         Obj found = findObj(x, y);
         if (found != null) {
-            objs.remove(found);
+            if (found.type.equals(type)) {
+                return;
+            }
+            throw new RuntimeException("There is already an object at (" + x + ", " + y + ")");
+        }
+        if ("empty".equals(type)) {
+            return;
+        }
+        if (!defMap.containsKey(type)) {
+            throw new RuntimeException("There is no type of object named " + type);
         }
         objs.add(new Obj(x, y, type));
     }

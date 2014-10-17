@@ -24,11 +24,11 @@ public class TheLongWayOut extends Level {
         maze.create(new Maze.Callback() {
 
             @Override
-            public void cell(int x, int y, boolean mapValue) {
+            public void cell(int x, int y, int mapValue) {
                 // don't write maze over player
                 if (map.getPlayer().atLocation(x, y)) {
                     return;
-                } else if (mapValue) { //false is empty space, true is wall
+                } else if (mapValue == 1) { // 0 is empty space 1 is wall
                     map.placeObject(x, y, "block");
                 } else {
                     map.placeObject(x, y, "empty");
