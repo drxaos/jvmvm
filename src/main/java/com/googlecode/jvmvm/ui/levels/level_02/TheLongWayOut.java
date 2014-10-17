@@ -17,17 +17,18 @@ public class TheLongWayOut extends Level {
 /*START_OF_START_LEVEL*/
         map.placePlayer(7, 5);
 
-        MazeGenerator maze = new MazeGenerator(map.getWidth(), map.getHeight());
+        Maze maze = new Maze(map.getWidth(), map.getHeight());
 /*BEGIN_EDITABLE*/
 
 /*END_EDITABLE*/
-        maze.create(x, y, mapValue, new MazeHelper() {
+        maze.create(new Maze.Callback() {
 
-            public int cell(int x, int y, int mapValue) {
+            @Override
+            public void cell(int x, int y, boolean mapValue) {
                 // don't write maze over player
                 if (map.getPlayer().atLocation(x, y)) {
-                    return 0;
-                } else if (mapValue == 1) { //0 is empty space 1 is wall
+                    return;
+                } else if (mapValue) { //false is empty space, true is wall
                     map.placeObject(x, y, "block");
                 } else {
                     map.placeObject(x, y, "empty");

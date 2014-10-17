@@ -22,7 +22,8 @@ public abstract class GameBase extends AbstractGame {
 
     private final int START = 0;
     private final int PUSH = START + 1;
-    private final int PLAY = PUSH + 1;
+    private final int PLAY_INIT = PUSH + 1;
+    private final int PLAY = PLAY_INIT + 1;
     private final int STOP = PLAY + 1;
 
     private int state = START;
@@ -33,7 +34,7 @@ public abstract class GameBase extends AbstractGame {
     private Obj player = null;
     private ArrayList<Obj> objs = new ArrayList<Obj>();
     private HashMap<String, Object> defMap = new HashMap<String, Object>();
-    private HashSet<String> inventory = new HashSet<String>();
+    protected HashSet<String> inventory = new HashSet<String>();
 
     private Code lvlCode;
 
@@ -73,6 +74,10 @@ public abstract class GameBase extends AbstractGame {
         }
     }
 
+    public Obj getPlayerObj() {
+        return player;
+    }
+
     abstract public HttpHandler getApiHandler();
 
     abstract public Class getBootstrapClass();
@@ -95,6 +100,9 @@ public abstract class GameBase extends AbstractGame {
 
     abstract public Object getMap();
 
+    public boolean isPlayerAtLocation(int x, int y) {
+        return (player.x == x) && (player.y == y);
+    }
 
     class DefinitionExecutor {
         Object definition;
@@ -167,16 +175,15 @@ public abstract class GameBase extends AbstractGame {
 
     @Override
     public void start() {
+        startApiServer();
+        configureLevel();
+    }
 
-        try {
-            server = HttpServer.create(new InetSocketAddress(Editor.API_PORT), 0);
-            server.createContext("/", getApiHandler());
-            server.setExecutor(null);
-            server.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    protected void configureVm(Project vm) throws IOException {
+    }
 
+    protected boolean configureLevel() {
+        Exception error = null;
         try {
             String path = "src/main/java";
             String lvlSrc = getSourceClass().getCanonicalName().replace(".", "/") + ".java";
@@ -190,32 +197,48 @@ public abstract class GameBase extends AbstractGame {
             if (code == null) {
                 actions.add(new Action.LoadCode(lvlCode.toString()));
             }
-            try {
-                levelVm = new Project("level-vm")
-                        .addFile(lvlSrc, lvlCode.toCompilationUnit(secret))
-                        .addFile(baseSrc, SrcUtil.loadSrc(path, baseSrc))
-                        .addFile(bootstrapSrc, SrcUtil.loadSrc(path, bootstrapSrc))
-                        .addSystemClass(getMeClass().getName())
-                        .addSystemClass(getDefinitionClass().getName())
-                        .addSystemClass(getMapClass().getName())
-                        .addSystemClass(getPlayerClass().getName())
-                        .addSystemClasses(Vm.bootstrap)
-                        .compile()
-                        .markObject("map", (java.io.Serializable) getMap());
-                actions.add(new Action.HideCode());
-            } catch (ProjectCompilerException e) {
-                e.printStackTrace();
-                actions.add(new Action.MoveCaretToBottomRight());
-                actions.add(new Action.Print("\n" + e.toString()));
-                actions.add(new Action.ShowCode());
-                state = STOP;
-            }
+            levelVm = new Project("level-vm")
+                    .addFile(lvlSrc, lvlCode.toCompilationUnit(secret))
+                    .addFile(baseSrc, SrcUtil.loadSrc(path, baseSrc))
+                    .addFile(bootstrapSrc, SrcUtil.loadSrc(path, bootstrapSrc))
+                    .addSystemClass(getMeClass().getName())
+                    .addSystemClass(getDefinitionClass().getName())
+                    .addSystemClass(getMapClass().getName())
+                    .addSystemClass(getPlayerClass().getName())
+                    .addSystemClasses(Vm.bootstrap);
+            configureVm(levelVm);
+            levelVm.compile()
+                    .markObject("map", (java.io.Serializable) getMap());
+        } catch (ProjectCompilerException e) {
+            e.printStackTrace();
+            error = e;
         } catch (IOException e) {
             e.printStackTrace();
+            error = e;
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
+            error = e;
         }
+        if (error != null) {
+            actions.add(new Action.MoveCaretToBottomRight());
+            actions.add(new Action.Print("\n" + error.toString()));
+            actions.add(new Action.ShowCode());
+            state = STOP;
+            return false;
+        } else {
+            return true;
+        }
+    }
 
+    private void startApiServer() {
+        try {
+            server = HttpServer.create(new InetSocketAddress(Editor.API_PORT), 0);
+            server.createContext("/", getApiHandler());
+            server.setExecutor(null);
+            server.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     static class ApiHandler implements HttpHandler {
@@ -265,19 +288,22 @@ public abstract class GameBase extends AbstractGame {
                     }
                 }
                 if (++pushCounter >= 25) {
-                    state = PLAY;
+                    state = PLAY_INIT;
                 }
-            } else if (state == PLAY) {
+            } else if (state == PLAY || state == PLAY_INIT) {
                 int toX = player.x, toY = player.y;
-                if (key != null) {
+                if (key != null || state == PLAY_INIT) {
+                    if(state == PLAY_INIT){
+                        key = 0;
+                    }
                     // move player
-                    if (key == KeyEvent.VK_DOWN && player.y < 49) {
+                    if (key == KeyEvent.VK_DOWN && player.y < 24) {
                         toY++;
                     } else if (key == KeyEvent.VK_UP && player.y > 0) {
                         toY--;
-                    } else if (key == KeyEvent.VK_RIGHT && player.y < 24) {
+                    } else if (key == KeyEvent.VK_RIGHT && player.x < 49) {
                         toX++;
-                    } else if (key == KeyEvent.VK_LEFT && player.y > 0) {
+                    } else if (key == KeyEvent.VK_LEFT && player.x > 0) {
                         toX--;
                     }
                 }
@@ -335,6 +361,15 @@ public abstract class GameBase extends AbstractGame {
                     }
                     actions.add(new Action.Inventory(inv));
                 }
+
+                // next level
+                levelVm.setupVM(getBootstrapClass().getCanonicalName(), "getNext", null, new Class[]{}, new Object[]{});
+                Object next = levelVm.run(2000);
+                if (next != null) {
+                    load((AbstractGame) Class.forName(next.toString()).newInstance());
+                }
+
+                state = PLAY;
             }
         } catch (ProjectExecutionException e) {
             e.printStackTrace();
@@ -347,6 +382,12 @@ public abstract class GameBase extends AbstractGame {
             actions.add(new Action.ShowCode());
             state = STOP;
             return;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
         }
     }
 

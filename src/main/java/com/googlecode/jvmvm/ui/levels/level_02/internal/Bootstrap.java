@@ -1,6 +1,6 @@
-package com.googlecode.jvmvm.ui.levels.level_01.internal;
+package com.googlecode.jvmvm.ui.levels.level_02.internal;
 
-import com.googlecode.jvmvm.ui.levels.level_01.*;
+import com.googlecode.jvmvm.ui.levels.level_02.*;
 
 import java.awt.*;
 
@@ -12,12 +12,8 @@ class Bootstrap {
 
     private static void execute(Map map) {
         Bootstrap.map = map;
-        level = new CellBlockA();
+        level = new TheLongWayOut();
         level.startLevel(map);
-    }
-
-    private static boolean onExit(Map map) {
-        return level.onExit(map);
     }
 
     public static void onCollision(Definition d, Player player) {
@@ -84,9 +80,9 @@ class Bootstrap {
 
             @Override
             public void onCollision(Player player) {
-                if (onExit(map)) {
-                    next = "com.googlecode.jvmvm.ui.levels.level_02.internal.Game";
-                }
+                // TODO next
+                //next = "com.googlecode.jvmvm.ui.levels.level_03.internal.Game";
+                map.writeStatus("YUP!");
             }
         });
 

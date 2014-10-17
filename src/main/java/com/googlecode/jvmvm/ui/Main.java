@@ -130,99 +130,102 @@ public class Main implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        try {
+            // if no game - start intro
+            if (game == null) {
+                try {
+                    game = new com.googlecode.jvmvm.ui.levels.intro.Game();
+                    game.start();
+                    editor.playMusic(game.getMusic());
+                    saveState.put("class" + game.getLevelNumber(), game.getClass().getName());
+                    saveState.put("name" + game.getLevelNumber(), game.getLevelName());
+                    saveState.put("dir" + game.getLevelNumber(), game.getLevelFolder());
+                    if (!saveState.containsKey("maxLevel")) {
+                        saveState.put("maxLevel", game.getLevelNumber());
+                    }
+                    editor.dsplaySaveGames(saveState);
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            }
 
-        // if no game - start intro
-        if (game == null) {
-            try {
-                game = new com.googlecode.jvmvm.ui.levels.intro.Game();
+            // controls
+            game.setKey(editor.getKeyCode());
+            editor.resetKeyCode();
+
+            // reset
+            if (editor.hasResetRequest()) {
+                try {
+                    game.stop();
+                    game = game.getClass().getConstructor(String.class).newInstance(editor.getResetCode());
+                    game.start();
+                    editor.playMusic(game.getMusic());
+                    editor.dsplaySaveGames(saveState);
+                } catch (InstantiationException e1) {
+                    e1.printStackTrace();
+                } catch (IllegalAccessException e1) {
+                    e1.printStackTrace();
+                } catch (NoSuchMethodException e1) {
+                    e1.printStackTrace();
+                } catch (InvocationTargetException e1) {
+                    e1.printStackTrace();
+                }
+                editor.resetResetRequest();
+            }
+
+            // process step
+            game.step();
+            editor.execute(game.getActions());
+
+            // next level game event
+            if (game.getNextLevel() != null) {
+                saveState.put("code" + game.getLevelNumber(), editor.getCodeEditor().getText());
+
+                game.stop();
+                game = game.getNextLevel();
                 game.start();
                 editor.playMusic(game.getMusic());
+
                 saveState.put("class" + game.getLevelNumber(), game.getClass().getName());
                 saveState.put("name" + game.getLevelNumber(), game.getLevelName());
                 saveState.put("dir" + game.getLevelNumber(), game.getLevelFolder());
-                if (!saveState.containsKey("maxLevel")) {
-                    saveState.put("maxLevel", game.getLevelNumber());
+                saveState.put("maxLevel", game.getLevelNumber());
+
+                editor.dsplaySaveGames(saveState);
+            }
+
+            // load level menu event
+            if (editor.getLoadLevelRequest() != null) {
+                try {
+                    saveState.put("code" + game.getLevelNumber(), editor.getCodeEditor().getText());
+                    game.stop();
+                    game = null;
+                    String lvl = editor.getLoadLevelRequest();
+                    editor.resetLoadLevelRequest();
+                    String code = (String) saveState.get("code" + lvl);
+                    game = (AbstractGame) Class.forName("" + saveState.get("class" + lvl)).getConstructor(String.class).newInstance(code);
+                    game.start();
+                    editor.playMusic(game.getMusic());
+                    editor.setText(code);
+
+                    saveState.put("name" + game.getLevelNumber(), game.getLevelName());
+                    saveState.put("dir" + game.getLevelNumber(), game.getLevelFolder());
+                    editor.dsplaySaveGames(saveState);
+                } catch (InstantiationException e1) {
+                    e1.printStackTrace();
+                } catch (IllegalAccessException e1) {
+                    e1.printStackTrace();
+                } catch (NoSuchMethodException e1) {
+                    e1.printStackTrace();
+                } catch (InvocationTargetException e1) {
+                    e1.printStackTrace();
+                } catch (ClassNotFoundException e1) {
+                    e1.printStackTrace();
                 }
-                editor.dsplaySaveGames(saveState);
-            } catch (Exception e1) {
-                e1.printStackTrace();
+
             }
-        }
-
-        // controls
-        game.setKey(editor.getKeyCode());
-        editor.resetKeyCode();
-
-        // reset
-        if (editor.hasResetRequest()) {
-            try {
-                game.stop();
-                game = game.getClass().getConstructor(String.class).newInstance(editor.getResetCode());
-                game.start();
-                editor.playMusic(game.getMusic());
-                editor.dsplaySaveGames(saveState);
-            } catch (InstantiationException e1) {
-                e1.printStackTrace();
-            } catch (IllegalAccessException e1) {
-                e1.printStackTrace();
-            } catch (NoSuchMethodException e1) {
-                e1.printStackTrace();
-            } catch (InvocationTargetException e1) {
-                e1.printStackTrace();
-            }
-            editor.resetResetRequest();
-        }
-
-        // process step
-        game.step();
-        editor.execute(game.getActions());
-
-        // next level game event
-        if (game.getNextLevel() != null) {
-            saveState.put("code" + game.getLevelNumber(), editor.getCodeEditor().getText());
-
-            game.stop();
-            game = game.getNextLevel();
-            game.start();
-            editor.playMusic(game.getMusic());
-
-            saveState.put("class" + game.getLevelNumber(), game.getClass().getName());
-            saveState.put("name" + game.getLevelNumber(), game.getLevelName());
-            saveState.put("dir" + game.getLevelNumber(), game.getLevelFolder());
-            saveState.put("maxLevel", game.getLevelNumber());
-
-            editor.dsplaySaveGames(saveState);
-        }
-
-        // load level menu event
-        if (editor.getLoadLevelRequest() != null) {
-            try {
-                saveState.put("code" + game.getLevelNumber(), editor.getCodeEditor().getText());
-                game.stop();
-                game = null;
-                String lvl = editor.getLoadLevelRequest();
-                editor.resetLoadLevelRequest();
-                String code = (String) saveState.get("code" + lvl);
-                game = (AbstractGame) Class.forName("" + saveState.get("class" + lvl)).getConstructor(String.class).newInstance(code);
-                game.start();
-                editor.playMusic(game.getMusic());
-                editor.setText(code);
-
-                saveState.put("name" + game.getLevelNumber(), game.getLevelName());
-                saveState.put("dir" + game.getLevelNumber(), game.getLevelFolder());
-                editor.dsplaySaveGames(saveState);
-            } catch (InstantiationException e1) {
-                e1.printStackTrace();
-            } catch (IllegalAccessException e1) {
-                e1.printStackTrace();
-            } catch (NoSuchMethodException e1) {
-                e1.printStackTrace();
-            } catch (InvocationTargetException e1) {
-                e1.printStackTrace();
-            } catch (ClassNotFoundException e1) {
-                e1.printStackTrace();
-            }
-
+        } catch (Throwable ex) {
+            ex.printStackTrace();
         }
     }
 

@@ -1,10 +1,11 @@
-package com.googlecode.jvmvm.ui.levels.level_01.internal;
+package com.googlecode.jvmvm.ui.levels.level_02.internal;
 
 
+import com.googlecode.jvmvm.loader.Project;
 import com.googlecode.jvmvm.ui.Action;
 import com.googlecode.jvmvm.ui.SrcUtil;
 import com.googlecode.jvmvm.ui.common.GameBase;
-import com.googlecode.jvmvm.ui.levels.level_01.*;
+import com.googlecode.jvmvm.ui.levels.level_02.*;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -22,6 +23,13 @@ public class Game extends GameBase {
     }
 
     @Override
+    protected void configureVm(Project vm) throws IOException {
+        String path = "src/main/java";
+        String mazeSrc = Maze.class.getName().replace(".", "/") + ".java";
+        vm.addFile(mazeSrc, SrcUtil.loadSrc(path, mazeSrc));
+    }
+
+    @Override
     public HttpHandler getApiHandler() {
         return new ApiHandler();
     }
@@ -30,7 +38,7 @@ public class Game extends GameBase {
     static class ApiHandler implements HttpHandler {
         public void handle(HttpExchange t) throws IOException {
             String baseSrc = "src/main/resources";
-            byte[] response = SrcUtil.loadData(baseSrc, "docs/level_01/" + t.getRequestURI().getPath().replace("..", "").replaceFirst("^/", ""));
+            byte[] response = SrcUtil.loadData(baseSrc, "docs/level_02/" + t.getRequestURI().getPath().replace("..", "").replaceFirst("^/", ""));
             t.sendResponseHeaders(200, response.length);
             OutputStream os = t.getResponseBody();
             os.write(response);
@@ -40,11 +48,9 @@ public class Game extends GameBase {
 
     @Override
     protected boolean configureLevel() {
-        boolean success = super.configureLevel();
-        if (success) {
-            actions.add(new Action.HideCode());
-        }
-        return success;
+        actions.add(new Action.ShowCode());
+        inventory.add("computer");
+        return super.configureLevel();
     }
 
     @Override
@@ -64,7 +70,7 @@ public class Game extends GameBase {
 
     @Override
     public Class getSourceClass() {
-        return CellBlockA.class;
+        return TheLongWayOut.class;
     }
 
     @Override
@@ -133,21 +139,21 @@ public class Game extends GameBase {
 
     @Override
     public String getMusic() {
-        return "Yonnie_The_Green.mp3";
+        return "gurh.mp3";
     }
 
     @Override
     public String getLevelNumber() {
-        return "01";
+        return "02";
     }
 
     @Override
     public Object getLevelName() {
-        return "CellBlockA.java";
+        return "TheLongWayOut.java";
     }
 
     @Override
     public Object getLevelFolder() {
-        return "level_01";
+        return "level_02";
     }
 }
