@@ -2,10 +2,10 @@ package com.googlecode.jvmvm.ui.levels.level_01;
 
 import com.googlecode.jvmvm.ui.levels.level_01.internal.Game;
 
-public class Player {
+final public class Player {
     private Game game;
 
-    public Player(Game game) {
+    private Player(Game game) {
         this.game = game;
     }
 

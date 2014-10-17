@@ -4,13 +4,13 @@ import com.googlecode.jvmvm.ui.levels.level_01.internal.Game;
 
 import java.io.Serializable;
 
-public class Map implements Serializable {
+final public class Map implements Serializable {
     private Player player;
     private Game game;
 
-    public Map(Game game) {
+    private Map(Game game, Player player) {
         this.game = game;
-        player = new Player(game);
+        this.player = player;
     }
 
     /**

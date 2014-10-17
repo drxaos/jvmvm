@@ -9,6 +9,8 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 public class Game extends GameBase {
     public Game(String code) {
@@ -70,9 +72,26 @@ public class Game extends GameBase {
         return Player.class;
     }
 
+    Player player;
+
     @Override
     public Object getPlayer() {
-        return new Player(this);
+        if (player == null) {
+            try {
+                Constructor<Player> c = Player.class.getDeclaredConstructor(new Class[]{Game.class});
+                c.setAccessible(true);
+                player = c.newInstance(this);
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return player;
     }
 
     @Override
@@ -80,9 +99,26 @@ public class Game extends GameBase {
         return Map.class;
     }
 
+    Map map;
+
     @Override
     public Object getMap() {
-        return new Map(this);
+        if (map == null) {
+            try {
+                Constructor<Map> c = Map.class.getDeclaredConstructor(new Class[]{Game.class, Player.class});
+                c.setAccessible(true);
+                map = c.newInstance(this, getPlayer());
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return map;
     }
 
     @Override
