@@ -234,7 +234,7 @@ public class Main implements ActionListener {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                    UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
                     new Timer(15, new Main()).start();
                 } catch (Exception e) {
                     e.printStackTrace();

@@ -313,6 +313,7 @@ public class Editor extends JFrame implements ActionListener {
             if (answer == JOptionPane.YES_OPTION) {
                 resetCode = null;
                 resetRequest = true;
+                getConsole().grabFocus();
             }
         }
     };
@@ -325,12 +326,14 @@ public class Editor extends JFrame implements ActionListener {
         public void actionPerformed(ActionEvent ev) {
             resetCode = getCodeEditor().getText();
             resetRequest = true;
+            getConsole().grabFocus();
         }
     };
     AbstractAction phoneAction = new AbstractAction("Phone") {
         @Override
         public void actionPerformed(ActionEvent ev) {
             keyCode = KeyEvent.VK_Q;
+            getConsole().grabFocus();
         }
     };
     AbstractAction menuAction = new AbstractAction("Menu") {
@@ -411,44 +414,6 @@ public class Editor extends JFrame implements ActionListener {
         playArea.repaint();
     }
 
-
-    private JMenuBar createMenuBar() {
-        JMenuBar mb = new JMenuBar();
-        {
-            JMenu menu = new JMenu("API");
-            mb.add(menu);
-        }
-        {
-            JMenu menu = new JMenu("Toggle Focus");
-            mb.add(menu);
-        }
-        {
-            JMenu menu = new JMenu("Notepad");
-            mb.add(menu);
-        }
-        {
-            JMenu menu = new JMenu("Reset");
-            mb.add(menu);
-        }
-        {
-            JMenu menu = new JMenu("Execute");
-            mb.add(menu);
-        }
-        {
-            JMenu menu = new JMenu("Menu");
-            mb.add(menu);
-        }
-        {
-            menuSerach = new JMenu("Search");
-            menuSerach.add(new JMenuItem(new ShowFindDialogAction()));
-            menuSerach.add(new JMenuItem(new ShowReplaceDialogAction()));
-            menuSerach.add(new JMenuItem(new GoToLineAction()));
-            mb.add(menuSerach);
-        }
-        return mb;
-    }
-
-
     /**
      * Creates our Find and Replace dialogs.
      */
@@ -463,13 +428,11 @@ public class Editor extends JFrame implements ActionListener {
 
     }
 
-
     /**
      * Listens for events from our search dialogs and actually does the dirty
      * work.
      */
     public void actionPerformed(ActionEvent e) {
-
         String command = e.getActionCommand();
         SearchDialogSearchContext context = findDialog.getSearchContext();
 
@@ -486,7 +449,6 @@ public class Editor extends JFrame implements ActionListener {
             JOptionPane.showMessageDialog(null, count
                     + " occurrences replaced.");
         }
-
     }
 
     public JConsole getConsole() {
@@ -539,6 +501,7 @@ public class Editor extends JFrame implements ActionListener {
 
     public void resetLoadLevelRequest() {
         loadLevelRequest = null;
+        getConsole().grabFocus();
     }
 
     public void displaySaveGames(HashMap saveState) {
@@ -551,6 +514,7 @@ public class Editor extends JFrame implements ActionListener {
 
     public void displayChapter(String chapter) {
         chapterWindow.displayChapter(chapter);
+        getConsole().grabFocus();
     }
 
     private class GoToLineAction extends AbstractAction {
@@ -643,5 +607,4 @@ public class Editor extends JFrame implements ActionListener {
             }
         }
     }
-
 }
