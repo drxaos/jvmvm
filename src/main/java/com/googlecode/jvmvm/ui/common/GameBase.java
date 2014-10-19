@@ -20,6 +20,8 @@ import java.util.List;
 
 public abstract class GameBase extends AbstractGame {
 
+    static HttpServer apiServer;
+
     private final int START = 0;
     private final int PUSH = START + 1;
     private final int PLAY_INIT = PUSH + 1;
@@ -28,7 +30,6 @@ public abstract class GameBase extends AbstractGame {
 
     private int state = START;
     private String code;
-    HttpServer server;
 
     private String secret = "secret" + Math.random();
     private Obj player = null;
@@ -233,10 +234,12 @@ public abstract class GameBase extends AbstractGame {
 
     private void startApiServer() {
         try {
-            server = HttpServer.create(new InetSocketAddress(Editor.API_PORT), 0);
-            server.createContext("/", getApiHandler());
-            server.setExecutor(null);
-            server.start();
+            if (apiServer == null) {
+                apiServer = HttpServer.create(new InetSocketAddress(Editor.API_PORT), 0);
+                apiServer.setExecutor(null);
+                apiServer.start();
+            }
+            apiServer.createContext("/", getApiHandler());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -394,9 +397,14 @@ public abstract class GameBase extends AbstractGame {
 
     @Override
     public void stop() {
-        server.stop(0);
+        if (apiServer != null) {
+            try {
+                apiServer.removeContext("/");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
-
 
     public void placePlayer(int x, int y) {
         if (player != null) {

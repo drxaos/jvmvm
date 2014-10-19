@@ -80,6 +80,7 @@ public class Player extends Thread {
     }
 
     public Player(InputStream stream, AudioDevice device) throws JavaLayerException {
+        this.setName("Music");
         bitstream = new Bitstream(stream);
         decoder = new Decoder();
 

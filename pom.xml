@@ -245,6 +245,25 @@
                             <sourcepath>${basedir}/src/main/java/com/googlecode/jvmvm/ui/levels/level_02</sourcepath>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>level_03-api</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/apidocs/docs/level_03</outputDirectory>
+                            <finalName>api-lavel_03</finalName>
+                            <jarOutputDirectory>${project.build.directory}/lib</jarOutputDirectory>
+                            <sourceFileIncludes>
+                                <include>ValidationEngaged.java</include>
+                                <include>Level.java</include>
+                                <include>Map.java</include>
+                                <include>Player.java</include>
+                            </sourceFileIncludes>
+                            <sourcepath>${basedir}/src/main/java/com/googlecode/jvmvm/ui/levels/level_03</sourcepath>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
