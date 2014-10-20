@@ -37,6 +37,9 @@ public abstract class GameBase extends AbstractGame {
     private HashMap<String, Object> defMap = new HashMap<String, Object>();
     protected HashSet<String> inventory = new HashSet<String>();
 
+    final Color defaultBg = Color.BLACK;
+    protected Color[] mapBg = new Color[getWidth() * getHeight()];
+
     private Code lvlCode;
 
     private int pushCounter = 0;
@@ -103,6 +106,10 @@ public abstract class GameBase extends AbstractGame {
 
     public boolean isPlayerAtLocation(int x, int y) {
         return (player.x == x) && (player.y == y);
+    }
+
+    public void setSquareColor(int x, int y, Color color) {
+        mapBg[y * (getWidth() - 1) + x] = color;
     }
 
     class DefinitionExecutor {
@@ -282,13 +289,19 @@ public abstract class GameBase extends AbstractGame {
                 state = PUSH;
             } else if (state == PUSH) {
                 pushLine();
+                for (int x = 0; x < getWidth(); x++) {
+                    Color bg = mapBg[24 * (getWidth() - 1) + x];
+                    actions.add(new Action.MoveCaret(x, 24));
+                    actions.add(new Action.PutChar(Color.BLACK, bg != null ? bg : defaultBg, ' '));
+                }
                 for (Obj obj : objs) {
                     if (obj.y == pushCounter) {
                         Object d = defMap.get(obj.type);
                         actions.add(new Action.MoveCaret(obj.x, 24));
                         Color color = new DefinitionExecutor(d).getColor();
                         char symbol = new DefinitionExecutor(d).getSymbol();
-                        actions.add(new Action.PutChar(color, symbol));
+                        Color bg = mapBg[obj.y * (getWidth() - 1) + obj.x];
+                        actions.add(new Action.PutChar(color, bg != null ? bg : defaultBg, symbol));
                     }
                 }
                 if (++pushCounter >= 25) {
@@ -332,18 +345,24 @@ public abstract class GameBase extends AbstractGame {
                 if (key != null) {
                     // repaint on user action
                     actions.add(new Action.Clear());
+                    for (int x = 0; x < getWidth(); x++) {
+                        for (int y = 0; y < getHeight(); y++) {
+                            Color bg = mapBg[y * (getWidth() - 1) + x];
+                            actions.add(new Action.MoveCaret(x, y));
+                            actions.add(new Action.PutChar(Color.BLACK, bg != null ? bg : defaultBg, ' '));
+                        }
+                    }
                     for (Obj obj : objs) {
                         Object d = defMap.get(obj.type);
                         Color color = new DefinitionExecutor(d).getColor();
                         char symbol = new DefinitionExecutor(d).getSymbol();
                         actions.add(new Action.MoveCaret(obj.x, obj.y));
-                        actions.add(new Action.PutChar(color, symbol));
+                        Color bg = mapBg[obj.y * (getWidth() - 1) + obj.x];
+                        actions.add(new Action.PutChar(color, bg != null ? bg : defaultBg, symbol));
                     }
                     Object d = defMap.get("player");
                     Color color = new DefinitionExecutor(d).getColor();
                     char symbol = new DefinitionExecutor(d).getSymbol();
-                    actions.add(new Action.MoveCaret(toX, toY));
-                    actions.add(new Action.PutChar(color, symbol));
 
                     // display statue if exists
                     if (status != null) {

@@ -14,7 +14,7 @@ class Bootstrap {
         Bootstrap.map = map;
         level = new Multiplicity();
         level.startLevel(map);
-        if(!validateLevel(map)){
+        if (!validateLevel(map)) {
             throw new RuntimeException("validation error");
         }
     }
@@ -87,9 +87,7 @@ class Bootstrap {
 
             @Override
             public void onCollision(Player player) {
-                // TODO next
-                //next = "com.googlecode.jvmvm.ui.levels.level_04.internal.Game";
-                map.writeStatus("YUP!");
+                next = "com.googlecode.jvmvm.ui.levels.level_05.internal.Game";
             }
         });
 
