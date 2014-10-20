@@ -1,7 +1,7 @@
-package com.googlecode.jvmvm.ui.levels.level_05;
+package com.googlecode.jvmvm.ui.levels.level_06;
 
 
-import com.googlecode.jvmvm.ui.levels.level_05.internal.Game;
+import com.googlecode.jvmvm.ui.levels.level_06.internal.Game;
 
 final public class Player {
     private Game game;
@@ -24,9 +24,6 @@ final public class Player {
         return game.isPlayerAtLocation(x, y);
     }
 
-    /**
-     * Kills the player and displays the given text as the cause of death.
-     */
     public void killedBy(String cause) {
         throw new RuntimeException("You have been killed by " + cause);
     }

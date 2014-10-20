@@ -112,6 +112,16 @@ public abstract class GameBase extends AbstractGame {
         mapBg[y * (getWidth() - 1) + x] = color;
     }
 
+    public int getObjX(String id) {
+        // TODO
+        return 0;
+    }
+
+    public int getObjY(String id) {
+        // TODO
+        return 0;
+    }
+
     class DefinitionExecutor {
         Object definition;
 
