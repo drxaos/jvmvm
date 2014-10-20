@@ -445,6 +445,12 @@ public abstract class GameBase extends AbstractGame {
     }
 
     public void placeObject(int x, int y, String type) {
+        if (x < 0 || x >= getWidth()) {
+            return;
+        }
+        if (y < 0 || y >= getHeight()) {
+            return;
+        }
         Obj found = findObj(x, y);
         if (found != null) {
             if (found.type.equals(type)) {
