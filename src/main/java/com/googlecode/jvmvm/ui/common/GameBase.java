@@ -479,4 +479,29 @@ public abstract class GameBase extends AbstractGame {
     public boolean hasItem(String type) {
         return inventory.contains(type);
     }
+
+
+    public int countObjects(String objectType) {
+        int count = 0;
+        for (Obj obj : objs) {
+            if (obj.type.equals(objectType)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public void validateAtLeastXObjects(int num, String objectType) {
+        int count = countObjects(objectType);
+        if (count < num) {
+            throw new RuntimeException("Not enough blocks on the map! Expected: " + num + ", found: " + count);
+        }
+    }
+
+    public void validateExactlyXManyObjects(int num, String objectType) {
+        int count = countObjects(objectType);
+        if (count != num) {
+            throw new RuntimeException("Wrong number of " + objectType + "s on the map! Expected: " + num + ", found: " + count);
+        }
+    }
 }

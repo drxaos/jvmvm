@@ -31,7 +31,6 @@ public class Game extends GameBase {
         return new ApiHandler();
     }
 
-
     static class ApiHandler implements HttpHandler {
         public void handle(HttpExchange t) throws IOException {
             String baseSrc = "src/main/resources";

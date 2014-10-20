@@ -14,8 +14,8 @@ class Bootstrap {
         Bootstrap.map = map;
         level = new ValidationEngaged();
         level.startLevel(map);
-        if(validateLevel(map)){
-            // TODO
+        if(!validateLevel(map)){
+            throw new RuntimeException("validation error");
         }
     }
 

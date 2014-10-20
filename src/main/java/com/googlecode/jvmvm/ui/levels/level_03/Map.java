@@ -60,14 +60,14 @@ final public class Map implements Serializable {
      * Raises an exception if there are not at least num objects of type objectType on the map.
      */
     public void validateAtLeastXObjects(int num, String objectType) {
-        // TODO
+        game.validateAtLeastXObjects(num, objectType);
     }
 
     /**
      * Raises an exception if there are not exactly num objects of type objectType on the map.
      */
     public void validateExactlyXManyObjects(int num, String objectType) {
-        // TODO
+        game.validateExactlyXManyObjects(num, objectType);
     }
 
     public void writeStatus(String text) {
