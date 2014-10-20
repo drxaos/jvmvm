@@ -1,6 +1,6 @@
-package com.googlecode.jvmvm.ui.levels.level_03.internal;
+package com.googlecode.jvmvm.ui.levels.level_04.internal;
 
-import com.googlecode.jvmvm.ui.levels.level_03.*;
+import com.googlecode.jvmvm.ui.levels.level_04.*;
 
 import java.awt.*;
 
@@ -12,9 +12,9 @@ class Bootstrap {
 
     private static void execute(Map map) {
         Bootstrap.map = map;
-        level = new ValidationEngaged();
+        level = new Multiplicity();
         level.startLevel(map);
-        if (!validateLevel(map)) {
+        if(!validateLevel(map)){
             throw new RuntimeException("validation error");
         }
     }
@@ -82,11 +82,14 @@ class Bootstrap {
             {
                 color = new Color(0f, 1f, 1f);
                 symbol = '⎕';
+
             }
 
             @Override
             public void onCollision(Player player) {
-                next = "com.googlecode.jvmvm.ui.levels.level_04.internal.Game";
+                // TODO next
+                //next = "com.googlecode.jvmvm.ui.levels.level_04.internal.Game";
+                map.writeStatus("YUP!");
             }
         });
 

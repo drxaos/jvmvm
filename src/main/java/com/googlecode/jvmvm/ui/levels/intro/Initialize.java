@@ -17,10 +17,10 @@ public class Initialize extends Level {
         map.draw(0, "");
         map.draw(0, "");
         map.draw(0, "");
-        map.draw(5, "Java port by Vladimir Polyakov");
-        map.draw(0, "");
         map.draw(5, "original game");
         map.draw(10, "by Alex Nisnevich and Greg Shuflin");
+        map.draw(0, "");
+        map.draw(5, "java port by Vladimir Polyakov");
         map.draw(0, "");
         map.draw(0, "");
         map.draw(0, "");
