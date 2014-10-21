@@ -14,6 +14,9 @@ public abstract class Definition {
 
     public char symbol = ' ';
 
+    /**
+     * The function that is executed when this object touches the player.
+     */
     public void onCollision(Player player) {
     }
 
@@ -29,6 +32,9 @@ public abstract class Definition {
     public void behavior(Object me) {
     }
 
+    /**
+     * (For non-dynamic objects only.) The function that determines whether or not the player can pass through this object.
+     */
     public boolean impassable(Player player, Object object) {
         return false;
     }

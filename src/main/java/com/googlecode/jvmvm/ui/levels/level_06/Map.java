@@ -86,7 +86,11 @@ final public class Map implements Serializable {
         game.__auth(command, secret);
     }
 
-    public void defineObject(String attackDrone, Definition player) {
-        // TODO
+    /**
+     * Defines a new type of object with the given properties.
+     * Note that type definitions created with map.defineObject only persist in the scope of the level.
+     */
+    public void defineObject(String type, Definition properties) {
+        game.defineObject(type, properties);
     }
 }

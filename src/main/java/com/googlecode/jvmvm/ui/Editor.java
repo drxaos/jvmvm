@@ -4,6 +4,7 @@ import org.fife.rsta.ui.GoToDialog;
 import org.fife.rsta.ui.search.FindDialog;
 import org.fife.rsta.ui.search.ReplaceDialog;
 import org.fife.rsta.ui.search.SearchDialogSearchContext;
+import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.Theme;
@@ -18,6 +19,7 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -377,6 +379,10 @@ public class Editor extends JFrame implements ActionListener {
     }
 
     public void setText(String text) {
+        DocumentFilter documentFilter = ((RSyntaxDocument) textArea.getDocument()).getDocumentFilter();
+        ((RSyntaxDocument) textArea.getDocument()).setDocumentFilter(null);
+        textArea.setText(text);
+        ((RSyntaxDocument) textArea.getDocument()).setDocumentFilter(documentFilter);
         textArea.setText(text);
         textArea.setCaretPosition(0);
     }

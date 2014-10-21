@@ -1,10 +1,7 @@
 package com.googlecode.jvmvm.ui.levels.intro;
 
 import com.googlecode.jvmvm.loader.Project;
-import com.googlecode.jvmvm.ui.AbstractGame;
-import com.googlecode.jvmvm.ui.Action;
-import com.googlecode.jvmvm.ui.SrcUtil;
-import com.googlecode.jvmvm.ui.Vm;
+import com.googlecode.jvmvm.ui.*;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -71,7 +68,7 @@ public class Game extends AbstractGame {
     }
 
     @Override
-    public boolean validateCode(String code) {
+    public boolean applyEdits(List<? extends Code.Edit> edits) {
         return true;
     }
 

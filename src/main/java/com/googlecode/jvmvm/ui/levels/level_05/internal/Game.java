@@ -3,6 +3,7 @@ package com.googlecode.jvmvm.ui.levels.level_05.internal;
 
 import com.googlecode.jvmvm.loader.Project;
 import com.googlecode.jvmvm.ui.Action;
+import com.googlecode.jvmvm.ui.Code;
 import com.googlecode.jvmvm.ui.SrcUtil;
 import com.googlecode.jvmvm.ui.common.GameBase;
 import com.googlecode.jvmvm.ui.levels.level_05.*;
@@ -13,10 +14,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 public class Game extends GameBase {
-    public Game(String code) {
-        super(code);
+    public Game(List<? extends Code.Edit> edits) {
+        super(edits);
     }
 
     public Game() {
@@ -70,13 +72,8 @@ public class Game extends GameBase {
     }
 
     @Override
-    public Class getMeClass() {
+    public Class getObjectClass() {
         return Me.class;
-    }
-
-    @Override
-    public Object getMe() {
-        return new Me();
     }
 
     @Override

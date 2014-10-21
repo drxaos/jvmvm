@@ -78,7 +78,7 @@ public abstract class AbstractGame {
 
     public abstract String getMusic();
 
-    public abstract boolean validateCode(String code);
+    public abstract boolean applyEdits(List<? extends Code.Edit> edits);
 
     public abstract List<Integer> redLines();
 

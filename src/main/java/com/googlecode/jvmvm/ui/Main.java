@@ -1,7 +1,10 @@
 package com.googlecode.jvmvm.ui;
 
 import javax.swing.*;
-import javax.swing.text.*;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class Main implements ActionListener {
@@ -74,10 +78,7 @@ public class Main implements ActionListener {
     class PartlyReadOnly extends DocumentFilter {
         @Override
         public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
-            Document document = fb.getDocument();
-            String text = document.getText(0, document.getLength());
-            String edit = text.substring(0, offset) + text.substring(offset + length, text.length());
-            if (game.validateCode(edit)) {
+            if (game.applyEdits(Collections.singletonList(new Code.Remove(length, offset)))) {
                 super.remove(fb, offset, length);
             }
             try {
@@ -92,10 +93,7 @@ public class Main implements ActionListener {
 
         @Override
         public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-            Document document = fb.getDocument();
-            String text = document.getText(0, document.getLength());
-            String edit = new StringBuilder(text).insert(offset, string).toString();
-            if (game.validateCode(edit)) {
+            if (game.applyEdits(Collections.singletonList(new Code.Insert(string, offset)))) {
                 super.insertString(fb, offset, string, attr);
             }
             try {
@@ -110,11 +108,7 @@ public class Main implements ActionListener {
 
         @Override
         public void replace(FilterBypass fb, int offset, int length, String string, AttributeSet attrs) throws BadLocationException {
-            Document document = fb.getDocument();
-            String text = document.getText(0, document.getLength());
-            String edit = text.substring(0, offset) + text.substring(offset + length, text.length());
-            edit = new StringBuilder(edit).insert(offset, string).toString();
-            if (game.validateCode(edit)) {
+            if (game.applyEdits(Collections.singletonList(new Code.Replace(string, offset, length)))) {
                 super.replace(fb, offset, length, string, attrs);
             }
             try {

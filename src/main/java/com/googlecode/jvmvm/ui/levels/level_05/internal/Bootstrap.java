@@ -87,9 +87,7 @@ class Bootstrap {
 
             @Override
             public void onCollision(Player player) {
-                // TODO next
-                //next = "com.googlecode.jvmvm.ui.levels.level_04.internal.Game";
-                map.writeStatus("YUP!");
+                next = "com.googlecode.jvmvm.ui.levels.level_06.internal.Game";
             }
         });
         defMap.put("mine", new Definition() {

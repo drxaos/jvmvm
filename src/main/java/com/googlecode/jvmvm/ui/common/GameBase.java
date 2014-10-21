@@ -4,6 +4,7 @@ import com.googlecode.jvmvm.loader.Project;
 import com.googlecode.jvmvm.loader.ProjectCompilerException;
 import com.googlecode.jvmvm.loader.ProjectExecutionException;
 import com.googlecode.jvmvm.ui.*;
+import com.googlecode.jvmvm.ui.levels.level_06.Definition;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -29,7 +30,7 @@ public abstract class GameBase extends AbstractGame {
     private final int STOP = PLAY + 1;
 
     private int state = START;
-    private String code;
+    private List<? extends Code.Edit> codeEdits;
 
     private String secret = "secret" + Math.random();
     private Obj player = null;
@@ -48,9 +49,9 @@ public abstract class GameBase extends AbstractGame {
     private boolean startOfStart;
     private boolean endOfStart;
 
-    public GameBase(String code) {
+    public GameBase(List<? extends Code.Edit> codeEdits) {
         super("level_01", "CellBlockA.java");
-        this.code = code;
+        this.codeEdits = codeEdits;
     }
 
     public GameBase() {
@@ -59,8 +60,8 @@ public abstract class GameBase extends AbstractGame {
 
 
     @Override
-    public boolean validateCode(String code) {
-        return lvlCode.apply(code, false);
+    public boolean applyEdits(List<? extends Code.Edit> edits) {
+        return lvlCode.apply(edits);
     }
 
     @Override
@@ -92,9 +93,7 @@ public abstract class GameBase extends AbstractGame {
 
     abstract public Class getSourceClass();
 
-    abstract public Class getMeClass();
-
-    abstract public Object getMe();
+    abstract public Class getObjectClass();
 
     abstract public Class getPlayerClass();
 
@@ -113,13 +112,23 @@ public abstract class GameBase extends AbstractGame {
     }
 
     public int getObjX(String id) {
-        // TODO
-        return 0;
+        Obj obj = findObj(id);
+        return (obj != null) ? obj.x : 0;
     }
 
     public int getObjY(String id) {
-        // TODO
-        return 0;
+        Obj obj = findObj(id);
+        return (obj != null) ? obj.y : 0;
+    }
+
+    public void defineObject(String type, Definition properties) {
+        if (type == null || type.isEmpty()) {
+            return;
+        }
+        if (defMap.containsKey(type)) {
+            throw new RuntimeException("There is already a type of object named " + type + "!");
+        }
+        defMap.put(type, properties);
     }
 
     class DefinitionExecutor {
@@ -182,7 +191,7 @@ public abstract class GameBase extends AbstractGame {
         }
 
         public void behavior(Object me) {
-            levelVm.setupVM(getBootstrapClass().getName(), "behavior", null, new Class[]{getDefinitionClass(), getMeClass()}, new Object[]{definition, me}).run(2000);
+            levelVm.setupVM(getBootstrapClass().getName(), "behavior", null, new Class[]{getDefinitionClass(), getObjectClass()}, new Object[]{definition, me}).run(2000);
         }
 
         public void onDrop() {
@@ -209,18 +218,15 @@ public abstract class GameBase extends AbstractGame {
             String baseSrc = getLevelClass().getCanonicalName().replace(".", "/") + ".java";
             String bootstrapSrc = getBootstrapClass().getCanonicalName().replace(".", "/") + ".java";
             lvlCode = Code.parse(SrcUtil.loadSrc(path, lvlSrc));
-            if (code != null) {
-                lvlCode.apply(code, false);
+            if (codeEdits != null) {
+                lvlCode.apply(codeEdits);
             }
-
-            if (code == null) {
-                actions.add(new Action.LoadCode(lvlCode.toString()));
-            }
+            actions.add(new Action.LoadCode(lvlCode.toString()));
             levelVm = new Project("level-vm")
                     .addFile(lvlSrc, lvlCode.toCompilationUnit(secret))
                     .addFile(baseSrc, SrcUtil.loadSrc(path, baseSrc))
                     .addFile(bootstrapSrc, SrcUtil.loadSrc(path, bootstrapSrc))
-                    .addSystemClass(getMeClass().getName())
+                    .addSystemClass(getObjectClass().getName())
                     .addSystemClass(getDefinitionClass().getName())
                     .addSystemClass(getMapClass().getName())
                     .addSystemClass(getPlayerClass().getName())
@@ -447,6 +453,17 @@ public abstract class GameBase extends AbstractGame {
         Obj found = null;
         for (Obj obj : objs) {
             if (obj.x == x && obj.y == y) {
+                found = obj;
+                break;
+            }
+        }
+        return found;
+    }
+
+    private Obj findObj(String id) {
+        Obj found = null;
+        for (Obj obj : objs) {
+            if (obj.id.equals(id)) {
                 found = obj;
                 break;
             }

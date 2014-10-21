@@ -2,10 +2,60 @@ package com.googlecode.jvmvm.ui;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Code {
+
+    public abstract static class Edit implements Serializable {
+        abstract public String apply(String to);
+    }
+
+    public static class Insert extends Edit {
+        String string;
+        int offset;
+
+        public Insert(String string, int offset) {
+            this.string = string;
+            this.offset = offset;
+        }
+
+        public String apply(String to) {
+            return new StringBuilder(to).insert(offset, string).toString();
+        }
+    }
+
+    public static class Remove extends Edit {
+        int offset, length;
+
+        public Remove(int length, int offset) {
+            this.length = length;
+            this.offset = offset;
+        }
+
+        public String apply(String to) {
+            return to.substring(0, offset) + to.substring(offset + length, to.length());
+        }
+    }
+
+    public static class Replace extends Edit {
+        String string;
+        int offset, length;
+
+        public Replace(String string, int offset, int length) {
+            this.string = string;
+            this.offset = offset;
+            this.length = length;
+        }
+
+        public String apply(String to) {
+            String edit = to.substring(0, offset) + to.substring(offset + length, to.length());
+            edit = new StringBuilder(edit).insert(offset, string).toString();
+            return edit;
+        }
+    }
+
 
     public static class Section {
         boolean editable;
@@ -39,6 +89,14 @@ public class Code {
 
     List<Section> sections = new ArrayList<Section>();
 
+    public boolean apply(List<? extends Edit> codeEdits) {
+        for (Edit codeEdit : codeEdits) {
+
+            // TODO try apply edits
+
+        }
+        return false;
+    }
 
     public String toString() {
         StringBuilder b = new StringBuilder();
@@ -64,77 +122,6 @@ public class Code {
             }
         }
         return b.toString();
-    }
-
-    public boolean apply(String code, boolean verify) {
-        if (!verify && !apply(code, true)) {
-            return false;
-        }
-
-        code = code.replace("\r\n", "\n").replace("\r", "\n");
-        Section waitingEditable = null;
-        for (Section section : sections) {
-            if (!section.editable && section.startOfStartLevel) {
-            } else if (!section.editable && section.endOfStartLevel) {
-            } else if (!section.editable && section.leading && !section.trailing) {
-                if (!code.startsWith(section.text)) {
-                    return false;
-                }
-                code = code.substring(section.text.length());
-            } else if (!section.editable && !section.leading && !section.trailing) {
-                int found = code.indexOf(section.text);
-                if (found < 0) {
-                    return false;
-                }
-                if (waitingEditable != null) {
-                    String editable = code.substring(0, found);
-                    if (editable.isEmpty() || !editable.endsWith("\n")) {
-                        return false;
-                    }
-                    if (!verify) {
-                        waitingEditable.text = editable;
-                    }
-                    waitingEditable = null;
-                }
-                code = code.substring(found);
-                code = code.substring(section.text.length());
-            } else if (!section.editable && !section.leading && section.trailing) {
-                int found = code.indexOf(section.text);
-                if (found < 0) {
-                    return false;
-                }
-                if (waitingEditable != null) {
-                    String editable = code.substring(0, found);
-                    if (editable.isEmpty() || !editable.endsWith("\n")) {
-                        return false;
-                    }
-                    if (!verify) {
-                        waitingEditable.text = editable;
-                    }
-                    waitingEditable = null;
-                }
-                code = code.substring(found);
-                code = code.substring(section.text.length());
-                if (!code.isEmpty()) {
-                    return false;
-                }
-            } else if (section.editable && section.leading && !section.trailing) {
-                waitingEditable = section;
-            } else if (section.editable && !section.leading && !section.trailing) {
-                waitingEditable = section;
-            } else if (section.editable && !section.leading && section.trailing) {
-                if (code.isEmpty()) {
-                    return false;
-                }
-                if (!verify) {
-                    section.text = code;
-                }
-            } else {
-                throw new RuntimeException("section error: " + section);
-            }
-
-        }
-        return true;
     }
 
     public List<Integer> getReadonlyLines() {
@@ -181,7 +168,8 @@ public class Code {
                 leading = false;
                 code.sections.add(new Section(false, false, true, false, false, null));
             } else {
-                b.append(s).append("\n");
+                b.append(s);
+                b.append("\n");
             }
         }
         code.sections.add(new Section(editable, false, false, leading, true, b.toString() + "\n"));

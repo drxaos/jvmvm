@@ -24,6 +24,9 @@ final public class Player {
         return game.isPlayerAtLocation(x, y);
     }
 
+    /**
+     * Kills the player and displays the given text as the cause of death.
+     */
     public void killedBy(String cause) {
         throw new RuntimeException("You have been killed by " + cause);
     }

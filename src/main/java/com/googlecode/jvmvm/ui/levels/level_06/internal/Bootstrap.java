@@ -71,7 +71,11 @@ class Bootstrap {
             {
                 color = Color.LIGHT_GRAY;
                 symbol = '#';
-                impassable = true;
+            }
+
+            @Override
+            public boolean impassable(Player player, Object object) {
+                return true;
             }
 
             @Override
@@ -88,20 +92,7 @@ class Bootstrap {
 
             @Override
             public void onCollision(Player player) {
-                // TODO next
-                //next = "com.googlecode.jvmvm.ui.levels.level_04.internal.Game";
-                map.writeStatus("YUP!");
-            }
-        });
-        defMap.put("mine", new Definition() {
-            {
-                color = new Color(0f, 0f, 0f);
-                symbol = ' ';
-            }
-
-            @Override
-            public void onCollision(Player player) {
-                player.killedBy("a hidden mine");
+                next = "com.googlecode.jvmvm.ui.levels.level_07.internal.Game";
             }
         });
 
