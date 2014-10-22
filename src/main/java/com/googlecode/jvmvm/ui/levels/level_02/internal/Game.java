@@ -57,6 +57,11 @@ public class Game extends GameBase {
     }
 
     @Override
+    protected Object createObject(String id) {
+        return null;
+    }
+
+    @Override
     public Class getBootstrapClass() {
         return Bootstrap.class;
     }

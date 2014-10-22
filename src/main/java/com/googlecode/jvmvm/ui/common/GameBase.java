@@ -4,7 +4,6 @@ import com.googlecode.jvmvm.loader.Project;
 import com.googlecode.jvmvm.loader.ProjectCompilerException;
 import com.googlecode.jvmvm.loader.ProjectExecutionException;
 import com.googlecode.jvmvm.ui.*;
-import com.googlecode.jvmvm.ui.levels.level_06.Definition;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -115,7 +114,7 @@ public abstract class GameBase extends AbstractGame {
         return (obj != null) ? obj.y : 0;
     }
 
-    public void defineObject(String type, Definition properties) {
+    public void defineObject(String type, Object properties) {
         if (type == null || type.isEmpty()) {
             return;
         }
@@ -123,6 +122,42 @@ public abstract class GameBase extends AbstractGame {
             throw new RuntimeException("There is already a type of object named " + type + "!");
         }
         defMap.put(type, properties);
+    }
+
+    public Point findNearest(String fromObjId, String toObjType) {
+        //TODO
+        return null;
+    }
+
+    private int getDx(String direction) {
+        if ("right".equals(direction)) {
+            return 1;
+        } else if ("left".equals(direction)) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+
+    private int getDy(String direction) {
+        if ("down".equals(direction)) {
+            return 1;
+        } else if ("up".equals(direction)) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+
+    public boolean canMove(String id, String direction) {
+        Obj obj = findObj(id);
+        Obj toObj = findObj(obj.x + getDx(direction), obj.y + getDy(direction));
+        // TODO
+        return false;
+    }
+
+    public void move(String id, String direction) {
+        //TODO
     }
 
     class DefinitionExecutor {
@@ -351,6 +386,14 @@ public abstract class GameBase extends AbstractGame {
                 player.x = toX;
                 player.y = toY;
 
+                // dynamic objects behavior
+                for (Obj obj : objs) {
+                    Object d = defMap.get(found.type);
+                    if (new DefinitionExecutor(d).getType().equals("dynamic")) {
+                        new DefinitionExecutor(d).behavior(createObject(obj.id));
+                    }
+                }
+
                 if (key != null) {
                     // repaint on user action
                     actions.add(new Action.Clear());
@@ -369,9 +412,14 @@ public abstract class GameBase extends AbstractGame {
                         Color bg = mapBg[obj.y * (getWidth() - 1) + obj.x];
                         actions.add(new Action.PutChar(color, bg != null ? bg : defaultBg, symbol));
                     }
+
+                    // draw player on the top of other objects
                     Object d = defMap.get("player");
                     Color color = new DefinitionExecutor(d).getColor();
                     char symbol = new DefinitionExecutor(d).getSymbol();
+                    Color bg = mapBg[player.y * (getWidth() - 1) + player.x];
+                    actions.add(new Action.MoveCaret(player.x, player.y));
+                    actions.add(new Action.PutChar(color, bg != null ? bg : defaultBg, symbol));
 
                     // display statue if exists
                     if (status != null) {
@@ -422,6 +470,8 @@ public abstract class GameBase extends AbstractGame {
             e.printStackTrace();
         }
     }
+
+    protected abstract Object createObject(String id);
 
     @Override
     public void stop() {

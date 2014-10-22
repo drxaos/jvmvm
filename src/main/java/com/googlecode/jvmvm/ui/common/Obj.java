@@ -4,6 +4,7 @@ class Obj {
     private static long counter = 0;
 
     int x, y;
+    int nextX, nextY;
     String type;
     String id;
 

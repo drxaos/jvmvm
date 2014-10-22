@@ -1,5 +1,6 @@
 package com.googlecode.jvmvm.ui.levels.level_06;
 
+import com.googlecode.jvmvm.ui.common.Point;
 import com.googlecode.jvmvm.ui.levels.level_06.internal.Game;
 
 final public class Object {
@@ -16,7 +17,7 @@ final public class Object {
      * of the nearest object of the given type to this object.
      */
     public Point findNearest(String type) {
-        return null;
+        return game.findNearest(id, type);
     }
 
     /**
@@ -38,11 +39,10 @@ final public class Object {
      * one square in the given direction, which can be "left", "right", "up", or "down".
      */
     public boolean canMove(String direction) {
-        // TODO
-        return false;
+        return game.canMove(id, direction);
     }
 
     public void move(String direction) {
-        // TODO
+        game.move(id, direction);
     }
 }

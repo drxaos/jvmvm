@@ -12,6 +12,8 @@
 
 package com.googlecode.jvmvm.ui.levels.level_06;
 
+import com.googlecode.jvmvm.ui.common.Point;
+
 import java.awt.*;
 
 public class Drones101 extends Level {

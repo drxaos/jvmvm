@@ -6,6 +6,7 @@ import com.googlecode.jvmvm.ui.Action;
 import com.googlecode.jvmvm.ui.Code;
 import com.googlecode.jvmvm.ui.SrcUtil;
 import com.googlecode.jvmvm.ui.common.GameBase;
+import com.googlecode.jvmvm.ui.common.Point;
 import com.googlecode.jvmvm.ui.levels.level_06.*;
 import com.googlecode.jvmvm.ui.levels.level_06.Object;
 import com.sun.net.httpserver.HttpExchange;
@@ -15,7 +16,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 public class Game extends GameBase {
     public Game(Code code) {
@@ -56,6 +56,11 @@ public class Game extends GameBase {
         actions.add(new Action.ShowCode());
         inventory.add("computer");
         return super.configureLevel();
+    }
+
+    @Override
+    protected java.lang.Object createObject(String id) {
+        return new Object(this, id);
     }
 
     @Override

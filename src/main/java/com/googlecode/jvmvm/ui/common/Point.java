@@ -1,4 +1,4 @@
-package com.googlecode.jvmvm.ui.levels.level_06;
+package com.googlecode.jvmvm.ui.common;
 
 public class Point {
     public int x, y;
