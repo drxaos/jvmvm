@@ -11,10 +11,14 @@ public abstract class AbstractGame {
     protected Project levelVm;
     protected Integer key;
     protected AbstractGame loadLevel;
+    protected Code lvlCode;
 
-    public AbstractGame(String level, String code) {
+    public AbstractGame() {
+    }
+
+    public void printLevelName(String level) {
         actions.add(new Action.MoveCaretToBottomLeft());
-        actions.add(new Action.Print(Color.GREEN, "\n> " + code));
+        actions.add(new Action.Print(Color.GREEN, "\n> " + level));
     }
 
     public List<Action> getActions() {
@@ -78,7 +82,7 @@ public abstract class AbstractGame {
 
     public abstract String getMusic();
 
-    public abstract boolean applyEdits(List<? extends Code.Edit> edits);
+    public abstract boolean applyEdit(Code.Edit edits);
 
     public abstract List<Integer> redLines();
 
@@ -87,4 +91,13 @@ public abstract class AbstractGame {
     public abstract String getLevelName();
 
     public abstract String getLevelFolder();
+
+    public Code getCurrentCode() {
+        return lvlCode;
+    }
+
+    public void setCode(Code code) {
+        lvlCode = code;
+        actions.add(new Action.LoadCode(lvlCode.toString()));
+    }
 }

@@ -11,10 +11,10 @@ public class Game extends AbstractGame {
 
 
     public Game() {
-        super("intro", "Initialize.java");
+        printLevelName("Initialize.java");
     }
 
-    public Game(String s) {
+    public Game(Code code) {
         this();
     }
 
@@ -68,7 +68,7 @@ public class Game extends AbstractGame {
     }
 
     @Override
-    public boolean applyEdits(List<? extends Code.Edit> edits) {
+    public boolean applyEdit(Code.Edit edit) {
         return true;
     }
 

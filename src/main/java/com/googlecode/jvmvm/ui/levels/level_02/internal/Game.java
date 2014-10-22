@@ -17,11 +17,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class Game extends GameBase {
-    public Game(List<? extends Code.Edit> edits) {
-        super(edits);
+    public Game(Code code) {
+        super(code);
     }
 
     public Game() {
+        this(null);
     }
 
     @Override

@@ -41,27 +41,21 @@ public abstract class GameBase extends AbstractGame {
     final Color defaultBg = Color.BLACK;
     protected Color[] mapBg = new Color[getWidth() * getHeight()];
 
-    private Code lvlCode;
-
     private int pushCounter = 0;
 
     private String status;
     private boolean startOfStart;
     private boolean endOfStart;
 
-    public GameBase(List<? extends Code.Edit> codeEdits) {
-        super("level_01", "CellBlockA.java");
-        this.codeEdits = codeEdits;
+    public GameBase(Code code) {
+        super();
+        printLevelName(getLevelName());
+        this.lvlCode = code;
     }
-
-    public GameBase() {
-        this(null);
-    }
-
 
     @Override
-    public boolean applyEdits(List<? extends Code.Edit> edits) {
-        return lvlCode.apply(edits);
+    public boolean applyEdit(Code.Edit edit) {
+        return lvlCode.apply(edit);
     }
 
     @Override
@@ -217,9 +211,8 @@ public abstract class GameBase extends AbstractGame {
             String lvlSrc = getSourceClass().getCanonicalName().replace(".", "/") + ".java";
             String baseSrc = getLevelClass().getCanonicalName().replace(".", "/") + ".java";
             String bootstrapSrc = getBootstrapClass().getCanonicalName().replace(".", "/") + ".java";
-            lvlCode = Code.parse(SrcUtil.loadSrc(path, lvlSrc));
-            if (codeEdits != null) {
-                lvlCode.apply(codeEdits);
+            if (lvlCode == null) {
+                lvlCode = Code.parse(SrcUtil.loadSrc(path, lvlSrc));
             }
             actions.add(new Action.LoadCode(lvlCode.toString()));
             levelVm = new Project("level-vm")

@@ -6,42 +6,61 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Code {
+public class Code implements Serializable {
 
     public abstract static class Edit implements Serializable {
-        abstract public String apply(String to);
+        int offset;
+
+        abstract public void apply(Section to, int startOffset);
+
+        public int getOffset() {
+            return offset;
+        }
+
+        abstract public int getLength();
     }
 
     public static class Insert extends Edit {
         String string;
-        int offset;
 
         public Insert(String string, int offset) {
             this.string = string;
             this.offset = offset;
         }
 
-        public String apply(String to) {
-            return new StringBuilder(to).insert(offset, string).toString();
+        @Override
+        public void apply(Section to, int startOffset) {
+            to.text = new StringBuilder(to.text).insert(offset - startOffset, string).toString();
+        }
+
+        @Override
+        public int getLength() {
+            return 0;
         }
     }
 
     public static class Remove extends Edit {
-        int offset, length;
+        int length;
 
         public Remove(int length, int offset) {
             this.length = length;
             this.offset = offset;
         }
 
-        public String apply(String to) {
-            return to.substring(0, offset) + to.substring(offset + length, to.length());
+        @Override
+        public void apply(Section to, int startOffset) {
+            to.text = to.text.substring(0, offset - startOffset) + to.text.substring(offset - startOffset + length, to.text.length());
+        }
+
+        @Override
+        public int getLength() {
+            return length;
         }
     }
 
     public static class Replace extends Edit {
         String string;
-        int offset, length;
+        int length;
 
         public Replace(String string, int offset, int length) {
             this.string = string;
@@ -49,15 +68,21 @@ public class Code {
             this.length = length;
         }
 
-        public String apply(String to) {
-            String edit = to.substring(0, offset) + to.substring(offset + length, to.length());
-            edit = new StringBuilder(edit).insert(offset, string).toString();
-            return edit;
+        @Override
+        public void apply(Section to, int startOffset) {
+            String edit = to.text.substring(0, offset - startOffset) + to.text.substring(offset - startOffset + length, to.text.length());
+            edit = new StringBuilder(edit).insert(offset - startOffset, string).toString();
+            to.text = edit;
+        }
+
+        @Override
+        public int getLength() {
+            return length;
         }
     }
 
 
-    public static class Section {
+    public static class Section implements Serializable {
         boolean editable;
         boolean startOfStartLevel;
         boolean endOfStartLevel;
@@ -72,6 +97,9 @@ public class Code {
             this.leading = leading;
             this.trailing = trailing;
             this.text = text;
+            if (text == null) {
+                this.text = "";
+            }
         }
 
         @Override
@@ -89,13 +117,24 @@ public class Code {
 
     List<Section> sections = new ArrayList<Section>();
 
-    public boolean apply(List<? extends Edit> codeEdits) {
-        for (Edit codeEdit : codeEdits) {
-
-            // TODO try apply edits
-
+    public boolean apply(Edit codeEdit) {
+        Section editSection = null;
+        int startOffset = 0;
+        for (Section section : sections) {
+            if (codeEdit.getOffset() >= startOffset && codeEdit.getOffset() + codeEdit.getLength() < startOffset + section.text.length()) {
+                editSection = section;
+                break;
+            }
+            startOffset += section.text.length();
         }
-        return false;
+        if (editSection == null) {
+            return false;
+        }
+        if (!editSection.editable) {
+            return false;
+        }
+        codeEdit.apply(editSection, startOffset);
+        return true;
     }
 
     public String toString() {

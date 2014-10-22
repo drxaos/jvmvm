@@ -12,7 +12,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
 import java.util.HashMap;
 
 public class Main implements ActionListener {
@@ -29,7 +28,7 @@ public class Main implements ActionListener {
                 try {
                     // On exit - save game
                     saveState.put("notepad", editor.getNotepadText());
-                    saveState.put("code" + game.getLevelNumber(), editor.getCodeEditor().getText());
+                    saveState.put("code" + game.getLevelNumber(), game.getCurrentCode());
                     ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("./savegame.dat"));
                     out.writeObject(saveState);
                 } catch (IOException e1) {
@@ -48,12 +47,12 @@ public class Main implements ActionListener {
             if (saveState.containsKey("maxLevel")) {
                 try {
                     String lvl = (String) saveState.get("maxLevel");
-                    String code = (String) saveState.get("code" + lvl);
-                    game = (AbstractGame) Class.forName("" + saveState.get("class" + lvl)).getConstructor(String.class).newInstance(code);
+                    Code code = (Code) saveState.get("code" + lvl);
+                    game = (AbstractGame) Class.forName("" + saveState.get("class" + lvl)).getConstructor(Code.class).newInstance(code);
                     game.start();
                     editor.playMusic(game.getMusic());
                     editor.setNotepadText((String) saveState.get("notepad"));
-                    editor.setText(code);
+                    game.setCode(code);
                 } catch (InstantiationException e1) {
                     e1.printStackTrace();
                 } catch (IllegalAccessException e1) {
@@ -78,8 +77,13 @@ public class Main implements ActionListener {
     class PartlyReadOnly extends DocumentFilter {
         @Override
         public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
-            if (game.applyEdits(Collections.singletonList(new Code.Remove(length, offset)))) {
+            if (game.applyEdit(new Code.Remove(length, offset))) {
                 super.remove(fb, offset, length);
+
+                if (!fb.getDocument().getText(0, fb.getDocument().getLength()).equals(game.getCurrentCode().toString())) {
+                    System.out.println("error");
+                }
+
             }
             try {
                 editor.getCodeEditor().removeAllLineHighlights();
@@ -93,8 +97,13 @@ public class Main implements ActionListener {
 
         @Override
         public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-            if (game.applyEdits(Collections.singletonList(new Code.Insert(string, offset)))) {
+            if (game.applyEdit(new Code.Insert(string, offset))) {
                 super.insertString(fb, offset, string, attr);
+
+                if (!fb.getDocument().getText(0, fb.getDocument().getLength()).equals(game.getCurrentCode().toString())) {
+                    System.out.println("error");
+                }
+
             }
             try {
                 editor.getCodeEditor().removeAllLineHighlights();
@@ -108,8 +117,13 @@ public class Main implements ActionListener {
 
         @Override
         public void replace(FilterBypass fb, int offset, int length, String string, AttributeSet attrs) throws BadLocationException {
-            if (game.applyEdits(Collections.singletonList(new Code.Replace(string, offset, length)))) {
+            if (game.applyEdit(new Code.Replace(string, offset, length))) {
                 super.replace(fb, offset, length, string, attrs);
+
+                if (!fb.getDocument().getText(0, fb.getDocument().getLength()).equals(game.getCurrentCode().toString())) {
+                    System.out.println("error");
+                }
+
             }
             try {
                 editor.getCodeEditor().removeAllLineHighlights();
@@ -151,7 +165,8 @@ public class Main implements ActionListener {
             if (editor.hasResetRequest()) {
                 try {
                     game.stop();
-                    game = game.getClass().getConstructor(String.class).newInstance(editor.getResetCode());
+                    game = game.getClass().getConstructor(Code.class).newInstance(
+                            editor.getResetToCurrentCode() ? game.getCurrentCode() : null);
                     game.start();
                     editor.playMusic(game.getMusic());
                     editor.displaySaveGames(saveState);
@@ -173,7 +188,7 @@ public class Main implements ActionListener {
 
             // next level game event
             if (game.getNextLevel() != null) {
-                saveState.put("code" + game.getLevelNumber(), editor.getCodeEditor().getText());
+                saveState.put("code" + game.getLevelNumber(), game.getCurrentCode());
 
                 game.stop();
                 game = game.getNextLevel();
@@ -191,16 +206,16 @@ public class Main implements ActionListener {
             // load level menu event
             if (editor.getLoadLevelRequest() != null) {
                 try {
-                    saveState.put("code" + game.getLevelNumber(), editor.getCodeEditor().getText());
+                    saveState.put("code" + game.getLevelNumber(), game.getCurrentCode());
                     game.stop();
                     game = null;
                     String lvl = editor.getLoadLevelRequest();
                     editor.resetLoadLevelRequest();
-                    String code = (String) saveState.get("code" + lvl);
-                    game = (AbstractGame) Class.forName("" + saveState.get("class" + lvl)).getConstructor(String.class).newInstance(code);
+                    Code code = (Code) saveState.get("code" + lvl);
+                    game = (AbstractGame) Class.forName("" + saveState.get("class" + lvl)).getConstructor(Code.class).newInstance(code);
                     game.start();
                     editor.playMusic(game.getMusic());
-                    editor.setText(code);
+                    game.setCode(code);
 
                     saveState.put("name" + game.getLevelNumber(), game.getLevelName());
                     saveState.put("dir" + game.getLevelNumber(), game.getLevelFolder());

@@ -49,7 +49,7 @@ public class Editor extends JFrame implements ActionListener {
 
     private Integer keyCode;
     private boolean resetRequest;
-    private String resetCode;
+    private boolean resetToCurrentCode;
     private String loadLevelRequest;
 
     public Editor() {
@@ -313,7 +313,7 @@ public class Editor extends JFrame implements ActionListener {
             int answer = JOptionPane.showConfirmDialog(Editor.this, message, "Reset",
                     JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (answer == JOptionPane.YES_OPTION) {
-                resetCode = null;
+                resetToCurrentCode = false;
                 resetRequest = true;
                 getConsole().grabFocus();
             }
@@ -326,7 +326,7 @@ public class Editor extends JFrame implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent ev) {
-            resetCode = getCodeEditor().getText();
+            resetToCurrentCode = true;
             resetRequest = true;
             getConsole().grabFocus();
         }
@@ -369,12 +369,12 @@ public class Editor extends JFrame implements ActionListener {
         return resetRequest;
     }
 
-    public String getResetCode() {
-        return resetCode;
+    public boolean getResetToCurrentCode() {
+        return resetToCurrentCode;
     }
 
     public void resetResetRequest() {
-        resetCode = null;
+        resetToCurrentCode = false;
         resetRequest = false;
     }
 
