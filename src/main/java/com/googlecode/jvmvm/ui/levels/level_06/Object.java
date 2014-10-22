@@ -3,7 +3,7 @@ package com.googlecode.jvmvm.ui.levels.level_06;
 import com.googlecode.jvmvm.ui.common.Point;
 import com.googlecode.jvmvm.ui.levels.level_06.internal.Game;
 
-final public class Object {
+public class Object {
 
     private Game game;
     private String id;
@@ -39,10 +39,16 @@ final public class Object {
      * one square in the given direction, which can be "left", "right", "up", or "down".
      */
     public boolean canMove(String direction) {
+        Definition d = (Definition) game.getNearObjType(id, direction);
+        if(d.impassable(game.getPlayer(), game.get)){}
         return game.canMove(id, direction);
     }
 
     public void move(String direction) {
         game.move(id, direction);
+    }
+
+    public String getType() {
+        return game.getObjType(id);
     }
 }

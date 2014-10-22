@@ -149,15 +149,18 @@ public abstract class GameBase extends AbstractGame {
         }
     }
 
-    public boolean canMove(String id, String direction) {
-        Obj obj = findObj(id);
-        Obj toObj = findObj(obj.x + getDx(direction), obj.y + getDy(direction));
-        // TODO
-        return false;
+    public String getObjType(String id) {
+        return findObj(id).type;
     }
 
-    public void move(String id, String direction) {
-        //TODO
+    public Object getNearObjType(String id, String direction) {
+        Obj obj = findObj(id);
+        Obj near = findObj(obj.x + getDx(direction), obj.y + getDy(direction));
+        if (near == null) {
+            return null;
+        } else {
+            return defMap.get(near.type);
+        }
     }
 
     class DefinitionExecutor {
