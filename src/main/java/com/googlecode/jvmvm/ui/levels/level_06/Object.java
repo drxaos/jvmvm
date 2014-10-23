@@ -8,8 +8,9 @@ public class Object {
     private Game game;
     private String id;
 
-    public Object(Game game,String id) {
+    public Object(Game game, String id) {
         this.game = game;
+        this.id = id;
     }
 
     /**
@@ -40,8 +41,10 @@ public class Object {
      */
     public boolean canMove(String direction) {
         Definition d = (Definition) game.getNearObjType(id, direction);
-        if(d.impassable(game.getPlayer(), game.get)){}
-        return game.canMove(id, direction);
+        if (d.impassable(null, getType(), (Object) game.createObject(id))) {
+            return false;
+        }
+        return true;
     }
 
     public void move(String direction) {

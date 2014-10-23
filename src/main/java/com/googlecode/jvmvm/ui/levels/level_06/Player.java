@@ -5,11 +5,9 @@ import com.googlecode.jvmvm.ui.levels.level_06.internal.Game;
 
 final public class Player {
     private Game game;
-    private String id;
 
-    private Player(Game game, String id) {
+    private Player(Game game) {
         this.game = game;
-        this.id = id;
     }
 
     /**

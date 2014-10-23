@@ -39,6 +39,7 @@ public interface Vm {
             StackTraceElement.class.getName(),
             Throwable.class.getName(),
             Exception.class.getName(),
+            IllegalArgumentException.class.getName(),
             RuntimeException.class.getName(),
             UnsupportedOperationException.class.getName(),
             NoSuchElementException.class.getName(),

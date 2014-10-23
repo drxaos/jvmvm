@@ -59,7 +59,7 @@ public class Game extends GameBase {
     }
 
     @Override
-    protected java.lang.Object createObject(String id) {
+    public java.lang.Object createObject(String id) {
         return new Object(this, id);
     }
 

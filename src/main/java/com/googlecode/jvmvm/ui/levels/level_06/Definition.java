@@ -14,7 +14,7 @@ public abstract class Definition {
 
     public char symbol = ' ';
 
-    public boolean impassable = true;
+    public boolean impassable = false;
 
     /**
      * The function that is executed when this object touches the player.
@@ -35,9 +35,9 @@ public abstract class Definition {
     }
 
     /**
-     * (For non-dynamic objects only.) The function that determines whether or not the player can pass through this object.
+     * (For non-dynamic objects only.) The function that determines whether or not the player (or object type) can pass through this object.
      */
-    public boolean impassable(Player player, Object me) {
+    public boolean impassable(Player player, String type, Object me) {
         return impassable;
     }
 }

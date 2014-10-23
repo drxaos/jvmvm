@@ -22,6 +22,8 @@ public abstract class GameBase extends AbstractGame {
 
     static HttpServer apiServer;
 
+    private final int TIMEOUT = 2000;// * 1000;
+
     private final int START = 0;
     private final int PUSH = START + 1;
     private final int PLAY_INIT = PUSH + 1;
@@ -125,8 +127,23 @@ public abstract class GameBase extends AbstractGame {
     }
 
     public Point findNearest(String fromObjId, String toObjType) {
-        //TODO
-        return null;
+        Obj from = findObj(fromObjId);
+        Obj found = null;
+        double dist = Double.MAX_VALUE;
+        for (Obj obj : objs) {
+            if (obj != from && obj.type.equals(toObjType)) {
+                double d = (Math.sqrt(Math.pow(from.x - obj.x, 2) + Math.pow(from.y - obj.y, 2)));
+                if (dist > d) {
+                    dist = d;
+                    found = obj;
+                }
+            }
+        }
+        if (found != null) {
+            return new Point(found.x, found.y);
+        } else {
+            return null;
+        }
     }
 
     private int getDx(String direction) {
@@ -157,9 +174,19 @@ public abstract class GameBase extends AbstractGame {
         Obj obj = findObj(id);
         Obj near = findObj(obj.x + getDx(direction), obj.y + getDy(direction));
         if (near == null) {
-            return null;
+            return defMap.get("empty");
         } else {
             return defMap.get(near.type);
+        }
+    }
+
+    public void move(String id, String direction) {
+        Obj obj = findObj(id);
+        if (obj.nextX != -1 && obj.nextY != -1) {
+            writeStatus("Can't move when it isn't your turn!");
+        } else {
+            obj.nextX = obj.x + getDx(direction);
+            obj.nextY = obj.y + getDy(direction);
         }
     }
 
@@ -179,17 +206,6 @@ public abstract class GameBase extends AbstractGame {
                 e.printStackTrace();
             }
             return ' ';
-        }
-
-        boolean getImpassable() {
-            try {
-                return definition.getClass().getField("impassable").getBoolean(definition);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            }
-            return true;
         }
 
         String getType() {
@@ -214,20 +230,24 @@ public abstract class GameBase extends AbstractGame {
             return Color.LIGHT_GRAY;
         }
 
+        public Boolean impassable(Object player, String type, Object me) {
+            return (Boolean) levelVm.setupVM(getBootstrapClass().getName(), "impassable", null, new Class[]{getDefinitionClass(), getPlayerClass(), String.class, getObjectClass()}, new Object[]{definition, player, type, me}).run(TIMEOUT);
+        }
+
         public void onCollision(Object player) {
-            levelVm.setupVM(getBootstrapClass().getName(), "onCollision", null, new Class[]{getDefinitionClass(), getPlayerClass()}, new Object[]{definition, player}).run(2000);
+            levelVm.setupVM(getBootstrapClass().getName(), "onCollision", null, new Class[]{getDefinitionClass(), getPlayerClass()}, new Object[]{definition, player}).run(TIMEOUT);
         }
 
         public void onPickUp(Object player) {
-            levelVm.setupVM(getBootstrapClass().getName(), "onPickUp", null, new Class[]{getDefinitionClass(), getPlayerClass()}, new Object[]{definition, player}).run(2000);
+            levelVm.setupVM(getBootstrapClass().getName(), "onPickUp", null, new Class[]{getDefinitionClass(), getPlayerClass()}, new Object[]{definition, player}).run(TIMEOUT);
         }
 
         public void behavior(Object me) {
-            levelVm.setupVM(getBootstrapClass().getName(), "behavior", null, new Class[]{getDefinitionClass(), getObjectClass()}, new Object[]{definition, me}).run(2000);
+            levelVm.setupVM(getBootstrapClass().getName(), "behavior", null, new Class[]{getDefinitionClass(), getObjectClass()}, new Object[]{definition, me}).run(TIMEOUT);
         }
 
         public void onDrop() {
-            levelVm.setupVM(getBootstrapClass().getName(), "onDrop", null, new Class[]{getDefinitionClass()}, new Object[]{definition}).run(2000);
+            levelVm.setupVM(getBootstrapClass().getName(), "onDrop", null, new Class[]{getDefinitionClass()}, new Object[]{definition}).run(TIMEOUT);
         }
 
     }
@@ -315,12 +335,12 @@ public abstract class GameBase extends AbstractGame {
         try {
             if (state == START) {
                 levelVm.setupVM(getBootstrapClass().getCanonicalName(), "definitions", null, new Class[]{java.util.Map.class}, new Object[]{defMap});
-                levelVm.run(2000);
+                levelVm.run(TIMEOUT);
 
                 startOfStart = false;
                 endOfStart = false;
                 levelVm.setupVM(getBootstrapClass().getCanonicalName(), "execute", null, new Class[]{getMapClass()}, new Object[]{Project.Marker.byName("map")});
-                levelVm.run(2000);
+                levelVm.run(TIMEOUT);
                 if (!startOfStart || !endOfStart) {
                     actions.add(new Action.MoveCaretToBottomRight());
                     if (!startOfStart) {
@@ -374,7 +394,7 @@ public abstract class GameBase extends AbstractGame {
                 Obj found = findObj(toX, toY);
                 if (found != null && found != player) {
                     Object d = defMap.get(found.type);
-                    if (new DefinitionExecutor(d).getImpassable()) {
+                    if (new DefinitionExecutor(d).impassable(getPlayer(), "player", createObject(found.id))) {
                         toX = player.x;
                         toY = player.y;
                     }
@@ -389,15 +409,41 @@ public abstract class GameBase extends AbstractGame {
                 player.x = toX;
                 player.y = toY;
 
-                // dynamic objects behavior
-                for (Obj obj : objs) {
-                    Object d = defMap.get(found.type);
-                    if (new DefinitionExecutor(d).getType().equals("dynamic")) {
-                        new DefinitionExecutor(d).behavior(createObject(obj.id));
-                    }
-                }
-
                 if (key != null) {
+
+                    if (key != 0) {
+                        // dynamic objects behavior
+                        for (Obj obj : objs) {
+                            Object d = defMap.get(obj.type);
+                            if ("dynamic".equals(new DefinitionExecutor(d).getType())) {
+                                new DefinitionExecutor(d).behavior(createObject(obj.id));
+                            }
+                            // move
+                            if (obj.nextX >= 0 && obj.nextY >= 0) {
+                                Obj toObj = findObj(obj.nextX, obj.nextY);
+                                if (toObj != null) {
+                                    Object toD = defMap.get(toObj.type);
+                                    if ("player".equals(toObj.type)) {
+                                        new DefinitionExecutor(d).onCollision(getPlayer());
+                                    }
+                                    if (!new DefinitionExecutor(toD).impassable(null, obj.type, createObject(toObj.id))) {
+                                        obj.x = obj.nextX;
+                                        obj.y = obj.nextY;
+                                    }
+                                    if ("item".equals(new DefinitionExecutor(toD).getType())) {
+                                        objs.remove(toObj);
+                                        obj.inventory.add(toObj.type);
+                                    }
+                                } else {
+                                    obj.x = obj.nextX;
+                                    obj.y = obj.nextY;
+                                }
+                                obj.nextX = -1;
+                                obj.nextY = -1;
+                            }
+                        }
+                    }
+
                     // repaint on user action
                     actions.add(new Action.Clear());
                     for (int x = 0; x < getWidth(); x++) {
@@ -447,7 +493,7 @@ public abstract class GameBase extends AbstractGame {
 
                 // next level
                 levelVm.setupVM(getBootstrapClass().getCanonicalName(), "getNext", null, new Class[]{}, new Object[]{});
-                Object next = levelVm.run(2000);
+                Object next = levelVm.run(TIMEOUT);
                 if (next != null) {
                     load((AbstractGame) Class.forName(next.toString()).newInstance());
                 }

@@ -24,6 +24,15 @@ class Bootstrap {
         return level.validateLevel(map);
     }
 
+    public static Boolean impassable(Definition d, Player player, String type, Object me) {
+        try {
+            return d.impassable(player, type, me);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public static void onCollision(Definition d, Player player) {
         d.onCollision(player);
     }
@@ -42,6 +51,13 @@ class Bootstrap {
 
     public static void definitions(java.util.Map defMap) {
 
+        defMap.put("empty", new Definition() {
+
+            {
+                color = Color.BLACK;
+                symbol = ' ';
+            }
+        });
         defMap.put("player", new Definition() {
 
             {
@@ -74,7 +90,7 @@ class Bootstrap {
             }
 
             @Override
-            public boolean impassable(Player player, Object object) {
+            public boolean impassable(Player player, String type, Object object) {
                 return true;
             }
 
@@ -92,7 +108,7 @@ class Bootstrap {
 
             @Override
             public void onCollision(Player player) {
-                next = "com.googlecode.jvmvm.ui.levels.level_07.internal.Game";
+                //next = "com.googlecode.jvmvm.ui.levels.level_07.internal.Game";
             }
         });
 
