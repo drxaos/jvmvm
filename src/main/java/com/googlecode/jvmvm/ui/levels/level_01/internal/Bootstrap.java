@@ -1,6 +1,10 @@
 package com.googlecode.jvmvm.ui.levels.level_01.internal;
 
 import com.googlecode.jvmvm.ui.levels.level_01.*;
+import com.googlecode.jvmvm.ui.levels.level_01.Definition;
+import com.googlecode.jvmvm.ui.levels.level_01.Level;
+import com.googlecode.jvmvm.ui.levels.level_01.Map;
+import com.googlecode.jvmvm.ui.levels.level_01.Player;
 
 import java.awt.*;
 
@@ -34,6 +38,10 @@ class Bootstrap {
 
     public static void behavior(Definition d, Me me) {
         d.behavior(me);
+    }
+
+    public static Boolean impassable(Definition d, Player player, String type, Me me) {
+        return d.impassable;
     }
 
     public static void definitions(java.util.Map defMap) {

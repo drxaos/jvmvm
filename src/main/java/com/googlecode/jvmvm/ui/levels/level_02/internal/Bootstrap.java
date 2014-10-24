@@ -32,6 +32,10 @@ class Bootstrap {
         d.behavior(me);
     }
 
+    public static Boolean impassable(Definition d, Player player, String type, Me me) {
+        return d.impassable;
+    }
+
     public static void definitions(java.util.Map defMap) {
 
         defMap.put("player", new Definition() {

@@ -31,7 +31,6 @@ public abstract class GameBase extends AbstractGame {
     private final int STOP = PLAY + 1;
 
     private int state = START;
-    private List<? extends Code.Edit> codeEdits;
 
     private String secret = "secret" + Math.random();
     private Obj player = null;
