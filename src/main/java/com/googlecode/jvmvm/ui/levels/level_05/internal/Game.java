@@ -53,6 +53,11 @@ public class Game extends GameBase {
     }
 
     @Override
+    protected Class getPhoneCallbackClass() {
+        return Object.class;
+    }
+
+    @Override
     protected Object createObject(String id) {
         return null;
     }

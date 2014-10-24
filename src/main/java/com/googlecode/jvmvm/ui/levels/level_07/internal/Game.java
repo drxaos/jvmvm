@@ -1,4 +1,4 @@
-package com.googlecode.jvmvm.ui.levels.level_03.internal;
+package com.googlecode.jvmvm.ui.levels.level_07.internal;
 
 
 import com.googlecode.jvmvm.loader.Project;
@@ -6,7 +6,8 @@ import com.googlecode.jvmvm.ui.Action;
 import com.googlecode.jvmvm.ui.Code;
 import com.googlecode.jvmvm.ui.SrcUtil;
 import com.googlecode.jvmvm.ui.common.GameBase;
-import com.googlecode.jvmvm.ui.levels.level_03.*;
+import com.googlecode.jvmvm.ui.levels.level_07.*;
+import com.googlecode.jvmvm.ui.levels.level_07.Object;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -14,7 +15,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 public class Game extends GameBase {
     public Game(Code code) {
@@ -37,7 +37,7 @@ public class Game extends GameBase {
     static class ApiHandler implements HttpHandler {
         public void handle(HttpExchange t) throws IOException {
             String baseSrc = "src/main/resources";
-            byte[] response = SrcUtil.loadData(baseSrc, "docs/level_03/" + t.getRequestURI().getPath().replace("..", "").replaceFirst("^/", ""));
+            byte[] response = SrcUtil.loadData(baseSrc, "docs/level_07/" + t.getRequestURI().getPath().replace("..", "").replaceFirst("^/", ""));
             t.sendResponseHeaders(200, response.length);
             OutputStream os = t.getResponseBody();
             os.write(response);
@@ -54,12 +54,12 @@ public class Game extends GameBase {
 
     @Override
     protected Class getPhoneCallbackClass() {
-        return Object.class;
+        return PhoneCallback.class;
     }
 
     @Override
-    protected Object createObject(String id) {
-        return null;
+    public java.lang.Object createObject(String id) {
+        return new com.googlecode.jvmvm.ui.levels.level_07.Object(this, id);
     }
 
     @Override
@@ -79,12 +79,12 @@ public class Game extends GameBase {
 
     @Override
     public Class getSourceClass() {
-        return ValidationEngaged.class;
+        return Colors.class;
     }
 
     @Override
     public Class getObjectClass() {
-        return Me.class;
+        return Object.class;
     }
 
     @Override
@@ -95,7 +95,7 @@ public class Game extends GameBase {
     Player player;
 
     @Override
-    public Object getPlayer() {
+    public java.lang.Object getPlayer() {
         if (player == null) {
             try {
                 Constructor<Player> c = Player.class.getDeclaredConstructor(new Class[]{Game.class});
@@ -122,7 +122,7 @@ public class Game extends GameBase {
     Map map;
 
     @Override
-    public Object getMap() {
+    public java.lang.Object getMap() {
         if (map == null) {
             try {
                 Constructor<Map> c = Map.class.getDeclaredConstructor(new Class[]{Game.class, Player.class});
@@ -143,21 +143,21 @@ public class Game extends GameBase {
 
     @Override
     public String getMusic() {
-        return "Revolution_Void_-_08_-_Obscure_Terrain.mp3";
+        return "Tortue_Super_Sonic_-_11_-_Y.mp3";
     }
 
     @Override
     public String getLevelNumber() {
-        return "03";
+        return "07";
     }
 
     @Override
     public String getLevelName() {
-        return "ValidationEngaged.java";
+        return "Colors.java";
     }
 
     @Override
     public String getLevelFolder() {
-        return "level_03";
+        return "level_07";
     }
 }

@@ -29,6 +29,7 @@ public class Main implements ActionListener {
                     // On exit - save game
                     saveState.put("notepad", editor.getNotepadText());
                     saveState.put("code" + game.getLevelNumber(), game.getCurrentCode());
+                    saveState.put("timestamp", System.currentTimeMillis());
                     ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("./savegame.dat"));
                     out.writeObject(saveState);
                 } catch (IOException e1) {
@@ -142,7 +143,8 @@ public class Main implements ActionListener {
             // if no game - start intro
             if (game == null) {
                 try {
-                    game = new com.googlecode.jvmvm.ui.levels.intro.Game();
+                    //game = new com.googlecode.jvmvm.ui.levels.intro.Game();
+                    game = new com.googlecode.jvmvm.ui.levels.level_07.internal.Game();
                     game.start();
                     editor.playMusic(game.getMusic());
                     saveState.put("class" + game.getLevelNumber(), game.getClass().getName());
@@ -198,7 +200,9 @@ public class Main implements ActionListener {
                 saveState.put("class" + game.getLevelNumber(), game.getClass().getName());
                 saveState.put("name" + game.getLevelNumber(), game.getLevelName());
                 saveState.put("dir" + game.getLevelNumber(), game.getLevelFolder());
-                saveState.put("maxLevel", game.getLevelNumber());
+                if (saveState.get("maxLevel").toString().compareTo(game.getLevelNumber().toString()) < 0) {
+                    saveState.put("maxLevel", game.getLevelNumber());
+                }
 
                 editor.displaySaveGames(saveState);
             }

@@ -4,6 +4,7 @@ import com.googlecode.jvmvm.loader.Project;
 import com.googlecode.jvmvm.loader.ProjectCompilerException;
 import com.googlecode.jvmvm.loader.ProjectExecutionException;
 import com.googlecode.jvmvm.ui.*;
+import com.googlecode.jvmvm.ui.levels.level_07.PhoneCallback;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -22,7 +23,7 @@ public abstract class GameBase extends AbstractGame {
 
     static HttpServer apiServer;
 
-    private final int TIMEOUT = 2000;// * 1000;
+    private final int TIMEOUT = 2000 * 1000;
 
     private final int START = 0;
     private final int PUSH = START + 1;
@@ -46,6 +47,8 @@ public abstract class GameBase extends AbstractGame {
     private String status;
     private boolean startOfStart;
     private boolean endOfStart;
+
+    private PhoneCallback phoneCallback;
 
     public GameBase(Code code) {
         super();
@@ -102,7 +105,16 @@ public abstract class GameBase extends AbstractGame {
     }
 
     public void setSquareColor(int x, int y, Color color) {
-        mapBg[y * (getWidth() - 1) + x] = color;
+        if (x < getWidth() && y < getHeight()) {
+            mapBg[y * getWidth() + x] = color;
+        }
+    }
+
+    public Color getSquareColor(int x, int y) {
+        if (x < getWidth() && y < getHeight()) {
+            return mapBg[y * getWidth() + x];
+        }
+        return Color.BLACK;
     }
 
     public int getObjX(String id) {
@@ -187,6 +199,18 @@ public abstract class GameBase extends AbstractGame {
             obj.nextX = obj.x + getDx(direction);
             obj.nextY = obj.y + getDy(direction);
         }
+    }
+
+    public void setPhoneCallback(PhoneCallback phoneCallback) {
+        this.phoneCallback = phoneCallback;
+    }
+
+    public Object getDefinitionOfObject(String id) {
+        return defMap.get(findObj(id).type);
+    }
+
+    public Object getDefinitionOfPlayer() {
+        return defMap.get("player");
     }
 
     class DefinitionExecutor {
@@ -280,6 +304,8 @@ public abstract class GameBase extends AbstractGame {
                     .addSystemClass(getDefinitionClass().getName())
                     .addSystemClass(getMapClass().getName())
                     .addSystemClass(getPlayerClass().getName())
+                    .addSystemClass(getPhoneCallbackClass().getName())
+                    .addSystemClass(Point.class.getName())
                     .addSystemClasses(Vm.bootstrap);
             configureVm(levelVm);
             levelVm.compile()
@@ -304,6 +330,8 @@ public abstract class GameBase extends AbstractGame {
             return true;
         }
     }
+
+    protected abstract Class getPhoneCallbackClass();
 
     private void startApiServer() {
         try {
@@ -359,7 +387,7 @@ public abstract class GameBase extends AbstractGame {
             } else if (state == PUSH) {
                 pushLine();
                 for (int x = 0; x < getWidth(); x++) {
-                    Color bg = mapBg[24 * (getWidth() - 1) + x];
+                    Color bg = getSquareColor(x, 24);
                     actions.add(new Action.MoveCaret(x, 24));
                     actions.add(new Action.PutChar(Color.BLACK, bg != null ? bg : defaultBg, ' '));
                 }
@@ -369,7 +397,7 @@ public abstract class GameBase extends AbstractGame {
                         actions.add(new Action.MoveCaret(obj.x, 24));
                         Color color = new DefinitionExecutor(d).getColor();
                         char symbol = new DefinitionExecutor(d).getSymbol();
-                        Color bg = mapBg[obj.y * (getWidth() - 1) + obj.x];
+                        Color bg = getSquareColor(obj.x, obj.y);
                         actions.add(new Action.PutChar(color, bg != null ? bg : defaultBg, symbol));
                     }
                 }
@@ -377,13 +405,13 @@ public abstract class GameBase extends AbstractGame {
                     state = PLAY_INIT;
                 }
             } else if (state == PLAY || state == PLAY_INIT) {
-                int toX = player.x, toY = player.y;
-                if (key != null || state == PLAY_INIT) {
+                boolean shouldRedraw = false;
+                boolean isDynamicsTurn = false;
+                boolean phone = false;
 
-                    // at first frame key=0, so canvas can redraw
-                    if (state == PLAY_INIT) {
-                        key = 0;
-                    }
+                int toX = player.x, toY = player.y;
+
+                if (key != null) {
                     // move player
                     if (key == KeyEvent.VK_DOWN && player.y < 24) {
                         toY++;
@@ -393,7 +421,13 @@ public abstract class GameBase extends AbstractGame {
                         toX++;
                     } else if (key == KeyEvent.VK_LEFT && player.x > 0) {
                         toX--;
+                    } else if (key == KeyEvent.VK_Q) {
+                        phone = true;
                     }
+                }
+
+                if (state == PLAY_INIT) {
+                    shouldRedraw = true;
                 }
 
                 // process player collisions
@@ -412,51 +446,65 @@ public abstract class GameBase extends AbstractGame {
                         new DefinitionExecutor(d).onCollision(getPlayer());
                     }
                 }
-                player.x = toX;
-                player.y = toY;
+                if (player.x != toX || player.y != toY) {
+                    player.x = toX;
+                    player.y = toY;
+                    isDynamicsTurn = true;
+                    shouldRedraw = true;
+                }
 
-                if (key != null) {
-                    // at first frame key=0, so canvas can redraw
+                // phone function
+                if (phone && inventory.contains("phone")) {
+                    if (phoneCallback == null) {
+                        writeStatus("Your function phone isn't bound to any function!");
+                        shouldRedraw = true;
+                    } else {
+                        levelVm.setupVM(getBootstrapClass().getName(), "phone", null, new Class[]{getPhoneCallbackClass()}, new Object[]{phoneCallback}).run(TIMEOUT);
+                        shouldRedraw = true;
+                    }
+                }
 
-                    if (state != PLAY_INIT) {
-                        // dynamic objects behavior
-                        for (Obj obj : objs) {
-                            Object d = defMap.get(obj.type);
-                            if ("dynamic".equals(new DefinitionExecutor(d).getType())) {
-                                new DefinitionExecutor(d).behavior(createObject(obj.id));
-                            }
-                            // move
-                            if (obj.nextX >= 0 && obj.nextY >= 0) {
-                                Obj toObj = findObj(obj.nextX, obj.nextY);
-                                if (toObj != null) {
-                                    // process collisions
-                                    Object toD = defMap.get(toObj.type);
-                                    if ("player".equals(toObj.type)) {
-                                        new DefinitionExecutor(d).onCollision(getPlayer());
-                                    }
-                                    if (!new DefinitionExecutor(toD).impassable(null, obj.type, createObject(toObj.id))) {
-                                        obj.x = obj.nextX;
-                                        obj.y = obj.nextY;
-                                    }
-                                    if ("item".equals(new DefinitionExecutor(toD).getType())) {
-                                        objs.remove(toObj);
-                                        obj.inventory.add(toObj.type);
-                                    }
-                                } else {
+                if (isDynamicsTurn) {
+                    // dynamic objects behavior
+                    for (Obj obj : objs) {
+                        Object d = defMap.get(obj.type);
+                        if ("dynamic".equals(new DefinitionExecutor(d).getType())) {
+                            new DefinitionExecutor(d).behavior(createObject(obj.id));
+                        }
+                        // move
+                        if (obj.nextX >= 0 && obj.nextY >= 0) {
+                            Obj toObj = findObj(obj.nextX, obj.nextY);
+                            if (toObj != null) {
+                                // process collisions
+                                Object toD = defMap.get(toObj.type);
+                                if ("player".equals(toObj.type)) {
+                                    new DefinitionExecutor(d).onCollision(getPlayer());
+                                }
+                                if (!new DefinitionExecutor(toD).impassable(null, obj.type, createObject(toObj.id))) {
                                     obj.x = obj.nextX;
                                     obj.y = obj.nextY;
                                 }
-                                obj.nextX = -1;
-                                obj.nextY = -1;
+                                if ("item".equals(new DefinitionExecutor(toD).getType())) {
+                                    objs.remove(toObj);
+                                    obj.inventory.add(toObj.type);
+                                }
+                            } else {
+                                obj.x = obj.nextX;
+                                obj.y = obj.nextY;
                             }
+                            obj.nextX = -1;
+                            obj.nextY = -1;
+                            shouldRedraw = true;
                         }
                     }
+                }
 
-                    // repaint on user action
+                if (shouldRedraw) {
+                    // repaint screen
                     actions.add(new Action.Clear());
                     for (int x = 0; x < getWidth(); x++) {
                         for (int y = 0; y < getHeight(); y++) {
-                            Color bg = mapBg[y * (getWidth() - 1) + x];
+                            Color bg = getSquareColor(x, y);
                             actions.add(new Action.MoveCaret(x, y));
                             actions.add(new Action.PutChar(Color.BLACK, bg != null ? bg : defaultBg, ' '));
                         }
@@ -466,7 +514,7 @@ public abstract class GameBase extends AbstractGame {
                         Color color = new DefinitionExecutor(d).getColor();
                         char symbol = new DefinitionExecutor(d).getSymbol();
                         actions.add(new Action.MoveCaret(obj.x, obj.y));
-                        Color bg = mapBg[obj.y * (getWidth() - 1) + obj.x];
+                        Color bg = getSquareColor(obj.x, obj.y);
                         actions.add(new Action.PutChar(color, bg != null ? bg : defaultBg, symbol));
                     }
 
@@ -474,7 +522,7 @@ public abstract class GameBase extends AbstractGame {
                     Object d = defMap.get("player");
                     Color color = new DefinitionExecutor(d).getColor();
                     char symbol = new DefinitionExecutor(d).getSymbol();
-                    Color bg = mapBg[player.y * (getWidth() - 1) + player.x];
+                    Color bg = getSquareColor(player.x, player.y);
                     actions.add(new Action.MoveCaret(player.x, player.y));
                     actions.add(new Action.PutChar(color, bg != null ? bg : defaultBg, symbol));
 

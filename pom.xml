@@ -302,6 +302,49 @@
                             <sourcepath>${basedir}/src/main/java/com/googlecode/jvmvm/ui/levels/level_05</sourcepath>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>level_06-api</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/apidocs/docs/level_06</outputDirectory>
+                            <finalName>api-lavel_06</finalName>
+                            <jarOutputDirectory>${project.build.directory}/lib</jarOutputDirectory>
+                            <sourceFileIncludes>
+                                <include>Drones101.java</include>
+                                <include>Level.java</include>
+                                <include>Map.java</include>
+                                <include>Player.java</include>
+                                <include>Object.java</include>
+                                <include>Definition.java</include>
+                            </sourceFileIncludes>
+                            <sourcepath>${basedir}/src/main/java/com/googlecode/jvmvm/ui/levels/level_06</sourcepath>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>level_07-api</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/apidocs/docs/level_07</outputDirectory>
+                            <finalName>api-lavel_07</finalName>
+                            <jarOutputDirectory>${project.build.directory}/lib</jarOutputDirectory>
+                            <sourceFileIncludes>
+                                <include>Colors.java</include>
+                                <include>Level.java</include>
+                                <include>Map.java</include>
+                                <include>Player.java</include>
+                                <include>Object.java</include>
+                                <include>Definition.java</include>
+                                <include>PhoneCallback.java</include>
+                            </sourceFileIncludes>
+                            <sourcepath>${basedir}/src/main/java/com/googlecode/jvmvm/ui/levels/level_07</sourcepath>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 

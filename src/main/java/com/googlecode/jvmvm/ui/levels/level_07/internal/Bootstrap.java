@@ -1,7 +1,7 @@
-package com.googlecode.jvmvm.ui.levels.level_06.internal;
+package com.googlecode.jvmvm.ui.levels.level_07.internal;
 
-import com.googlecode.jvmvm.ui.levels.level_06.*;
-import com.googlecode.jvmvm.ui.levels.level_06.Object;
+import com.googlecode.jvmvm.ui.levels.level_07.*;
+import com.googlecode.jvmvm.ui.levels.level_07.Object;
 
 import java.awt.*;
 
@@ -13,7 +13,7 @@ class Bootstrap {
 
     private static void execute(Map map) {
         Bootstrap.map = map;
-        level = new Drones101();
+        level = new Colors();
         level.startLevel(map);
         if (!validateLevel(map)) {
             throw new RuntimeException("validation error");
@@ -47,6 +47,10 @@ class Bootstrap {
 
     public static void behavior(Definition d, Object me) {
         d.behavior(me);
+    }
+
+    public static void phone(PhoneCallback p) {
+        p.callback();
     }
 
     public static void definitions(java.util.Map defMap) {
@@ -108,10 +112,22 @@ class Bootstrap {
 
             @Override
             public void onCollision(Player player) {
-                next = "com.googlecode.jvmvm.ui.levels.level_07.internal.Game";
+                //next = "com.googlecode.jvmvm.ui.levels.level_07.internal.Game";
             }
         });
+        defMap.put("phone", new Definition() {
+            {
+                type = "item";
+                color = Color.WHITE;
+                symbol = '☎';
 
+            }
+
+            @Override
+            public void onPickUp(Player player) {
+                map.writeStatus("You have picked up the function phone!");
+            }
+        });
     }
 
     public static String getNext() {

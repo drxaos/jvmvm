@@ -143,6 +143,9 @@ public class Project implements Serializable {
     }
 
     public Project addSystemClass(String className) throws ClassNotFoundException {
+        if (className == null || className.isEmpty()) {
+            return this;
+        }
         systemClasses.add(className);
         if (classLoader != null) {
             classLoader.addSystemClass(className);

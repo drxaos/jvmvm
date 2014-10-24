@@ -28,11 +28,6 @@ public class Game extends GameBase {
 
     @Override
     protected void configureVm(Project vm) throws IOException {
-        try {
-            vm.addSystemClass(Point.class.getName());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -43,7 +38,7 @@ public class Game extends GameBase {
     static class ApiHandler implements HttpHandler {
         public void handle(HttpExchange t) throws IOException {
             String baseSrc = "src/main/resources";
-            byte[] response = SrcUtil.loadData(baseSrc, "docs/level_05/" + t.getRequestURI().getPath().replace("..", "").replaceFirst("^/", ""));
+            byte[] response = SrcUtil.loadData(baseSrc, "docs/level_06/" + t.getRequestURI().getPath().replace("..", "").replaceFirst("^/", ""));
             t.sendResponseHeaders(200, response.length);
             OutputStream os = t.getResponseBody();
             os.write(response);
@@ -56,6 +51,11 @@ public class Game extends GameBase {
         actions.add(new Action.ShowCode());
         inventory.add("computer");
         return super.configureLevel();
+    }
+
+    @Override
+    protected Class getPhoneCallbackClass() {
+        return java.lang.Object.class;
     }
 
     @Override

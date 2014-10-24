@@ -24,6 +24,7 @@ import javazoom.jl.decoder.*;
 import javazoom.jl.player.AudioDevice;
 import javazoom.jl.player.FactoryRegistry;
 
+import java.io.BufferedInputStream;
 import java.io.InputStream;
 
 /**
@@ -72,15 +73,19 @@ public class Player extends Thread {
 
     private boolean stop = false;
 
-    /**
-     * Creates a new <code>Player</code> instance.
-     */
-    public Player(InputStream stream) throws JavaLayerException {
-        this(stream, null);
+    private String music;
+    private boolean repeat = false;
+
+    public Player(String music, boolean repeat) throws JavaLayerException {
+        this.music = music;
+        this.repeat = repeat;
     }
 
-    public Player(InputStream stream, AudioDevice device) throws JavaLayerException {
-        this.setName("Music");
+    private static BufferedInputStream getStream(String music) {
+        return new BufferedInputStream(ClassLoader.getSystemClassLoader().getResourceAsStream("music/" + music));
+    }
+
+    public void open(InputStream stream, AudioDevice device) throws JavaLayerException {
         bitstream = new Bitstream(stream);
         decoder = new Decoder();
 
@@ -131,8 +136,14 @@ public class Player extends Thread {
     @Override
     public void run() {
         try {
-            play();
-        } catch (JavaLayerException e) {
+            while (!stop) {
+                open(getStream(music), null);
+                play();
+                if (!repeat) {
+                    break;
+                }
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -236,6 +247,4 @@ public class Player extends Thread {
 */
         return true;
     }
-
-
 }

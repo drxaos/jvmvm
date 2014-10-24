@@ -25,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -211,6 +210,9 @@ public class Editor extends JFrame implements ActionListener {
             Border compound = new CompoundBorder(line, margin);
             phoneBtn.setBorder(compound);
             phoneBtn.setFont(btnFont);
+            phoneBtn.getActionMap().put("Phone", phoneAction);
+            phoneBtn.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                    (KeyStroke) phoneAction.getValue(javax.swing.Action.ACCELERATOR_KEY), "Phone");
             phoneBtn.addActionListener(phoneAction);
             bottomPanel.add(phoneBtn);
         }
@@ -334,6 +336,10 @@ public class Editor extends JFrame implements ActionListener {
         }
     };
     AbstractAction phoneAction = new AbstractAction("Phone") {
+        {
+            putValue(javax.swing.Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control 6"));
+        }
+
         @Override
         public void actionPerformed(ActionEvent ev) {
             keyCode = KeyEvent.VK_Q;
@@ -618,9 +624,7 @@ public class Editor extends JFrame implements ActionListener {
         if (music != null) {
 
             try {
-                player = new Player(
-                        new BufferedInputStream(ClassLoader.getSystemClassLoader().getResourceAsStream("music/" + music))
-                );
+                player = new Player(music, true);
                 player.start();
                 currentMusic = music;
             } catch (Exception e) {
