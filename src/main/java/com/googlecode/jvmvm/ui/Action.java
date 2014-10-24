@@ -51,6 +51,20 @@ public abstract class Action {
         }
     }
 
+    public static class ShowPhone extends Action {
+        @Override
+        public void execute(Editor editor) {
+            editor.showPhone();
+        }
+    }
+
+    public static class HidePhone extends Action {
+        @Override
+        public void execute(Editor editor) {
+            editor.hidePhone();
+        }
+    }
+
     public static class DisplayTitle extends Action {
         String title;
 

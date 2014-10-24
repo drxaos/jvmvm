@@ -46,6 +46,8 @@ public class Editor extends JFrame implements ActionListener {
     private NotepadWindow notepadWindow;
     private ChapterWindow chapterWindow;
     private JLabel inventory;
+    private JButton phoneBtn;
+    private String phoneBtnText = "[Q]Phone";
 
     private Integer keyCode;
     private boolean resetRequest;
@@ -200,7 +202,7 @@ public class Editor extends JFrame implements ActionListener {
             bottomPanel.add(executeBtn);
         }
         {
-            JButton phoneBtn = new JButton("[Q]Phone");
+            phoneBtn = new JButton(phoneBtnText);
             phoneBtn.setForeground(Color.WHITE);
             phoneBtn.setBackground(Color.BLACK);
             phoneBtn.setFocusable(false);
@@ -521,6 +523,19 @@ public class Editor extends JFrame implements ActionListener {
     public void displayChapter(String chapter) {
         chapterWindow.displayChapter(chapter);
         getConsole().grabFocus();
+    }
+
+    public void showPhone() {
+        phoneBtn.setForeground(Color.WHITE);
+        phoneBtn.setText(phoneBtnText);
+        phoneBtn.setEnabled(true);
+    }
+
+    public void hidePhone() {
+        phoneBtn.setPreferredSize(phoneBtn.getSize());
+        phoneBtn.setForeground(Color.BLACK);
+        phoneBtn.setText("");
+        phoneBtn.setEnabled(false);
     }
 
     private class GoToLineAction extends AbstractAction {

@@ -333,6 +333,9 @@ public abstract class GameBase extends AbstractGame {
     public void step() {
         try {
             if (state == START) {
+                // show parts of UI
+                configureUi();
+
                 levelVm.setupVM(getBootstrapClass().getCanonicalName(), "definitions", null, new Class[]{java.util.Map.class}, new Object[]{defMap});
                 levelVm.run(TIMEOUT);
 
@@ -376,6 +379,8 @@ public abstract class GameBase extends AbstractGame {
             } else if (state == PLAY || state == PLAY_INIT) {
                 int toX = player.x, toY = player.y;
                 if (key != null || state == PLAY_INIT) {
+
+                    // at first frame key=0, so canvas can redraw
                     if (state == PLAY_INIT) {
                         key = 0;
                     }
@@ -390,6 +395,8 @@ public abstract class GameBase extends AbstractGame {
                         toX--;
                     }
                 }
+
+                // process player collisions
                 Obj found = findObj(toX, toY);
                 if (found != null && found != player) {
                     Object d = defMap.get(found.type);
@@ -409,8 +416,9 @@ public abstract class GameBase extends AbstractGame {
                 player.y = toY;
 
                 if (key != null) {
+                    // at first frame key=0, so canvas can redraw
 
-                    if (key != 0) {
+                    if (state != PLAY_INIT) {
                         // dynamic objects behavior
                         for (Obj obj : objs) {
                             Object d = defMap.get(obj.type);
@@ -421,6 +429,7 @@ public abstract class GameBase extends AbstractGame {
                             if (obj.nextX >= 0 && obj.nextY >= 0) {
                                 Obj toObj = findObj(obj.nextX, obj.nextY);
                                 if (toObj != null) {
+                                    // process collisions
                                     Object toD = defMap.get(toObj.type);
                                     if ("player".equals(toObj.type)) {
                                         new DefinitionExecutor(d).onCollision(getPlayer());
@@ -469,20 +478,16 @@ public abstract class GameBase extends AbstractGame {
                     actions.add(new Action.MoveCaret(player.x, player.y));
                     actions.add(new Action.PutChar(color, bg != null ? bg : defaultBg, symbol));
 
-                    // display statue if exists
+                    // display status if exists
                     if (status != null) {
                         displayStatus(status);
                         status = null;
                     }
 
-                    // hide code if no computer
-                    if (inventory.contains("computer")) {
-                        actions.add(new Action.ShowCode());
-                    } else {
-                        actions.add(new Action.HideCode());
-                    }
+                    // show parts of UI
+                    configureUi();
 
-                    // format inventory
+                    // display inventory
                     String inv = "";
                     for (String t : inventory) {
                         inv += new DefinitionExecutor(defMap.get(t)).getSymbol();
@@ -490,7 +495,7 @@ public abstract class GameBase extends AbstractGame {
                     actions.add(new Action.Inventory(inv));
                 }
 
-                // next level
+                // load next level on current level request
                 levelVm.setupVM(getBootstrapClass().getCanonicalName(), "getNext", null, new Class[]{}, new Object[]{});
                 Object next = levelVm.run(TIMEOUT);
                 if (next != null) {
@@ -516,6 +521,22 @@ public abstract class GameBase extends AbstractGame {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void configureUi() {
+        // hide code if no computer
+        if (inventory.contains("computer")) {
+            actions.add(new Action.ShowCode());
+        } else {
+            actions.add(new Action.HideCode());
+        }
+
+        // hide phone button if no phone
+        if (inventory.contains("phone")) {
+            actions.add(new Action.ShowPhone());
+        } else {
+            actions.add(new Action.HidePhone());
         }
     }
 
