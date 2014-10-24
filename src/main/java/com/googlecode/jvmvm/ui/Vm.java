@@ -1,6 +1,7 @@
 package com.googlecode.jvmvm.ui;
 
 import java.awt.*;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -40,12 +41,27 @@ public interface Vm {
             Throwable.class.getName(),
             Exception.class.getName(),
             IllegalArgumentException.class.getName(),
+            NullPointerException.class.getName(),
             RuntimeException.class.getName(),
+            IOException.class.getName(),
             UnsupportedOperationException.class.getName(),
             NoSuchElementException.class.getName(),
             UnsupportedEncodingException.class.getName(),
+            Error.class.getName(),
+            NoClassDefFoundError.class.getName(),
+            CloneNotSupportedException.class.getName(),
+            IllegalAccessError.class.getName(),
+            IllegalAccessException.class.getName(),
+            IndexOutOfBoundsException.class.getName(),
+            ArrayIndexOutOfBoundsException.class.getName(),
+            StringIndexOutOfBoundsException.class.getName(),
+            ArithmeticException.class.getName(),
+            ClassCastException.class.getName(),
+            SecurityException.class.getName(),
+            UnsupportedOperationException.class.getName(),
 
             Serializable.class.getName(),
+            Cloneable.class.getName(),
 
             Arrays.class.getName(),
             Collections.class.getName(),
@@ -56,6 +72,7 @@ public interface Vm {
 
             Set.class.getName(),
             HashSet.class.getName(),
+            TreeSet.class.getName(),
 
             Map.class.getName(),
             HashMap.class.getName(),
