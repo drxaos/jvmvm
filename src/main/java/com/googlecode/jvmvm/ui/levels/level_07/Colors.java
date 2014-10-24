@@ -27,9 +27,9 @@ public class Colors extends Level {
         // The function phone lets you call arbitrary functions,
         // as defined by player.setPhoneCallback() below.
         // The function phone callback is bound to Q or Ctrl-6.
-        map.getPlayer().setPhoneCallback(new PhoneCallback() {
+        map.getPlayer().setPhoneCallback(new Function() {
             @Override
-            public void callback() {
+            public void call() {
 /*BEGIN_EDITABLE*/
                 Player player = map.getPlayer();
 

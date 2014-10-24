@@ -54,7 +54,7 @@ public class Game extends GameBase {
 
     @Override
     protected Class getPhoneCallbackClass() {
-        return PhoneCallback.class;
+        return Function.class;
     }
 
     @Override

@@ -49,8 +49,8 @@ class Bootstrap {
         d.behavior(me);
     }
 
-    public static void phone(PhoneCallback p) {
-        p.callback();
+    public static void phone(Function p) {
+        p.call();
     }
 
     public static void definitions(java.util.Map defMap) {

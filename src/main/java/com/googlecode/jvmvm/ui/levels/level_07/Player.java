@@ -36,7 +36,7 @@ final public class Player {
     /**
      * Sets the function that is executed when the player uses the function phone.
      */
-    public void setPhoneCallback(PhoneCallback phoneCallback) {
+    public void setPhoneCallback(Function phoneCallback) {
         game.setPhoneCallback(phoneCallback);
     }
 

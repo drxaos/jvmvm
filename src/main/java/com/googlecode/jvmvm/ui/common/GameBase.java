@@ -4,7 +4,6 @@ import com.googlecode.jvmvm.loader.Project;
 import com.googlecode.jvmvm.loader.ProjectCompilerException;
 import com.googlecode.jvmvm.loader.ProjectExecutionException;
 import com.googlecode.jvmvm.ui.*;
-import com.googlecode.jvmvm.ui.levels.level_07.PhoneCallback;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -48,7 +47,7 @@ public abstract class GameBase extends AbstractGame {
     private boolean startOfStart;
     private boolean endOfStart;
 
-    private PhoneCallback phoneCallback;
+    private Object phoneCallback;
 
     public GameBase(Code code) {
         super();
@@ -201,7 +200,7 @@ public abstract class GameBase extends AbstractGame {
         }
     }
 
-    public void setPhoneCallback(PhoneCallback phoneCallback) {
+    public void setPhoneCallback(Object phoneCallback) {
         this.phoneCallback = phoneCallback;
     }
 
