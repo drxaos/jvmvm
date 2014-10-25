@@ -1,0 +1,2 @@
+
+map.placeObject(16, 12, "exit");

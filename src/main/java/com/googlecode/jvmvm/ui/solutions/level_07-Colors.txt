@@ -1,0 +1,39 @@
+
+Player player = map.getPlayer();
+Color chosenColor = Color.RED;
+
+if (
+player.atLocation(24, 12) ||
+player.atLocation(33, 12) ) {
+
+    chosenColor = Color.RED;
+} else if (
+player.atLocation(27, 12) ||
+player.atLocation(36, 12) ) {
+
+    chosenColor = Color.YELLOW;
+} else if (
+player.atLocation(21, 12) ||
+player.atLocation(30, 12) ) {
+
+    chosenColor = Color.GREEN;
+}
+
+player.setColor(chosenColor);
+
+
+-------------------------------
+
+
+Player player = map.getPlayer();
+Color playerColor = player.getColor();
+if (playerColor == Color.RED) {
+    player.setColor(Color.YELLOW);
+} else if (playerColor == Color.YELLOW) {
+    player.setColor(Color.GREEN);
+} else if (playerColor == Color.GREEN) {
+    player.setColor(Color.RED);
+}
+
+
+

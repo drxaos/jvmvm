@@ -1,0 +1,11 @@
+
+/*
+
+...
+
+*/
+
+---------------------
+
+// after maze creation
+map.placeObject(8,5, "exit");
