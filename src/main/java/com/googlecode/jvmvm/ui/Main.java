@@ -143,8 +143,8 @@ public class Main implements ActionListener {
             // if no game - start intro
             if (game == null) {
                 try {
-                    //game = new com.googlecode.jvmvm.ui.levels.intro.Game();
-                    game = new com.googlecode.jvmvm.ui.levels.level_07.internal.Game();
+                    game = new com.googlecode.jvmvm.ui.levels.intro.Game();
+//                    game = new com.googlecode.jvmvm.ui.levels.level_07.internal.Game();
                     game.start();
                     editor.playMusic(game.getMusic());
                     saveState.put("class" + game.getLevelNumber(), game.getClass().getName());

@@ -22,7 +22,7 @@ public abstract class GameBase extends AbstractGame {
 
     static HttpServer apiServer;
 
-    private final int TIMEOUT = 2000 * 1000;
+    private final int TIMEOUT = 2000;// * 1000;
 
     private final int START = 0;
     private final int PUSH = START + 1;
