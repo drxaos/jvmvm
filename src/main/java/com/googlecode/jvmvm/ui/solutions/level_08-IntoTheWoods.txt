@@ -1,0 +1,2 @@
+
+        map.getPlayer().setPhoneCallback(functionList.get("generateForest"));

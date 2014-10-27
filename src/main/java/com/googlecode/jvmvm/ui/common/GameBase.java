@@ -212,6 +212,19 @@ public abstract class GameBase extends AbstractGame {
         return defMap.get("player");
     }
 
+    public int getPlayerX() {
+        return player.x;
+    }
+
+    public int getPlayerY() {
+        return player.y;
+    }
+
+    public String getTypeAt(int x, int y) {
+        Obj obj = findObj(x, y);
+        return obj == null ? "empty" : obj.type;
+    }
+
     class DefinitionExecutor {
         Object definition;
 
@@ -643,6 +656,29 @@ public abstract class GameBase extends AbstractGame {
                 return;
             }
             throw new RuntimeException("There is already an object at (" + x + ", " + y + ")");
+        }
+        if ("empty".equals(type)) {
+            return;
+        }
+        if (!defMap.containsKey(type)) {
+            throw new RuntimeException("There is no type of object named " + type);
+        }
+        objs.add(new Obj(x, y, type));
+    }
+
+    public void replaceObject(int x, int y, String type) {
+        if (x < 0 || x >= getWidth()) {
+            return;
+        }
+        if (y < 0 || y >= getHeight()) {
+            return;
+        }
+        Obj found = findObj(x, y);
+        if (found != null) {
+            if (found.type.equals(type)) {
+                return;
+            }
+            objs.remove(found);
         }
         if ("empty".equals(type)) {
             return;

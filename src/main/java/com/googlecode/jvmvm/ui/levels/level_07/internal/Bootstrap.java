@@ -112,7 +112,7 @@ class Bootstrap {
 
             @Override
             public void onCollision(Player player) {
-                //next = "com.googlecode.jvmvm.ui.levels.level_07.internal.Game";
+                next = "com.googlecode.jvmvm.ui.levels.level_08.internal.Game";
             }
         });
         defMap.put("phone", new Definition() {
