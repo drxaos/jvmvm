@@ -26,14 +26,20 @@ public abstract class Action {
 
     public static class LoadCode extends Action {
         String code;
+        boolean resetCaret;
+
+        public LoadCode(String code, boolean resetCaret) {
+            this.code = code;
+            this.resetCaret = resetCaret;
+        }
 
         public LoadCode(String code) {
-            this.code = code;
+            this(code, true);
         }
 
         @Override
         public void execute(Editor editor) {
-            editor.loadCode(code);
+            editor.loadCode(code, resetCaret);
         }
     }
 

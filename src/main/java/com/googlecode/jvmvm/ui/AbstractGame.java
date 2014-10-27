@@ -100,4 +100,8 @@ public abstract class AbstractGame {
         lvlCode = code;
         actions.add(new Action.LoadCode(lvlCode.toString()));
     }
+
+    public String getCode() {
+        return lvlCode.toString();
+    }
 }

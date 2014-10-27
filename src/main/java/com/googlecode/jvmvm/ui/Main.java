@@ -1,6 +1,8 @@
 package com.googlecode.jvmvm.ui;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -40,6 +42,7 @@ public class Main implements ActionListener {
         });
         editor.setVisible(true);
         ((AbstractDocument) editor.getCodeEditor().getDocument()).setDocumentFilter(new PartlyReadOnly());
+        editor.getCodeEditor().getDocument().addDocumentListener(new PartlyReadOnly());
 
         try {
             // On start - load saved game
@@ -75,14 +78,14 @@ public class Main implements ActionListener {
     /**
      * Validating document filter
      */
-    class PartlyReadOnly extends DocumentFilter {
+    class PartlyReadOnly extends DocumentFilter implements DocumentListener {
         @Override
         public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
             if (game.applyEdit(new Code.Remove(length, offset))) {
                 super.remove(fb, offset, length);
 
                 if (!fb.getDocument().getText(0, fb.getDocument().getLength()).equals(game.getCurrentCode().toString())) {
-                    System.out.println("error");
+                    editor.scheduleSetText(game.getCode(), false);
                 }
 
             }
@@ -98,11 +101,14 @@ public class Main implements ActionListener {
 
         @Override
         public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+            if (string == null) {
+                string = "";
+            }
             if (game.applyEdit(new Code.Insert(string, offset))) {
                 super.insertString(fb, offset, string, attr);
 
                 if (!fb.getDocument().getText(0, fb.getDocument().getLength()).equals(game.getCurrentCode().toString())) {
-                    System.out.println("error");
+                    editor.scheduleSetText(game.getCode(), false);
                 }
 
             }
@@ -118,11 +124,14 @@ public class Main implements ActionListener {
 
         @Override
         public void replace(FilterBypass fb, int offset, int length, String string, AttributeSet attrs) throws BadLocationException {
+            if (string == null) {
+                string = "";
+            }
             if (game.applyEdit(new Code.Replace(string, offset, length))) {
                 super.replace(fb, offset, length, string, attrs);
 
                 if (!fb.getDocument().getText(0, fb.getDocument().getLength()).equals(game.getCurrentCode().toString())) {
-                    System.out.println("error");
+                    editor.scheduleSetText(game.getCode(), false);
                 }
 
             }
@@ -133,6 +142,43 @@ public class Main implements ActionListener {
                 }
             } catch (BadLocationException e) {
                 e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            if (e.getClass().getName().endsWith("UndoRedoDocumentEvent")) {
+                try {
+                    String text = e.getDocument().getText(0, e.getDocument().getLength());
+                    String insert = text.substring(e.getOffset(), e.getOffset() + e.getLength());
+                    game.applyEdit(new Code.Insert(insert, e.getOffset()));
+                    if (!e.getDocument().getText(0, e.getDocument().getLength()).equals(game.getCurrentCode().toString())) {
+                        editor.scheduleSetText(game.getCode(), false);
+                    }
+                } catch (BadLocationException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            if (e.getClass().getName().endsWith("UndoRedoDocumentEvent")) {
+                try {
+                    game.applyEdit(new Code.Remove(e.getLength(), e.getOffset()));
+                    if (!e.getDocument().getText(0, e.getDocument().getLength()).equals(game.getCurrentCode().toString())) {
+                        editor.scheduleSetText(game.getCode(), false);
+                    }
+                } catch (BadLocationException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            if (e.getClass().getName().endsWith("UndoRedoDocumentEvent")) {
+                System.out.println(e);
             }
         }
     }

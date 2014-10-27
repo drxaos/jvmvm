@@ -18,6 +18,7 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import java.awt.*;
@@ -386,13 +387,47 @@ public class Editor extends JFrame implements ActionListener {
         resetRequest = false;
     }
 
-    public void setText(String text) {
+    public void scheduleSetText(final String text, boolean resetCaret) {
+        final int caretPosition = resetCaret ? 0 : textArea.getCaretPosition();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                setText(text, caretPosition);
+            }
+        });
+    }
+
+    public void setText(String text, int caretPosition) {
         DocumentFilter documentFilter = ((RSyntaxDocument) textArea.getDocument()).getDocumentFilter();
+        DocumentListener[] documentListeners = ((RSyntaxDocument) textArea.getDocument()).getDocumentListeners();
         ((RSyntaxDocument) textArea.getDocument()).setDocumentFilter(null);
+        for (DocumentListener documentListener : documentListeners) {
+            textArea.getDocument().removeDocumentListener(documentListener);
+        }
         textArea.setText(text);
         ((RSyntaxDocument) textArea.getDocument()).setDocumentFilter(documentFilter);
+        for (DocumentListener documentListener : documentListeners) {
+            textArea.getDocument().addDocumentListener(documentListener);
+        }
         textArea.setText(text);
-        textArea.setCaretPosition(0);
+        textArea.setCaretPosition(caretPosition);
+    }
+
+    public void setText(String text, boolean resetCaret) {
+        int caretPosition = textArea.getCaretPosition();
+        DocumentFilter documentFilter = ((RSyntaxDocument) textArea.getDocument()).getDocumentFilter();
+        DocumentListener[] documentListeners = ((RSyntaxDocument) textArea.getDocument()).getDocumentListeners();
+        ((RSyntaxDocument) textArea.getDocument()).setDocumentFilter(null);
+        for (DocumentListener documentListener : documentListeners) {
+            textArea.getDocument().removeDocumentListener(documentListener);
+        }
+        textArea.setText(text);
+        ((RSyntaxDocument) textArea.getDocument()).setDocumentFilter(documentFilter);
+        for (DocumentListener documentListener : documentListeners) {
+            textArea.getDocument().addDocumentListener(documentListener);
+        }
+        textArea.setText(text);
+        textArea.setCaretPosition(resetCaret ? 0 : caretPosition);
     }
 
     public void setMap(char[][] map) {
@@ -497,8 +532,8 @@ public class Editor extends JFrame implements ActionListener {
         });
     }
 
-    public void loadCode(String code) {
-        setText(code);
+    public void loadCode(String code, boolean resetCaret) {
+        setText(code, resetCaret);
     }
 
     public String getNotepadText() {
