@@ -160,10 +160,13 @@ public class CustomLineHighlightManager extends LineHighlightManager {
     /**
      * Information about a line highlight.
      */
-    private static class LineHighlightInfo implements Comparable<LineHighlightInfo> {
+    public static class LineHighlightInfo implements Comparable<LineHighlightInfo> {
 
         private Position offs;
         private Color color;
+
+        private int spaceStart;
+        private int spaceEnd;
 
         public LineHighlightInfo(Position offs, Color c) {
             this.offs = offs;
@@ -175,6 +178,26 @@ public class CustomLineHighlightManager extends LineHighlightManager {
                 return offs.getOffset() - o.getOffset();
             }
             return -1;
+        }
+
+        public void setColor(Color color) {
+            this.color = color;
+        }
+
+        public int getSpaceStart() {
+            return spaceStart;
+        }
+
+        public void setSpaceStart(int spaceStart) {
+            this.spaceStart = spaceStart;
+        }
+
+        public int getSpaceEnd() {
+            return spaceEnd;
+        }
+
+        public void setSpaceEnd(int spaceEnd) {
+            this.spaceEnd = spaceEnd;
         }
 
         @Override

@@ -579,6 +579,17 @@ public class Editor extends JFrame implements ActionListener {
         phoneBtn.setEnabled(false);
     }
 
+    public void colorizeCodeEditor(AbstractGame game) {
+        try {
+            getCodeEditor().removeAllLineHighlights();
+            for (Integer line : game.redLines()) {
+                getCodeEditor().addLineHighlight(line, new Color(0x36, 0x1B, 0x15));
+            }
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
     private class GoToLineAction extends AbstractAction {
 
         public GoToLineAction() {

@@ -89,14 +89,7 @@ public class Main implements ActionListener {
                 }
 
             }
-            try {
-                editor.getCodeEditor().removeAllLineHighlights();
-                for (Integer line : game.redLines()) {
-                    editor.getCodeEditor().addLineHighlight(line, new Color(0x36, 0x1B, 0x15));
-                }
-            } catch (BadLocationException e) {
-                e.printStackTrace();
-            }
+            editor.colorizeCodeEditor(game);
         }
 
         @Override
@@ -112,14 +105,7 @@ public class Main implements ActionListener {
                 }
 
             }
-            try {
-                editor.getCodeEditor().removeAllLineHighlights();
-                for (Integer line : game.redLines()) {
-                    editor.getCodeEditor().addLineHighlight(line, new Color(0x36, 0x1B, 0x15));
-                }
-            } catch (BadLocationException e) {
-                e.printStackTrace();
-            }
+            editor.colorizeCodeEditor(game);
         }
 
         @Override
@@ -135,14 +121,7 @@ public class Main implements ActionListener {
                 }
 
             }
-            try {
-                editor.getCodeEditor().removeAllLineHighlights();
-                for (Integer line : game.redLines()) {
-                    editor.getCodeEditor().addLineHighlight(line, new Color(0x36, 0x1B, 0x15));
-                }
-            } catch (BadLocationException e) {
-                e.printStackTrace();
-            }
+            editor.colorizeCodeEditor(game);
         }
 
         @Override
