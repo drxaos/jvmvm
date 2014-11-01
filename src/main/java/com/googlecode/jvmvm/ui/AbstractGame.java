@@ -4,6 +4,7 @@ import com.googlecode.jvmvm.loader.Project;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public abstract class AbstractGame {
@@ -84,7 +85,7 @@ public abstract class AbstractGame {
 
     public abstract boolean applyEdit(Code.Edit edits);
 
-    public abstract List<Integer> redLines();
+    public abstract HashMap<Integer, Code.Line> redLines();
 
     public abstract String getLevelNumber();
 

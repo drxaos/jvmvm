@@ -5,6 +5,7 @@ import com.googlecode.jvmvm.ui.*;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 public class Game extends AbstractGame {
@@ -73,8 +74,8 @@ public class Game extends AbstractGame {
     }
 
     @Override
-    public List<Integer> redLines() {
-        return Collections.emptyList();
+    public java.util.HashMap<Integer, Code.Line> redLines() {
+        return new HashMap<Integer, Code.Line>();
     }
 
     @Override

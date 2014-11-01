@@ -124,7 +124,7 @@ public class IntoTheWoods extends Level {
         functionList.get("fortresses").call();
         functionList.get("fortresses").call();
 
-        map.getPlayer().setPhoneCallback(functionList.get(/*START_EDIT*/"movePlayerToExit"/*END_EDIT*/));
+        map.getPlayer().setPhoneCallback(functionList.get("/*BEGIN_INLINE*/movePlayerToExit"/*END_INLINE*/));
 
         map.placeObject(map.getWidth() - 1, map.getHeight() - 1, "exit");
 /*END_OF_START_LEVEL*/

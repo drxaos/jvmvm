@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Code implements Serializable {
@@ -163,18 +164,42 @@ public class Code implements Serializable {
         return b.toString();
     }
 
-    public List<Integer> getReadonlyLines() {
-        List<Integer> res = new ArrayList<Integer>();
+    public static class Line {
+        public boolean readonly;
+        public boolean inline = false;
+        public int inlineStart, inlineEnd;
+
+        public Line(boolean readonly) {
+            this.readonly = readonly;
+        }
+
+        public Line(boolean readonly, boolean inline, int inlineStart, int inlineEnd) {
+            this.readonly = readonly;
+            this.inline = inline;
+            this.inlineStart = inlineStart;
+            this.inlineEnd = inlineEnd;
+        }
+    }
+
+    public HashMap<Integer, Line> getReadonlyLines() {
+        HashMap<Integer, Line> res = new HashMap<Integer, Line>();
         int line = 0;
         for (Section section : sections) {
             for (int i = 0; i < StringUtils.countMatches(section.text, "\n"); i++) {
-                if (!section.editable) {
-                    res.add(line);
+                if (!section.editable && !res.containsKey(line)) {
+                    res.put(line, new Line(true));
+                } else if (section.editable && res.containsKey(line)) {
+                    // inline
+                    res.get(line).inline = true;
+                    res.get(line).inlineStart = 5; // TODO
+                    res.get(line).inlineEnd = 10; // TODO
                 }
                 line++;
             }
         }
-        res.add(line);
+        if (!res.containsKey(line)) {
+            res.put(line, new Line(true));
+        }
         return res;
     }
 
@@ -196,6 +221,21 @@ public class Code implements Serializable {
                 b = new StringBuilder();
                 leading = false;
                 editable = false;
+            } else if (s.contains("/*BEGIN_INLINE*/") && s.contains("/*END_INLINE*/")) {
+                code.sections.add(new Section(editable, false, false, leading, false, b.toString()));
+
+                b = new StringBuilder();
+                b.append(s.substring(0, s.indexOf("/*BEGIN_INLINE*/")));
+                code.sections.add(new Section(false, false, false, leading, false, b.toString()));
+                b = new StringBuilder();
+                b.append(s.substring(s.indexOf("/*BEGIN_INLINE*/") + "/*BEGIN_INLINE*/".length(), s.indexOf("/*END_INLINE*/")));
+                code.sections.add(new Section(true, false, false, leading, false, b.toString()));
+                b = new StringBuilder();
+                b.append(s.substring(s.indexOf("/*END_INLINE*/") + "/*END_INLINE*/".length(), s.length()));
+                code.sections.add(new Section(false, false, false, leading, false, b.toString()));
+
+                b = new StringBuilder();
+                leading = false;
             } else if (s.equals("/*START_OF_START_LEVEL*/")) {
                 code.sections.add(new Section(editable, false, false, leading, false, b.toString()));
                 b = new StringBuilder();

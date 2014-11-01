@@ -61,7 +61,7 @@ public abstract class GameBase extends AbstractGame {
     }
 
     @Override
-    public List<Integer> redLines() {
+    public HashMap<Integer, Code.Line> redLines() {
         return lvlCode.getReadonlyLines();
     }
 
