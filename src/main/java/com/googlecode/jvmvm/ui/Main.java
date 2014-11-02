@@ -7,7 +7,6 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -49,28 +48,28 @@ public class Main implements ActionListener {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream("./savegame.dat"));
             saveState = (HashMap) in.readObject();
             if (saveState.containsKey("maxLevel")) {
-                try {
-                    String lvl = (String) saveState.get("maxLevel");
-                    Code code = (Code) saveState.get("code" + lvl);
-                    game = (AbstractGame) Class.forName("" + saveState.get("class" + lvl)).getConstructor(Code.class).newInstance(code);
-                    game.start();
-                    editor.playMusic(game.getMusic());
-                    editor.setNotepadText((String) saveState.get("notepad"));
-                    game.setCode(code);
-                } catch (InstantiationException e1) {
-                    e1.printStackTrace();
-                } catch (IllegalAccessException e1) {
-                    e1.printStackTrace();
-                } catch (NoSuchMethodException e1) {
-                    e1.printStackTrace();
-                } catch (InvocationTargetException e1) {
-                    e1.printStackTrace();
-                }
+                String lvl = (String) saveState.get("maxLevel");
+                Code code = (Code) saveState.get("code" + lvl);
+                game = (AbstractGame) Class.forName("" + saveState.get("class" + lvl)).getConstructor(Code.class).newInstance(code);
+                game.start();
+                editor.playMusic(game.getMusic());
+                editor.setNotepadText((String) saveState.get("notepad"));
+                game.setCode(code);
             }
             editor.displaySaveGames(saveState);
         } catch (IOException e1) {
             e1.printStackTrace();
         } catch (ClassNotFoundException e1) {
+            e1.printStackTrace();
+        } catch (InstantiationException e1) {
+            e1.printStackTrace();
+        } catch (IllegalAccessException e1) {
+            e1.printStackTrace();
+        } catch (NoSuchMethodException e1) {
+            e1.printStackTrace();
+        } catch (InvocationTargetException e1) {
+            e1.printStackTrace();
+        } catch (Exception e1) {
             e1.printStackTrace();
         }
     }
@@ -168,8 +167,8 @@ public class Main implements ActionListener {
             // if no game - start intro
             if (game == null) {
                 try {
-                    game = new com.googlecode.jvmvm.ui.levels.intro.Game();
-//                    game = new com.googlecode.jvmvm.ui.levels.level_07.internal.Game();
+//                    game = new com.googlecode.jvmvm.ui.levels.intro.Game();
+                    game = new com.googlecode.jvmvm.ui.levels.level_08.internal.Game();
                     game.start();
                     editor.playMusic(game.getMusic());
                     saveState.put("class" + game.getLevelNumber(), game.getClass().getName());

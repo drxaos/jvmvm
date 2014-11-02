@@ -91,8 +91,11 @@ public class CustomLineHighlightManager extends LineHighlightManager {
                         if (y > vr.y - lineHeight) {
                             if (y < vr.y + vr.height) {
                                 g.setColor(lhi.getColor());
-                                g.fillRect(0, y, textArea.getWidth(), lineHeight);
-//                                g.fillRect(20, y, 50, lineHeight);
+                                int charWidth = textArea.getFontMetrics(textArea.getFont()).charWidth('x');
+                                int spaceStart = charWidth * lhi.getSpaceStart();
+                                int spaceEnd = charWidth * lhi.getSpaceEnd();
+                                g.fillRect(0, y, spaceStart, lineHeight);
+                                g.fillRect(spaceEnd, y, textArea.getWidth() - spaceEnd, lineHeight);
                             } else {
                                 break; // Out of visible rect
                             }

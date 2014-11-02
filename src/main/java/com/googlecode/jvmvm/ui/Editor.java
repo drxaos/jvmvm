@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Editor extends JFrame implements ActionListener {
 
@@ -582,8 +583,15 @@ public class Editor extends JFrame implements ActionListener {
     public void colorizeCodeEditor(AbstractGame game) {
         try {
             getCodeEditor().removeAllLineHighlights();
-            for (Integer line : game.redLines().keySet()) {
-                getCodeEditor().addLineHighlight(line, new Color(0x36, 0x1B, 0x15));
+            HashMap<Integer, Code.Line> redLines = game.redLines();
+            for (Map.Entry<Integer, Code.Line> e : redLines.entrySet()) {
+                CustomLineHighlightManager.LineHighlightInfo lhi =
+                        (CustomLineHighlightManager.LineHighlightInfo) getCodeEditor().addLineHighlight(
+                                e.getKey(), new Color(0x36, 0x1B, 0x15));
+                if (e.getValue().inline) {
+                    lhi.setSpaceStart(e.getValue().inlineStart);
+                    lhi.setSpaceEnd(e.getValue().inlineEnd);
+                }
             }
         } catch (BadLocationException e) {
             e.printStackTrace();
