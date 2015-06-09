@@ -225,6 +225,14 @@ public abstract class GameBase extends AbstractGame {
         return obj == null ? "empty" : obj.type;
     }
 
+    public boolean isTransport(String type) {
+        Object d = defMap.get(type);
+        if (d == null) {
+            throw new RuntimeException("There is no type of object named " + type);
+        }
+        return new DefinitionExecutor(d).isTransport();
+    }
+
     class DefinitionExecutor {
         Object definition;
 
@@ -263,6 +271,16 @@ public abstract class GameBase extends AbstractGame {
                 e.printStackTrace();
             }
             return Color.LIGHT_GRAY;
+        }
+
+        boolean isTransport() {
+            try {
+                return definition.getClass().getField("transport").getBoolean(definition);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+            }
+            return false;
         }
 
         public Boolean impassable(Object player, String type, Object me) {
@@ -442,22 +460,8 @@ public abstract class GameBase extends AbstractGame {
                     shouldRedraw = true;
                 }
 
-                // process player collisions
-                Obj found = findObj(toX, toY);
-                if (found != null && found != player) {
-                    Object d = defMap.get(found.type);
-                    if (new DefinitionExecutor(d).impassable(getPlayer(), "player", createObject(found.id))) {
-                        toX = player.x;
-                        toY = player.y;
-                    }
-                    if ("item".equals(new DefinitionExecutor(d).getType())) {
-                        new DefinitionExecutor(d).onPickUp(getPlayer());
-                        objs.remove(found);
-                        inventory.add(found.type);
-                    } else {
-                        new DefinitionExecutor(d).onCollision(getPlayer());
-                    }
-                }
+                int fromX = player.x;
+                int fromY = player.y;
                 if (player.x != toX || player.y != toY) {
                     player.x = toX;
                     player.y = toY;
@@ -486,13 +490,27 @@ public abstract class GameBase extends AbstractGame {
                         // move
                         if (obj.nextX >= 0 && obj.nextY >= 0) {
                             Obj toObj = findObj(obj.nextX, obj.nextY);
+
+                            // transports
+                            boolean transportLeavingWater = true;
+                            if (isTransport(obj.type)) {
+                                Obj fromObj = findObj(obj.x, obj.y, false);
+                                if (fromObj == null && toObj == null) {
+                                    transportLeavingWater = false;
+                                } else if (fromObj != null && toObj != null && fromObj.type.equals(toObj.type)) {
+                                    transportLeavingWater = false;
+                                }
+                            } else {
+                                transportLeavingWater = false;
+                            }
+
                             if (toObj != null) {
                                 // process collisions
                                 Object toD = defMap.get(toObj.type);
                                 if ("player".equals(toObj.type)) {
                                     new DefinitionExecutor(d).onCollision(getPlayer());
                                 }
-                                if (!new DefinitionExecutor(toD).impassable(null, obj.type, createObject(toObj.id))) {
+                                if (!new DefinitionExecutor(toD).impassable(null, obj.type, createObject(toObj.id)) && !transportLeavingWater) {
                                     obj.x = obj.nextX;
                                     obj.y = obj.nextY;
                                 }
@@ -500,13 +518,35 @@ public abstract class GameBase extends AbstractGame {
                                     objs.remove(toObj);
                                     obj.inventory.add(toObj.type);
                                 }
-                            } else {
+                            } else if (!transportLeavingWater) {
                                 obj.x = obj.nextX;
                                 obj.y = obj.nextY;
                             }
                             obj.nextX = -1;
                             obj.nextY = -1;
                             shouldRedraw = true;
+                        }
+                    }
+                }
+
+                // process player collisions
+                Obj found = findObj(toX, toY);
+                if (found != null && found != player) {
+                    Object d = defMap.get(found.type);
+                    if (new DefinitionExecutor(d).impassable(getPlayer(), "player", createObject(found.id))) {
+                        player.x = fromX;
+                        player.y = fromY;
+                    }
+                    if ("item".equals(new DefinitionExecutor(d).getType())) {
+                        new DefinitionExecutor(d).onPickUp(getPlayer());
+                        objs.remove(found);
+                        inventory.add(found.type);
+                    } else {
+                        Obj transport = findObj(toX, toY, true);
+                        if (transport != null) {
+                            new DefinitionExecutor(defMap.get(transport.type)).onCollision(getPlayer());
+                        } else {
+                            new DefinitionExecutor(d).onCollision(getPlayer());
                         }
                     }
                 }
@@ -622,9 +662,13 @@ public abstract class GameBase extends AbstractGame {
     }
 
     private Obj findObj(int x, int y) {
+        return findObj(x, y, false);
+    }
+
+    private Obj findObj(int x, int y, boolean transport) {
         Obj found = null;
         for (Obj obj : objs) {
-            if (obj.x == x && obj.y == y) {
+            if (obj.x == x && obj.y == y && isTransport(obj.type) == transport && !obj.type.equals("player")) {
                 found = obj;
                 break;
             }
@@ -650,7 +694,7 @@ public abstract class GameBase extends AbstractGame {
         if (y < 0 || y >= getHeight()) {
             return;
         }
-        Obj found = findObj(x, y);
+        Obj found = findObj(x, y, isTransport(type));
         if (found != null) {
             if (found.type.equals(type)) {
                 return;

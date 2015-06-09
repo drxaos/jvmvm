@@ -345,6 +345,48 @@
                             <sourcepath>${basedir}/src/main/java/com/googlecode/jvmvm/ui/levels/level_07</sourcepath>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>level_08-api</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/apidocs/docs/level_08</outputDirectory>
+                            <finalName>api-lavel_08</finalName>
+                            <jarOutputDirectory>${project.build.directory}/lib</jarOutputDirectory>
+                            <sourceFileIncludes>
+                                <include>IntoTheWoods.java</include>
+                                <include>Level.java</include>
+                                <include>Map.java</include>
+                                <include>Player.java</include>
+                                <include>Object.java</include>
+                                <include>Definition.java</include>
+                            </sourceFileIncludes>
+                            <sourcepath>${basedir}/src/main/java/com/googlecode/jvmvm/ui/levels/level_08</sourcepath>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>level_09-api</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/apidocs/docs/level_09</outputDirectory>
+                            <finalName>api-lavel_09</finalName>
+                            <jarOutputDirectory>${project.build.directory}/lib</jarOutputDirectory>
+                            <sourceFileIncludes>
+                                <include>FordingTheRiver.java</include>
+                                <include>Level.java</include>
+                                <include>Map.java</include>
+                                <include>Player.java</include>
+                                <include>Object.java</include>
+                                <include>Definition.java</include>
+                            </sourceFileIncludes>
+                            <sourcepath>${basedir}/src/main/java/com/googlecode/jvmvm/ui/levels/level_09</sourcepath>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 

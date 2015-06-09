@@ -1,7 +1,7 @@
-package com.googlecode.jvmvm.ui.levels.level_08.internal;
+package com.googlecode.jvmvm.ui.levels.level_09.internal;
 
-import com.googlecode.jvmvm.ui.levels.level_08.*;
-import com.googlecode.jvmvm.ui.levels.level_08.Object;
+import com.googlecode.jvmvm.ui.levels.level_09.*;
+import com.googlecode.jvmvm.ui.levels.level_09.Object;
 
 import java.awt.*;
 
@@ -13,7 +13,7 @@ class Bootstrap {
 
     private static void execute(Map map) {
         Bootstrap.map = map;
-        level = new IntoTheWoods();
+        level = new FordingTheRiver();
         level.startLevel(map);
         if (!validateLevel(map)) {
             throw new RuntimeException("validation error");
