@@ -1,8 +1,0 @@
-
-player.setPhoneCallback(new Function(){
-     public void call(){
-          raftDirection = "up";
-     }
-});
-
-

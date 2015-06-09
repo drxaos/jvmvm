@@ -1,4 +1,0 @@
-# for the mp3 decoder
-javazoom.spi.mpeg.sampled.file.MpegAudioFileReader
-com.sun.media.codec.audio.mp3.JS_MP3FileReader
-javazoom.spi.mpeg.sampled.convert.MpegFormatConversionProvider
