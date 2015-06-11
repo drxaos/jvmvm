@@ -71,7 +71,7 @@ You can continue running restored project as if it is a new separate project, st
 
 ### In Development
 Project is in alpha and contains bugs, undocumented features and documentation for unwritten features.
-See tests http://git.io/4hc3tA and source code http://git.io/V6UvpA.
+See tests and source code.
 
 ### Authors and Contributors
 Original project is JauVM - http://jauvm.blogspot.ru/.
