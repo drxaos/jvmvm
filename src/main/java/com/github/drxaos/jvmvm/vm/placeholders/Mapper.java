@@ -50,12 +50,10 @@ public class Mapper implements PlaceholderFactory {
         }
     }
 
-    @Override
     public String getClassName() {
         return "";
     }
 
-    @Override
     public Serializable replace(Object original) {
         try {
             Placeholder placeholder = new Placeholder();
