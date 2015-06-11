@@ -17,7 +17,6 @@ public class Mapper implements PlaceholderFactory {
         HashMap fields;
         Class cls;
 
-        @Override
         public Object restore() {
             try {
                 Object obj = SilentObjectCreator.create(cls, Object.class);
