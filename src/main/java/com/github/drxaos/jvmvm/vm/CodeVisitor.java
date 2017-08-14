@@ -189,7 +189,6 @@ public final class CodeVisitor extends ClassVisitor {
         return methodVisitor;
     }
 
-
     public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
         //interpretable |= interpretable.class == ClassRef.get(Types.getInternalName(desc), cls);
         return emptyAnnotationVisitor;

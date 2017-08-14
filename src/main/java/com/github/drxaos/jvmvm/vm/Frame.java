@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2005 Nuno Cruces
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
+ * <p>
  * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  * 3. Neither the name of the copyright holders nor the names of its contributors
- *    may be used to endorse or promote products derived from this software without
- *    specific prior written permission.
- *
+ * may be used to endorse or promote products derived from this software without
+ * specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -39,6 +39,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+
+import static com.github.drxaos.jvmvm.vm.placeholders.Lambda.LAMBDA_STACK_SKIP;
 
 public final class Frame implements Cloneable, Serializable {
     private static final long serialVersionUID = 874267885800467086l;
@@ -122,7 +124,11 @@ public final class Frame implements Cloneable, Serializable {
             if (type == long.class || type == double.class) {
                 frame.stack[i -= 2] = popBigObject();
             } else {
-                frame.stack[i -= 1] = popObject();
+                Object o = popObject();
+                if (o == LAMBDA_STACK_SKIP) {
+                    o = popObject();
+                }
+                frame.stack[i -= 1] = o;
             }
         }
         Object target;
@@ -381,6 +387,12 @@ public final class Frame implements Cloneable, Serializable {
         return stack[sp + i];
     }
 
+    public int getTargetIdx(Class<?>... types) {
+        int i = types.length;
+        for (Class<?> type : types) if (type == long.class || type == double.class) i++;
+        return sp + i;
+    }
+
     public Object[] popParameters(Class<?>... types) {
         assert mutable;
 
@@ -555,5 +567,9 @@ public final class Frame implements Cloneable, Serializable {
             }
             frame = frame.getParent();
         }
+    }
+
+    public void replaceByIdx(int idx, Object to) {
+        stack[idx] = to;
     }
 }

@@ -526,6 +526,7 @@ public abstract class Insn implements Serializable {
                     !field.getName().startsWith("ACC_") &&
                     !field.getName().startsWith("V1_") &&
                     !field.getName().startsWith("F_") &&
+                    !field.getName().startsWith("H_") &&
                     !field.getName().startsWith("T_")) {
                 try {
                     if (field.getInt(null) == opcode) {

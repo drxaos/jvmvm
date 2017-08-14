@@ -29,6 +29,7 @@
 package com.github.drxaos.jvmvm.vm.insn;
 
 import com.github.drxaos.jvmvm.vm.*;
+import com.github.drxaos.jvmvm.vm.placeholders.Lambda;
 import com.github.drxaos.jvmvm.vm.ref.ConstructorRef;
 import com.github.drxaos.jvmvm.vm.ref.MethodRef;
 import org.objectweb.asm.Handle;
@@ -37,6 +38,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import static com.github.drxaos.jvmvm.vm.placeholders.Lambda.LAMBDA_STACK_SKIP;
 import static org.objectweb.asm.Opcodes.*;
 
 public abstract class MethodInsn extends Insn {
@@ -58,7 +60,14 @@ public abstract class MethodInsn extends Insn {
     }
 
     public static Insn getInsnIndy(String name, String desc, Handle bsm, Object[] bsmArgs, Class<?> cls) {
-        throw new UnsupportedOperationException("not implemented yet");
+
+        switch (bsm.getTag()) {
+            case H_INVOKESTATIC:
+                Handle h = (Handle) bsmArgs[1];
+                return new IndyInsn(new InvokeStaticInsn(h.getOwner(), h.getName(), h.getDesc(), cls));
+            default:
+                throw new UnsupportedOperationException();
+        }
     }
 
 
@@ -170,6 +179,14 @@ public abstract class MethodInsn extends Insn {
             method.setAccessible(true); // TODO check access
 
             Object target = frame.getTarget(method.getParameterTypes());
+
+            if (target instanceof Lambda) {
+                // call lambda by handle
+                int targetIdx = frame.getTargetIdx(method.getParameterTypes());
+                frame.replaceByIdx(targetIdx, LAMBDA_STACK_SKIP);
+                ((Lambda) target).getmInsn().execute(vm);
+                return;
+            }
 
             if (!method.getDeclaringClass().isInstance(target))
                 throw new IncompatibleClassChangeError(Types.getInternalName(method.getDeclaringClass()));
