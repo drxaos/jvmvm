@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2005 Nuno Cruces
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
+ * <p>
  * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  * 3. Neither the name of the copyright holders nor the names of its contributors
- *    may be used to endorse or promote products derived from this software without
- *    specific prior written permission.
- *
+ * may be used to endorse or promote products derived from this software without
+ * specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -31,6 +31,7 @@ package com.github.drxaos.jvmvm.vm.insn;
 import com.github.drxaos.jvmvm.vm.*;
 import com.github.drxaos.jvmvm.vm.ref.ConstructorRef;
 import com.github.drxaos.jvmvm.vm.ref.MethodRef;
+import org.objectweb.asm.Handle;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -54,6 +55,10 @@ public abstract class MethodInsn extends Insn {
                 assert false;
                 return null;
         }
+    }
+
+    public static Insn getInsnIndy(String name, String desc, Handle bsm, Object[] bsmArgs, Class<?> cls) {
+        throw new UnsupportedOperationException("not implemented yet");
     }
 
 

@@ -1,9 +1,9 @@
 package com.github.drxaos.jvmvm.loader;
 
-import com.github.drxaos.jvmvm.vm.MethodCode;
 import com.github.drxaos.jvmvm.compiler.Compiler;
 import com.github.drxaos.jvmvm.compiler.javac.JavaCompiler;
 import com.github.drxaos.jvmvm.vm.GlobalCodeLoader;
+import com.github.drxaos.jvmvm.vm.MethodCode;
 import com.github.drxaos.jvmvm.vm.VirtualMachine;
 import org.apache.commons.io.FileUtils;
 
@@ -18,6 +18,7 @@ public class Project implements Serializable {
     Map<String, String> files = new HashMap<String, String>();
     List<byte[]> jars = new ArrayList<byte[]>();
     List<String> systemClasses = new ArrayList<String>();
+    SystemClassesCallback systemClassesCallback = null;
     Map<String, String> remapping = new HashMap<String, String>();
     Compiler compiler = new JavaCompiler();
     boolean started = false;
@@ -98,6 +99,7 @@ public class Project implements Serializable {
                 throw new ProjectCompilerException("cannot load system class", e);
             }
         }
+        classLoader.setSystemClassesCallback(systemClassesCallback);
         for (Map.Entry<String, String> remapClass : remapping.entrySet()) {
             classLoader.addRemapping(remapClass.getKey(), remapClass.getValue());
         }
@@ -150,6 +152,14 @@ public class Project implements Serializable {
         systemClasses.add(className);
         if (classLoader != null) {
             classLoader.addSystemClass(className);
+        }
+        return this;
+    }
+
+    public Project setSystemClassesCallback(SystemClassesCallback callback) {
+        this.systemClassesCallback = callback;
+        if (classLoader != null) {
+            classLoader.setSystemClassesCallback(callback);
         }
         return this;
     }

@@ -9,11 +9,11 @@ import java.io.Serializable;
 import java.security.SecureClassLoader;
 import java.util.*;
 
-class RemapMethodVisitor extends MethodAdapter {
+class RemapMethodVisitor extends MethodVisitor {
     Map<String, String> remapping;
 
     public RemapMethodVisitor(MethodVisitor mv, Map<String, String> remapping) {
-        super(mv);
+        super(Opcodes.ASM4, mv);
         this.remapping = remapping;
     }
 
@@ -51,11 +51,11 @@ class RemapMethodVisitor extends MethodAdapter {
     }
 }
 
-class Modifier extends ClassAdapter {
+class Modifier extends ClassVisitor {
     Map<String, String> remapping;
 
     public Modifier(ClassVisitor cv, Map<String, String> remapping) {
-        super(cv);
+        super(Opcodes.ASM4, cv);
         this.remapping = remapping;
     }
 
@@ -104,6 +104,8 @@ public class MemoryClassLoader extends SecureClassLoader {
             "sun.reflect.SerializationConstructorAccessorImpl"
     );
 
+    SystemClassesCallback systemClassesCallback = null;
+
     Map<String, byte[]> classes = new HashMap<String, byte[]>();
     Map<String, String> remapping = new HashMap<String, String>();
     boolean vmDisabled = false;
@@ -135,12 +137,22 @@ public class MemoryClassLoader extends SecureClassLoader {
         return this;
     }
 
+    public MemoryClassLoader setSystemClassesCallback(SystemClassesCallback systemClassesCallback) {
+        this.systemClassesCallback = systemClassesCallback;
+        return this;
+    }
+
     MemoryClassLoader addRemapping(String className, String toClassName) {
         remapping.put(className.replace(".", "/"), toClassName.replace(".", "/"));
         return this;
     }
 
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        if (!classes.containsKey(name) && systemClassesCallback != null && systemClassesCallback.shouldResolve(name)) {
+            // lazy resolving
+            addSystemClass(name);
+        }
+
         if (classes.containsKey(name)) {
             synchronized (getClassLoadingLock(name)) {
                 // First, check if the class has already been loaded
