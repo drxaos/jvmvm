@@ -235,11 +235,11 @@ public class Project implements Serializable {
         return GlobalCodeLoader.getAll(classLoader.loadClass(className));
     }
 
-    public Object run() throws ProjectExecutionException, ProjectLoaderException {
+    public Object run() throws ProjectExecutionException, ProjectLoaderException, BreakpointException {
         return run(-1);
     }
 
-    public Object run(long timeout) throws ProjectExecutionException, ProjectLoaderException {
+    public Object run(long timeout) throws ProjectExecutionException, ProjectLoaderException, BreakpointException {
         if (vmState != null && virtualMachine == null) {
             try {
                 virtualMachine = VirtualMachine.create(classLoader, vmState);
@@ -249,6 +249,8 @@ public class Project implements Serializable {
         }
         try {
             return virtualMachine.run(timeout);
+        } catch (BreakpointException e) {
+            throw e;
         } catch (Throwable throwable) {
             throw new ProjectExecutionException("program error", throwable, virtualMachine.getPointer());
         }
@@ -348,4 +350,29 @@ public class Project implements Serializable {
             return new Marker(name);
         }
     }
+
+    public void setBreakpoint(String clazz, String method) {
+        virtualMachine.setBreakpoint(clazz, method);
+    }
+
+    public void setBreakpoint(String clazz, Integer line) {
+        virtualMachine.setBreakpoint(clazz, line);
+    }
+
+    public void removeBreakpoint(String clazz, String method) {
+        virtualMachine.removeBreakpoint(clazz, method);
+    }
+
+    public void removeBreakpoint(String clazz, Integer line) {
+        virtualMachine.removeBreakpoint(clazz, line);
+    }
+
+    public void removeBreakpoint(String clazz, String method, Integer line) {
+        virtualMachine.removeBreakpoint(clazz, method, line);
+    }
+
+    public void clearBreakpoints() {
+        virtualMachine.clearBreakpoints();
+    }
+
 }

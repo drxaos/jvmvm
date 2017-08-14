@@ -28,6 +28,7 @@
 
 package com.github.drxaos.jvmvm.vm;
 
+import com.github.drxaos.jvmvm.loader.BreakpointException;
 import com.github.drxaos.jvmvm.loader.MemoryClassLoader;
 import com.github.drxaos.jvmvm.loader.ProjectLoaderException;
 import com.github.drxaos.jvmvm.vm.insn.Insn;
@@ -63,6 +64,8 @@ public final class VirtualMachine implements Serializable {
     Map<String, Object> marks = new HashMap<String, Object>();
 
     InterfaceImplementer interfaceImplementer = new InterfaceImplementer();
+
+    Set<Breakpoint> breakpoints = new HashSet<>();
 
     transient ClassLoader classLoader;
 
@@ -208,12 +211,28 @@ public final class VirtualMachine implements Serializable {
 
                     stepNumber++;
                 }
+
+                if (breakpoints.size() > 0) {
+                    StackTraceElement pointer = getPointer();
+                    if (pointer != null && pointer.getClassName() != null) {
+                        for (Breakpoint bp : breakpoints) {
+                            if (bp.getClazz().equals(pointer.getClassName()) &&
+                                    (bp.getMethod() == null || bp.getMethod().equals(pointer.getMethodName())) &&
+                                    (bp.getLine() == null || bp.getLine().equals(pointer.getLineNumber()))) {
+                                throw new BreakpointException(bp, pointer);
+                            }
+                        }
+                    }
+                }
+
                 if (cycles > 0) {
                     cycles--;
                 }
                 if (cycles == 0) {
                     return;
                 }
+            } catch (BreakpointException e) {
+                throw e;
             } catch (StackTracedException e) {
                 Throwable t = e.getCause();
                 fillInStackTrace(t, t.getStackTrace());
@@ -268,6 +287,30 @@ public final class VirtualMachine implements Serializable {
                 throw new VirtualMachineException("unknown error", e);
             }
         }
+    }
+
+    public void setBreakpoint(String clazz, String method) {
+        breakpoints.add(new Breakpoint(clazz, method, null));
+    }
+
+    public void setBreakpoint(String clazz, Integer line) {
+        breakpoints.add(new Breakpoint(clazz, null, line));
+    }
+
+    public void removeBreakpoint(String clazz, String method) {
+        breakpoints.remove(new Breakpoint(clazz, method, null));
+    }
+
+    public void removeBreakpoint(String clazz, String method, Integer line) {
+        breakpoints.remove(new Breakpoint(clazz, method, line));
+    }
+
+    public void removeBreakpoint(String clazz, Integer line) {
+        breakpoints.remove(new Breakpoint(clazz, null, line));
+    }
+
+    public void clearBreakpoints() {
+        breakpoints.clear();
     }
 
     public StackTraceElement getPointer() {
