@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2005 Nuno Cruces
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
+ * <p>
  * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ * list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
  * 3. Neither the name of the copyright holders nor the names of its contributors
- *    may be used to endorse or promote products derived from this software without
- *    specific prior written permission.
- *
+ * may be used to endorse or promote products derived from this software without
+ * specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -62,9 +62,15 @@ public final class VirtualMachine implements Serializable {
     private Set<Class> clinitedClasses = new HashSet<Class>();
     Map<String, Object> marks = new HashMap<String, Object>();
 
+    InterfaceImplementer interfaceImplementer = new InterfaceImplementer();
+
     transient ClassLoader classLoader;
 
     VirtualMachine() {
+    }
+
+    public InterfaceImplementer getInterfaceImplementer() {
+        return interfaceImplementer;
     }
 
     /**
@@ -376,6 +382,20 @@ public final class VirtualMachine implements Serializable {
 
     public Object getMark(String name) {
         return marks.get(name);
+    }
+
+    WeakHashMap<Object, Insn> lambdas = new WeakHashMap<>();
+
+    public void putLambda(Object lambda, Insn mInsn) {
+        lambdas.put(lambda, mInsn);
+    }
+
+    public boolean isLambda(Object target) {
+        return lambdas.containsKey(target);
+    }
+
+    public Insn getLambdaInsn(Object target) {
+        return lambdas.get(target);
     }
 }
 

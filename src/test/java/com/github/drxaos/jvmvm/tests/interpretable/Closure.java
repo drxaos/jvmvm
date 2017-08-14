@@ -2,19 +2,21 @@ package com.github.drxaos.jvmvm.tests.interpretable;
 
 public class Closure {
 
-    interface IntegerMath {
-        int operation(int a, int b);
+    interface Op {
+        int eval(int a, int b);
     }
+
+    static int y = 4;
 
     public static void main(String... args) {
 
         int x = 3;
 
-        IntegerMath addition = (a, b) -> (a + b + x);
+        Op addition = (a, b) -> (a + b + x + y);
 
-        int res = addition.operation(1, 2);
+        int res = addition.eval(1, 2);
 
-        if (res != 6) {
+        if (res != 10) {
             throw new RuntimeException();
         }
     }

@@ -30,23 +30,40 @@ package com.github.drxaos.jvmvm.vm.insn;
 
 import com.github.drxaos.jvmvm.vm.Frame;
 import com.github.drxaos.jvmvm.vm.VirtualMachine;
-import com.github.drxaos.jvmvm.vm.placeholders.Lambda;
 import org.objectweb.asm.Handle;
 
+import java.lang.invoke.MethodType;
+
+import static org.objectweb.asm.Opcodes.H_INVOKESTATIC;
+import static org.objectweb.asm.Opcodes.INVOKESTATIC;
+
 public final class IndyInsn extends Insn {
-    public static Insn getInsn(MethodInsn mInsn) {
-        return new IndyInsn(mInsn);
+
+    public static IndyInsn getInsn(String name, String desc, Handle bsm, Object[] bsmArgs, Class<?> cls) {
+        switch (bsm.getTag()) {
+            case H_INVOKESTATIC:
+                Handle h = (Handle) bsmArgs[1];
+                Class<?> type = MethodType.fromMethodDescriptorString(desc, cls.getClassLoader()).returnType();
+                Insn insn = MethodInsn.getInsn(INVOKESTATIC, h.getOwner(), h.getName(), h.getDesc(), cls);
+                return new IndyInsn(insn, type);
+            default:
+                throw new UnsupportedOperationException();
+        }
     }
 
-    private final MethodInsn mInsn;
+    private final Insn mInsn;
+    private final Class lambdaType;
 
-    IndyInsn(MethodInsn mInsn) {
+    IndyInsn(Insn mInsn, Class lambdaType) {
         this.mInsn = mInsn;
+        this.lambdaType = lambdaType;
     }
 
     public void execute(VirtualMachine vm) {
+        Object lambda = vm.getInterfaceImplementer().implement(lambdaType);
         Frame frame = vm.getFrame();
-        frame.pushObject(new Lambda(mInsn));
+        frame.pushObject(lambda);
+        vm.putLambda(lambda, mInsn);
     }
 
     @Override

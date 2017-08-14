@@ -29,16 +29,13 @@
 package com.github.drxaos.jvmvm.vm.insn;
 
 import com.github.drxaos.jvmvm.vm.*;
-import com.github.drxaos.jvmvm.vm.placeholders.Lambda;
 import com.github.drxaos.jvmvm.vm.ref.ConstructorRef;
 import com.github.drxaos.jvmvm.vm.ref.MethodRef;
-import org.objectweb.asm.Handle;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static com.github.drxaos.jvmvm.vm.placeholders.Lambda.LAMBDA_STACK_SKIP;
 import static org.objectweb.asm.Opcodes.*;
 
 public abstract class MethodInsn extends Insn {
@@ -58,18 +55,6 @@ public abstract class MethodInsn extends Insn {
                 return null;
         }
     }
-
-    public static Insn getInsnIndy(String name, String desc, Handle bsm, Object[] bsmArgs, Class<?> cls) {
-
-        switch (bsm.getTag()) {
-            case H_INVOKESTATIC:
-                Handle h = (Handle) bsmArgs[1];
-                return new IndyInsn(new InvokeStaticInsn(h.getOwner(), h.getName(), h.getDesc(), cls));
-            default:
-                throw new UnsupportedOperationException();
-        }
-    }
-
 
     static final class InvokeVirtualInsn extends MethodInsn {
         private final MethodRef m;
@@ -180,11 +165,11 @@ public abstract class MethodInsn extends Insn {
 
             Object target = frame.getTarget(method.getParameterTypes());
 
-            if (target instanceof Lambda) {
+            if (vm.isLambda(target)) {
                 // call lambda by handle
                 int targetIdx = frame.getTargetIdx(method.getParameterTypes());
-                frame.replaceByIdx(targetIdx, LAMBDA_STACK_SKIP);
-                ((Lambda) target).getmInsn().execute(vm);
+                frame.replaceByIdx(targetIdx, Frame.LAMBDA_STACK_SKIP);
+                vm.getLambdaInsn(target).execute(vm);
                 return;
             }
 

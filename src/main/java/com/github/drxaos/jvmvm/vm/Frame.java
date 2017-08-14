@@ -28,6 +28,7 @@
 
 package com.github.drxaos.jvmvm.vm;
 
+import com.github.drxaos.jvmvm.vm.insn.Insn;
 import com.github.drxaos.jvmvm.vm.ref.ConstructorRef;
 import com.github.drxaos.jvmvm.vm.ref.MethodRef;
 
@@ -39,8 +40,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
-
-import static com.github.drxaos.jvmvm.vm.placeholders.Lambda.LAMBDA_STACK_SKIP;
+import java.util.WeakHashMap;
 
 public final class Frame implements Cloneable, Serializable {
     private static final long serialVersionUID = 874267885800467086l;
@@ -55,6 +55,8 @@ public final class Frame implements Cloneable, Serializable {
     private transient Constructor constructor;
     private transient MethodCode code;
     private boolean mutable;
+
+    public static final Object LAMBDA_STACK_SKIP = new Object();
 
     Frame() {
     }
@@ -572,4 +574,5 @@ public final class Frame implements Cloneable, Serializable {
     public void replaceByIdx(int idx, Object to) {
         stack[idx] = to;
     }
+
 }

@@ -41,7 +41,7 @@ public class LambdaTest {
         Project project = new Project("lambda-test")
                 .addFile(name, FileUtils.readFileToString(new File("src/test/java/" + name)))
                 .setSystemClassesCallback(className -> {
-                    System.err.println("Loading: " + className);
+                    System.err.println("Loading2: " + className);
                     return true;
                 })
                 .compile()

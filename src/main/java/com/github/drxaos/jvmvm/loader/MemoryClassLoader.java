@@ -148,6 +148,10 @@ public class MemoryClassLoader extends SecureClassLoader {
     }
 
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        if (serviceClasses.contains(name)) {
+            return super.loadClass(name, resolve);
+        }
+
         if (!classes.containsKey(name) && systemClassesCallback != null && systemClassesCallback.shouldResolve(name)) {
             // lazy resolving
             addSystemClass(name);
@@ -187,11 +191,7 @@ public class MemoryClassLoader extends SecureClassLoader {
                 return c;
             }
         } else {
-            if (serviceClasses.contains(name)) {
-                return super.loadClass(name, resolve);
-            } else {
-                throw new ClassNotFoundException(name);
-            }
+            throw new ClassNotFoundException(name);
         }
     }
 
@@ -227,5 +227,9 @@ public class MemoryClassLoader extends SecureClassLoader {
         } else {
             return null;
         }
+    }
+
+    public Class<?> defineClass(String name, byte[] b) {
+        return super.defineClass(name, b, 0, b.length);
     }
 }

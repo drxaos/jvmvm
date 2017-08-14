@@ -138,7 +138,7 @@ public final class CodeVisitor extends ClassVisitor {
         @Override
         public void visitInvokeDynamicInsn(String name, String desc, Handle bsm, Object... bsmArgs) {
             if (!interpretable) return;
-            insns.add(MethodInsn.getInsnIndy(name, desc, bsm, bsmArgs, cls));
+            insns.add(IndyInsn.getInsn(name, desc, bsm, bsmArgs, cls));
         }
     };
     private static final AnnotationVisitor emptyAnnotationVisitor = new AnnotationVisitor(Opcodes.ASM4, null) {
